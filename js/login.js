@@ -49,7 +49,7 @@ function iniciarSesion() {
 
             if (usuario.password.trim() === password) {
                 localStorage.setItem("usuarioLogueado", JSON.stringify(usuario));
-                window.location.href = "https://navigationasistance.ddns.net:8083/usuarios.html";
+                window.location.href = "usuarios.html";
             } else {
                 alert("Contraseña incorrecta.");
             }

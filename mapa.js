@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const latElem = document.getElementById("lat");
   const lonElem = document.getElementById("lon");
 
+  let naveganteSeleccionadoId = null;
+
   let map = L.map('map').setView([0, 0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
@@ -71,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!isNaN(lat) && !isNaN(lng)) {
           const usuarioRes = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${nadador.usuarioid}`);
           const usuario = await usuarioRes.json();
-          const nombre = usuario.nombre ? `👤 ${usuario.nombre}` : `👤 Navegante`;
+          const nombre = usuario.nombre && usuario.apellido ? `👤 ${usuario.nombre} ${usuario.apellido}` : `👤 Navegante`;
           opciones.push({ value: `${lat},${lng}`, label: nombre });
         }
       }
@@ -80,6 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const option = document.createElement("option");
         option.value = opt.value;
         option.textContent = opt.label;
+        option.dataset.id = opt.id;
         selectNavegante.appendChild(option);
       });
     });
@@ -106,6 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
   selectNavegante.addEventListener('change', function (e) {
     const coords = e.target.value.split(",").map(parseFloat);
     map.flyTo(coords, 15);
+    naveganteSeleccionadoId = e.target.options[e.target.selectedIndex].dataset.id || null;
   });
 
   const api_url = new URL("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
@@ -150,6 +154,12 @@ document.addEventListener("DOMContentLoaded", () => {
           }).addTo(map).bindPopup(`👤 ${nombre}`);
           swimmerMarkers.set(usuarioid, marker);
         }
+
+        // 👇 ESTA ES LA LÍNEA QUE AGREGA EL SEGUIMIENTO
+        if (usuarioid === naveganteSeleccionadoId) {
+          map.setView(position, map.getZoom());
+        }
+
       }
 
       // Eliminar marcadores que ya no están activos

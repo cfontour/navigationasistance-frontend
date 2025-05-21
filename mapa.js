@@ -146,11 +146,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const nombre = await getUsuarioNombre(usuarioid);
         const position = [lat, lng];
 
+        // Obtener y formatear la hora desde fecha_ultima_actualizacion
+        let hora = "";
+        const fechaRaw = nadador.fecha_ultima_actualizacion;
+        if (fechaRaw) {
+            const date = new Date(fechaRaw);
+            hora = date.toLocaleTimeString('es-UY', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+        // Contenido del popup
+        const popupTexto = `👤 ${nombre}<br>🕒 ${hora}`;
+
         if (swimmerMarkers.has(usuarioid)) {
           const marker = swimmerMarkers.get(usuarioid);
           marker.setLatLng(position);
           marker.setIcon(createSwimmerIcon(map.getZoom()));
-          marker.setPopupContent(`👤 ${nombre}`);
+          marker.setPopupContent(popupTexto);
 
         } else {
           const marker = L.marker(position, {

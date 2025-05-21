@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const position = [lat, lng];
 
         // 🛠️ CORRECTO: Definís fechaRaw ANTES de usarla
-        const fechaRaw = nadador.fecha_ultima_actualizacion;
+        const fechaRaw = nadador.fechaUltimaActualizacion;
 
         // Obtener y formatear la hora desde fecha_ultima_actualizacion
         let hora = "";
@@ -163,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 hora = "Hora inválida";
             }
         } catch (e) {
+            console.log("Debug usuarioid:", usuarioid, "fecha_ultima_actualizacion:", nadador.fecha_ultima_actualizacion);
             console.error("Error formateando hora:", e);
             hora = "Sin hora";
         }

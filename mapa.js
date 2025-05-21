@@ -157,19 +157,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 second: '2-digit'
             });
         }
+
+        //
+        const estado = nadador.estado ? nadador.estado : "Navegante";
+
         // Contenido del popup
         const popupTexto = `👤 ${nombre}<br>🕒 ${hora}`;
+        const tooltipTexto = `👤 ${nombre}\n🆔 ${usuarioid}\n🕒 ${hora}\n📶 Estado: ${estado}`;
 
         if (swimmerMarkers.has(usuarioid)) {
           const marker = swimmerMarkers.get(usuarioid);
           marker.setLatLng(position);
           marker.setIcon(createSwimmerIcon(map.getZoom()));
           marker.setPopupContent(popupTexto);
-
+          marker.setTooltipContent(tooltipTexto);
         } else {
-          const marker = L.marker(position, {
-            icon: createSwimmerIcon(map.getZoom())
-          }).addTo(map).bindPopup(`👤 ${nombre}`);
+            const marker = L.marker(position, {
+              icon: createSwimmerIcon(map.getZoom())
+            }).addTo(map)
+              .bindPopup(popupTexto)
+              .bindTooltip(tooltipTexto, { permanent: false, direction: 'top' });
           swimmerMarkers.set(usuarioid, marker);
         }
 

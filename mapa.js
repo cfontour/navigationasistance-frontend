@@ -140,15 +140,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         nuevosIds.add(usuarioid);
 
-        //const nombre = await getUsuarioNombre(usuarioid);
-        const nombreCompleto = `👤 ${usuario.nombre} ${usuario.apellido}`;
+        const nombre = await getUsuarioNombre(usuarioid);
         const position = [lat, lng];
 
         if (swimmerMarkers.has(usuarioid)) {
           const marker = swimmerMarkers.get(usuarioid);
           marker.setLatLng(position);
           marker.setIcon(createSwimmerIcon(map.getZoom()));
-          marker.setPopupContent(nombreCompleto);
+          marker.setPopupContent(`👤 ${usuario.nombre} ${usuario.apellido}`);
         } else {
           const marker = L.marker(position, {
             icon: createSwimmerIcon(map.getZoom())

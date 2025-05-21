@@ -148,16 +148,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Obtener y formatear la hora desde fecha_ultima_actualizacion
         let hora = "";
-        const fechaRaw = nadador.fecha_ultima_actualizacion;
-        if (fechaRaw) {
+        try {
             const date = new Date(fechaRaw);
-            hora = date.toLocaleTimeString('es-UY', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
+            if (!isNaN(date.getTime())) {
+                hora = date.toLocaleTimeString('es-UY', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            } else {
+                hora = "Hora inválida";
+            }
+        } catch (e) {
+            console.error("Error formateando hora:", e);
+            hora = "Sin hora";
         }
-
         //
         const estado = nadador.estado ? nadador.estado : "Navegante";
 

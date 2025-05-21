@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
     usuarios.forEach((u) => {
       const opt = document.createElement("option");
       opt.value = u.id;
-      opt.textContent = `👤 ${u.nombre}`;
+       opt.textContent = `👤 ${u.nombre} ${u.apellido}`;
       selectUsuario.appendChild(opt);
     });
   }

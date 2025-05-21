@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const marker = swimmerMarkers.get(usuarioid);
           marker.setLatLng(position);
           marker.setIcon(createSwimmerIcon(map.getZoom()));
-          marker.setPopupContent(`👤 ${nombre}`);
+          marker.setPopupContent(`👤 ${usuario.nombre} ${usuario.apellido}`);
         } else {
           const marker = L.marker(position, {
             icon: createSwimmerIcon(map.getZoom())

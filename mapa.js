@@ -154,18 +154,23 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const date = new Date(fechaRaw);
             if (!isNaN(date.getTime())) {
-                hora = date.toLocaleTimeString('es-UY', {
+                  const dia = String(date.getDate()).padStart(2, '0');
+                  const mes = String(date.getMonth() + 1).padStart(2, '0');
+                  const anio = date.getFullYear();
+                  const horaTxt = date.toLocaleTimeString('es-UY', {
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit'
-                });
-            } else {
-                hora = "Hora inválida";
-            }
+                  });
+
+                  hora = `${dia}/${mes}/${anio} ${horaTxt}`;
+                } else {
+                  hora = "Fecha inválida";
+                }
         } catch (e) {
             console.log("Debug usuarioid:", usuarioid, "fecha_ultima_actualizacion:", nadador.fecha_ultima_actualizacion);
             console.error("Error formateando hora:", e);
-            hora = "Sin hora";
+            hora = "Sin fecha";
         }
         //
         const estado = nadador.estado ? nadador.estado : "Navegante";

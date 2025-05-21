@@ -1,0 +1,45 @@
+/* Asegura separación y alineación limpia en la lista */
+#lista-respaldos li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+}
+
+/* Botones de acción compactos */
+#lista-respaldos .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+/* Espaciado entre botones */
+#lista-respaldos .btn + .btn {
+  margin-left: 0.4rem;
+}
+
+/* Mejora estética del campo de entrada */
+#input-contacto {
+  font-size: 0.95rem;
+}
+
+/* Colores suaves para alertas o mensajes */
+.text-muted {
+  color: #6c757d !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+/* Encabezados mejor alineados */
+.card-header h6 {
+  margin: 0;
+  font-weight: bold;
+}
+
+/* Mejoras para el bloque de usuario */
+#usuario-info {
+  font-weight: 500;
+  font-size: 1rem;
+}

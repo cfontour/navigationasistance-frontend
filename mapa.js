@@ -119,8 +119,11 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${id}`);
       const usuario = await res.json();
-      return usuario.nombre || "Nombre no disponible";
+      return usuario.nombre && usuario.apellido
+            ? `${usuario.nombre} ${usuario.apellido}`
+            : usuario.nombre || "Nombre no disponible";
     } catch {
+      console.error("Error al obtener nombre completo:", error);
       return "Nombre no disponible";
     }
   }
@@ -147,7 +150,8 @@ document.addEventListener("DOMContentLoaded", () => {
           const marker = swimmerMarkers.get(usuarioid);
           marker.setLatLng(position);
           marker.setIcon(createSwimmerIcon(map.getZoom()));
-          marker.setPopupContent(`👤 ${usuario.nombre} ${usuario.apellido}`);
+          marker.setPopupContent(`👤 ${nombre}`);
+
         } else {
           const marker = L.marker(position, {
             icon: createSwimmerIcon(map.getZoom())

@@ -146,6 +146,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const nombre = await getUsuarioNombre(usuarioid);
         const position = [lat, lng];
 
+        // 🛠️ CORRECTO: Definís fechaRaw ANTES de usarla
+        const fechaRaw = nadador.fecha_ultima_actualizacion;
+
         // Obtener y formatear la hora desde fecha_ultima_actualizacion
         let hora = "";
         try {

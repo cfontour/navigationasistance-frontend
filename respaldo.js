@@ -24,7 +24,9 @@ async function cargarRespaldos() {
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/respaldo/listarPorUsuario/${usuarioLogueado.id}`);
     const data = await res.json();
 
-    if (!data.length) {
+    console.log("Respaldos recibidos:", data); // debug opcional
+
+    if (!Array.isArray(data) || data.length === 0) {
       listaElement.innerHTML = `<li class="list-group-item text-muted">No hay contactos registrados.</li>`;
       return;
     }

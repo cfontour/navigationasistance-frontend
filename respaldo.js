@@ -21,11 +21,20 @@ async function cargarRespaldos() {
   listaElement.innerHTML = "";
 
   try {
-    const res = await fetch(https://navigationasistance-backend-1.onrender.com/respaldo/listarPorUsuario/${usuarioLogueado.id});
-    const data = await res.json();
+    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/respaldo/listarPorUsuario/${usuarioLogueado.id}`);
 
-    if (!data.length) {
-      listaElement.innerHTML = <li class="list-group-item text-muted">No hay contactos registrados.</li>;
+    if (!res.ok) throw new Error("Respuesta no OK del servidor");
+
+    let data = [];
+
+    try {
+      data = await res.json();
+    } catch (jsonError) {
+      console.warn("Respuesta vacía o no JSON.");
+    }
+
+    if (!Array.isArray(data) || data.length === 0) {
+      listaElement.innerHTML = `<li class="list-group-item text-muted">No hay contactos registrados.</li>`;
       return;
     }
 
@@ -33,21 +42,22 @@ async function cargarRespaldos() {
       const li = document.createElement("li");
       li.className = "list-group-item d-flex justify-content-between align-items-center";
 
-      li.innerHTML =
+      li.innerHTML = `
         <span>${r.contacto}</span>
         <div>
           <button class="btn btn-sm btn-warning mr-2" onclick="editarRespaldo(${r.id}, '${r.contacto}')">✏️</button>
           <button class="btn btn-sm btn-danger" onclick="eliminarRespaldo(${r.id})">🗑️</button>
         </div>
-      ;
+      `;
 
       listaElement.appendChild(li);
     });
   } catch (error) {
     console.error("Error al cargar respaldos:", error);
-    listaElement.innerHTML = <li class="list-group-item text-danger">Error al cargar los contactos.</li>;
+    listaElement.innerHTML = `<li class="list-group-item text-danger">Error al cargar los contactos.</li>`;
   }
 }
+
 
 function mostrarFormularioAgregar() {
   document.getElementById("formulario-agregar").classList.remove("d-none");

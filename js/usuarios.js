@@ -4,6 +4,7 @@ $(document).ready(function () {
     cargarUsuarios();
     $('#usuarios').DataTable();
     actualizarEmailDelUsuario();
+    mostrarItemRespaldoSiUsuarioLogueado(); // ✅ Integrado acá, dentro del flujo seguro
 });
 
 function getHeaders() {
@@ -88,5 +89,14 @@ async function agregarUsuario() {
         console.error("Error al agregar usuario:", error);
         alert("No se pudo agregar el usuario. Intente nuevamente.");
     }
+}
 
+// ✅ NUEVO: Mostrar el ítem de respaldo si hay usuario logueado
+function mostrarItemRespaldoSiUsuarioLogueado() {
+    const userStr = localStorage.getItem("usuarioLogueado");
+    const itemRespaldo = document.getElementById("item-respaldo");
+
+    if (userStr && itemRespaldo) {
+        itemRespaldo.classList.remove("d-none");
+    }
 }

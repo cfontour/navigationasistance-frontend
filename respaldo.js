@@ -81,7 +81,7 @@ async function agregarRespaldo() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contacto,
-        usuario_id: usuarioLogueado.id
+        usuarioId: usuarioLogueado.id
       })
     });
 

@@ -22,9 +22,16 @@ async function cargarRespaldos() {
 
   try {
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/respaldo/listarPorUsuario/${usuarioLogueado.id}`);
-    const data = await res.json();
 
-    console.log("Respaldos recibidos:", data); // debug opcional
+    if (!res.ok) throw new Error("Respuesta no OK del servidor");
+
+    const contentLength = res.headers.get("content-length");
+    if (!contentLength || parseInt(contentLength) === 0) {
+      listaElement.innerHTML = `<li class="list-group-item text-muted">No hay contactos registrados.</li>`;
+      return;
+    }
+
+    const data = await res.json();
 
     if (!Array.isArray(data) || data.length === 0) {
       listaElement.innerHTML = `<li class="list-group-item text-muted">No hay contactos registrados.</li>`;

@@ -1,10 +1,19 @@
 // usuarios.js
 
 $(document).ready(function () {
-    cargarUsuarios();
-    $('#usuarios').DataTable();
+    const usuarioStr = localStorage.getItem("usuarioLogueado");
+    if (!usuarioStr) return;
+
+    const usuario = JSON.parse(usuarioStr);
     actualizarEmailDelUsuario();
-    mostrarItemRespaldoSiUsuarioLogueado(); // ✅ Integrado acá, dentro del flujo seguro
+    mostrarItemRespaldoSiUsuarioLogueado();
+
+    if (usuario.rol === "ADMINISTRADOR") {
+        cargarUsuarios();
+        $('#usuarios').DataTable();
+    } else {
+        mostrarVistaSoloDelUsuario(usuario);
+    }
 });
 
 function getHeaders() {
@@ -32,14 +41,12 @@ async function cargarUsuarios() {
 
     for (let usuario of usuarios) {
         let botonEliminar = `<a href="#" onclick="eliminarUsuario('${usuario.id}')" class="btn btn-danger btn-circle btn-sm"><i class="fas fa-trash"></i></a>`;
-
         let usuarioHtml = `<tr>
             <td>${usuario.id}</td>
             <td>${usuario.nombre} ${usuario.apellido}</td>
             <td>${usuario.email}</td>
             <td>${botonEliminar}</td>
         </tr>`;
-
         listadoHtml += usuarioHtml;
     }
 
@@ -47,9 +54,7 @@ async function cargarUsuarios() {
 }
 
 async function eliminarUsuario(id) {
-    if (!confirm('¿Desea eliminar el usuario?')) {
-        return;
-    }
+    if (!confirm('¿Desea eliminar el usuario?')) return;
 
     await fetch('https://navigationasistance-backend-1.onrender.com/usuarios/eliminar/' + id, {
         method: 'DELETE',
@@ -91,7 +96,6 @@ async function agregarUsuario() {
     }
 }
 
-// ✅ NUEVO: Mostrar el ítem de respaldo si hay usuario logueado
 function mostrarItemRespaldoSiUsuarioLogueado() {
     const userStr = localStorage.getItem("usuarioLogueado");
     const itemRespaldo = document.getElementById("item-respaldo");
@@ -99,4 +103,30 @@ function mostrarItemRespaldoSiUsuarioLogueado() {
     if (userStr && itemRespaldo) {
         itemRespaldo.classList.remove("d-none");
     }
+}
+
+// ✅ NUEVO: Vista restringida solo para rol USUARIO
+function mostrarVistaSoloDelUsuario(usuario) {
+    document.getElementById("card-formulario").classList.add("d-none");
+    document.getElementById("card-tabla").classList.add("d-none");
+
+    const container = document.querySelector(".container-fluid");
+    const card = document.createElement("div");
+    card.className = "card mb-4";
+    card.innerHTML = `
+        <div class="card-header">Tus datos</div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead><tr><th>ID</th><th>Nombre Completo</th><th>Email</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>${usuario.id}</td>
+                        <td>${usuario.nombre} ${usuario.apellido}</td>
+                        <td>${usuario.email}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+    container.appendChild(card);
 }

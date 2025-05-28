@@ -175,6 +175,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const nombre = await getUsuarioNombre(usuarioid);
         const position = [lat, lng];
 
+        //
+        // 📍 Agregar punto a la traza si está activa
+              if (trazaActiva && usuarioid === naveganteSeleccionadoId) {
+                if (!rutaHistorial.has(usuarioid)) {
+                  rutaHistorial.set(usuarioid, []);
+                }
+                const puntos = rutaHistorial.get(usuarioid);
+                puntos.push(position);
+
+                // ➕ Mostrar puntos individuales de la ruta
+                const marker = L.circleMarker(position, {
+                  radius: 5,
+                  color: "blue",
+                  fillColor: "#3399ff",
+                  fillOpacity: 0.8
+                }).addTo(map);
+              }
+        //
+
         // 🛠️ CORRECTO: Definís fechaRaw ANTES de usarla
         const fechaRaw = nadador.fechaUltimaActualizacion;
 
@@ -223,34 +242,22 @@ document.addEventListener("DOMContentLoaded", () => {
           swimmerMarkers.set(usuarioid, marker);
         }
 
-        // 👇 ESTA ES LA LÍNEA QUE AGREGA EL SEGUIMIENTO
-        if (usuarioid === naveganteSeleccionadoId) {
-          map.setView(position, map.getZoom());
+        //
+        // ⛳ Marcar inicio si aún no lo hicimos
+              if (trazaActiva && usuarioid === naveganteSeleccionadoId && !marcadorInicio) {
+                marcadorInicio = L.marker(position, {
+                  icon: L.icon({
+                    iconUrl: "img/flag-icon.png",
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 24]
+                  })
+                }).addTo(map);
+              }
 
-          if (trazaActiva) {
-            if (!rutaHistorial.has(usuarioid)) {
-              rutaHistorial.set(usuarioid, []);
-
-              // 🏁 Agrega bandera solo una vez (inicio)
-              marcadorInicio = L.marker(position, {
-                icon: L.icon({
-                  iconUrl: 'img/start_flag.png',
-                  iconSize: [30, 30],
-                  iconAnchor: [15, 30]
-                })
-              }).addTo(map).bindTooltip("Inicio", { permanent: false, direction: 'top' });
-            }
-
-            // 🔵 Agrega punto (círculo)
-            const punto = L.circleMarker(position, {
-              radius: 5,
-              color: "#007bff",
-              fillColor: "#007bff",
-              fillOpacity: 0.6
-            }).addTo(map);
-            rutaHistorial.get(usuarioid).push(punto);
-          }
-        }
+              if (usuarioid === naveganteSeleccionadoId) {
+                map.setView(position, map.getZoom());
+              }
+        //
 
       }
 

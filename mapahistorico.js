@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const inicio = new Date(datos[0].nadadorhora);
     const fin = new Date(datos[datos.length - 1].nadadorhora);
     const duracionHor = Math.floor((fin - inicio) / 3600000);
-    const duracionMin = Math.floor((fin - inicio) / 3600000) / 60000);
+    const duracionMin = Math.floor((fin - inicio) % 3600000 / 60000);
     const duracionSeg = Math.floor(((fin - inicio) % 60000) / 1000);
     const distanciaTotal = datosRuta.reduce((sum, p) => sum + p.distancia, 0);
     const distanciaKm = (distanciaTotal / 1000).toFixed(2);

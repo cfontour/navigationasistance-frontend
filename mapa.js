@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
     // Agrega esta estructura para mantener historial por usuario
-    const rutaHistorial = new Map();
+    //const rutaHistorial = new Map();
     const iconoInicio = L.icon({
         iconUrl: 'img/start_flag.png', // deberías tener esta imagen en tu /img
         iconSize: [32, 32],

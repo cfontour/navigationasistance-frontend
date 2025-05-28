@@ -191,6 +191,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   fillColor: "#3399ff",
                   fillOpacity: 0.8
                 }).addTo(map);
+
+                puntos.push(marker);
+
               }
         //
 

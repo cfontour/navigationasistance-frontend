@@ -320,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  cargarNavegantes);
+  cargarNavegante();
 
   setInterval(getSwimmer, 5000);
 });

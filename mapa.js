@@ -178,6 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
         //
         // 📍 Agregar punto a la traza si está activa
               if (trazaActiva && usuarioid === naveganteSeleccionadoId) {
+                console.log("Trazando para:", usuarioid);
                 if (!rutaHistorial.has(usuarioid)) {
                   rutaHistorial.set(usuarioid, []);
                 }

@@ -288,5 +288,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  setInterval(getSwimmer, 5000);
+  setInterval(getSwimmer, 10000);
 });

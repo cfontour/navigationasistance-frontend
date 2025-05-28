@@ -146,7 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const inicio = new Date(datos[0].nadadorhora);
     const fin = new Date(datos[datos.length - 1].nadadorhora);
-    const duracionMin = Math.floor((fin - inicio) / 60000);
+    const duracionHor = Math.floor((fin - inicio) / 3600000);
+    const duracionMin = Math.floor((fin - inicio) / 3600000) / 60000);
     const duracionSeg = Math.floor(((fin - inicio) % 60000) / 1000);
     const distanciaTotal = datosRuta.reduce((sum, p) => sum + p.distancia, 0);
     const distanciaKm = (distanciaTotal / 1000).toFixed(2);
@@ -158,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
       div.style.padding = "10px";
       div.style.border = "1px solid #ccc";
       div.style.borderRadius = "8px";
-      div.innerHTML = `<strong>Resumen</strong><br>Tiempo total: ${duracionMin}m ${duracionSeg}s<br>Distancia: ${distanciaKm} km`;
+      div.innerHTML = `<strong>Resumen</strong><br>Tiempo total: ${duracionHor}h ${duracionMin}m ${duracionSeg}s<br>Distancia: ${distanciaKm} km`;
       return div;
     };
     infoControl.addTo(map);

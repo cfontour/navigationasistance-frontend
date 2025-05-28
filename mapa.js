@@ -182,7 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
                   rutaHistorial.set(usuarioid, []);
                 }
                 const puntos = rutaHistorial.get(usuarioid);
-                puntos.push(position);
 
                 // ➕ Mostrar puntos individuales de la ruta
                 const marker = L.circleMarker(position, {
@@ -192,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   fillOpacity: 0.8
                 }).addTo(map);
 
-                puntos.push(marker);
+                puntos.push(position);
 
               }
         //

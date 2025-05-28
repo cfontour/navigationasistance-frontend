@@ -247,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
               if (trazaActiva && usuarioid === naveganteSeleccionadoId && !marcadorInicio) {
                 marcadorInicio = L.marker(position, {
                   icon: L.icon({
-                    iconUrl: "img/flag-icon.png",
+                    iconUrl: "img/start_flag.png",
                     iconSize: [24, 24],
                     iconAnchor: [12, 24]
                   })

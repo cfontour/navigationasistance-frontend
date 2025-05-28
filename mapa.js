@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let firstTime = true;
 
   async function cargarNavegantes() {
-    try {
+
       const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
       const nadadores = await response.json();
       const opciones = [];
@@ -163,9 +163,6 @@ document.addEventListener("DOMContentLoaded", () => {
         selectNavegante.appendChild(option);
       });
 
-    } catch (error) {
-      console.error("Error al cargar navegantes:", error);
-    }
   }
 
 
@@ -320,7 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  async function cargarNavegante();
+  cargarNavegantes();
 
   setInterval(getSwimmer, 5000);
 });

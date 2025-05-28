@@ -83,39 +83,39 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-  // Cargar lista de usuarios activos (nadadores)
-  fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar")
-    .then(response => response.json())
-    .then(async nadadores => {
-      const opciones = [];
-      for (const nadador of nadadores) {
-        const lat = parseFloat(nadador.nadadorlat);
-        const lng = parseFloat(nadador.nadadorlng);
-        if (!isNaN(lat) && !isNaN(lng)) {
-          const usuarioRes = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${nadador.usuarioid}`);
-          const usuario = await usuarioRes.json();
-          const nombre = usuario.nombre && usuario.apellido ? `👤 ${usuario.nombre} ${usuario.apellido}` : `👤 Navegante`;
-          opciones.push({ value: `${lat},${lng}`, label: nombre, id: nadador.usuarioid });
+    // Cargar lista de usuarios activos (nadadores)
+    fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar")
+      .then(response => response.json())
+      .then(async nadadores => {
+        const opciones = [];
+        for (const nadador of nadadores) {
+          const lat = parseFloat(nadador.nadadorlat);
+          const lng = parseFloat(nadador.nadadorlng);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            const usuarioRes = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${nadador.usuarioid}`);
+            const usuario = await usuarioRes.json();
+            const nombre = usuario.nombre && usuario.apellido ? `👤 ${usuario.nombre} ${usuario.apellido}` : `👤 Navegante`;
+            opciones.push({ value: `${lat},${lng}`, label: nombre, id: nadador.usuarioid });
+          }
         }
-      }
-      opciones.sort((a, b) => a.label.localeCompare(b.label));
-      opciones.forEach(opt => {
-        const option = document.createElement("option");
-        option.value = opt.value;
-        option.textContent = opt.label;
-        option.dataset.id = opt.id;
-        selectNavegante.appendChild(option);
-      });
+        opciones.sort((a, b) => a.label.localeCompare(b.label));
+        opciones.forEach(opt => {
+          const option = document.createElement("option");
+          option.value = opt.value;
+          option.textContent = opt.label;
+          option.dataset.id = opt.id;
+          selectNavegante.appendChild(option);
+        });
     });
 
-  // Al cambiar la zona seleccionada, centrar el mapa
-  selectLocation.addEventListener('change', function (e) {
+    // Al cambiar la zona seleccionada, centrar el mapa
+    selectLocation.addEventListener('change', function (e) {
     const zonaId = e.target.value;
     if (!zonaId) return;
 
-    fetch(`https://navigationasistance-backend-1.onrender.com/zonas/listarZona/${zonaId}`)
-      .then(res => res.json())
-      .then(zona => {
+      fetch(`https://navigationasistance-backend-1.onrender.com/zonas/listarZona/${zonaId}`)
+        .then(res => res.json())
+        .then(zona => {
         if (zona && zona.lato && zona.lngo) {
           updateMap([zona.lato, zona.lngo]);
         } else {
@@ -124,13 +124,14 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch(err => {
         console.error("Error al obtener coordenadas de la zona:", err);
-      });
+    });
   });
 
   selectNavegante.addEventListener('change', function (e) {
     const coords = e.target.value.split(",").map(parseFloat);
     map.flyTo(coords, 15);
     naveganteSeleccionadoId = e.target.options[e.target.selectedIndex].dataset.id || null;
+    console.log("Navegante seleccionado:", naveganteSeleccionadoId);
   });
 
   const api_url = new URL("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
@@ -149,13 +150,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-    // Agrega esta estructura para mantener historial por usuario
-    //const rutaHistorial = new Map();
-    const iconoInicio = L.icon({
-        iconUrl: 'img/start_flag.png', // deberías tener esta imagen en tu /img
-        iconSize: [32, 32],
-        iconAnchor: [16, 32]
-    });
+  // Agrega esta estructura para mantener historial por usuario
+  //const rutaHistorial = new Map();
+  const iconoInicio = L.icon({
+      iconUrl: 'img/start_flag.png', // deberías tener esta imagen en tu /img
+      iconSize: [32, 32],
+      iconAnchor: [16, 32]
+  });
 
   async function getSwimmer() {
     try {

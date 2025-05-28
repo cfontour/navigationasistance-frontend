@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const usuarioRes = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${nadador.usuarioid}`);
           const usuario = await usuarioRes.json();
           const nombre = usuario.nombre && usuario.apellido ? `👤 ${usuario.nombre} ${usuario.apellido}` : `👤 Navegante`;
-          opciones.push({ value: `${lat},${lng}`, label: nombre });
+          opciones.push({ value: `${lat},${lng}`, label: nombre, id: nadador.usuarioid });
         }
       }
       opciones.sort((a, b) => a.label.localeCompare(b.label));

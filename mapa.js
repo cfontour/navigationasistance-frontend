@@ -84,29 +84,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Cargar lista de usuarios activos (nadadores)
-    fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar")
-      .then(response => response.json())
-      .then(async nadadores => {
-        const opciones = [];
-        for (const nadador of nadadores) {
-          const lat = parseFloat(nadador.nadadorlat);
-          const lng = parseFloat(nadador.nadadorlng);
-          if (!isNaN(lat) && !isNaN(lng)) {
-            const usuarioRes = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${nadador.usuarioid}`);
-            const usuario = await usuarioRes.json();
-            const nombre = usuario.nombre && usuario.apellido ? `👤 ${usuario.nombre} ${usuario.apellido}` : `👤 Navegante`;
-            opciones.push({ value: `${lat},${lng}`, label: nombre, id: nadador.usuarioid });
-          }
-        }
-        opciones.sort((a, b) => a.label.localeCompare(b.label));
-        opciones.forEach(opt => {
-          const option = document.createElement("option");
-          option.value = opt.value;
-          option.textContent = opt.label;
-          option.dataset.id = opt.id;
-          selectNavegante.appendChild(option);
-        });
-    });
+    //fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar")
+    //  .then(response => response.json())
+    //  .then(async nadadores => {
+    //    const opciones = [];
+    //    for (const nadador of nadadores) {
+    //      const lat = parseFloat(nadador.nadadorlat);
+    //      const lng = parseFloat(nadador.nadadorlng);
+    //      if (!isNaN(lat) && !isNaN(lng)) {
+    //        const usuarioRes = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${nadador.usuarioid}`);
+    //        const usuario = await usuarioRes.json();
+    //        const nombre = usuario.nombre && usuario.apellido ? `👤 ${usuario.nombre} ${usuario.apellido}` : `👤 Navegante`;
+    //        opciones.push({ value: `${lat},${lng}`, label: nombre, id: nadador.usuarioid });
+    //      }
+    //    }
+    //    opciones.sort((a, b) => a.label.localeCompare(b.label));
+    //    opciones.forEach(opt => {
+    //      const option = document.createElement("option");
+    //      option.value = opt.value;
+    //      option.textContent = opt.label;
+    //      option.dataset.id = opt.id;
+    //      selectNavegante.appendChild(option);
+    //    });
+    //});
 
     // Al cambiar la zona seleccionada, centrar el mapa
     selectLocation.addEventListener('change', function (e) {
@@ -136,6 +136,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const api_url = new URL("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
   let firstTime = true;
+
+  async function cargarNavegantes() {
+    try {
+      const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
+      const nadadores = await response.json();
+      const opciones = [];
+
+      for (const nadador of nadadores) {
+        const lat = parseFloat(nadador.nadadorlat);
+        const lng = parseFloat(nadador.nadadorlng);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const usuarioRes = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${nadador.usuarioid}`);
+          const usuario = await usuarioRes.json();
+          const nombre = usuario.nombre && usuario.apellido ? `👤 ${usuario.nombre} ${usuario.apellido}` : `👤 Navegante`;
+          opciones.push({ value: `${lat},${lng}`, label: nombre, id: nadador.usuarioid });
+        }
+      }
+
+      opciones.sort((a, b) => a.label.localeCompare(b.label));
+      opciones.forEach(opt => {
+        const option = document.createElement("option");
+        option.value = opt.value;
+        option.textContent = opt.label;
+        option.dataset.id = opt.id;
+        selectNavegante.appendChild(option);
+      });
+
+    } catch (error) {
+      console.error("Error al cargar navegantes:", error);
+    }
+  }
+
 
   async function getUsuarioNombre(id) {
     try {
@@ -288,5 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  setInterval(getSwimmer, 10000);
+  cargarNavegantes);
+
+  setInterval(getSwimmer, 5000);
 });

@@ -191,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   fillOpacity: 0.8
                 }).addTo(map);
 
-                puntos.push(position);
+                puntos.push(marker);
 
               }
         //

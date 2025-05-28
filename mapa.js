@@ -5,12 +5,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const latElem = document.getElementById("lat");
   const lonElem = document.getElementById("lon");
 
+  const rutaHistorial = new Map();
+  let trazaActiva = false;
+  let marcadorInicio = null;
+
   let naveganteSeleccionadoId = null;
 
   let map = L.map('map').setView([0, 0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
   }).addTo(map);
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "t" || event.key === "T") {
+      trazaActiva = !trazaActiva;
+      alert(`Traza en vivo ${trazaActiva ? "activada" : "desactivada"}`);
+
+      if (!trazaActiva) {
+        // Limpiar trazas
+        rutaHistorial.forEach(puntos => puntos.forEach(p => map.removeLayer(p)));
+        rutaHistorial.clear();
+        if (marcadorInicio) {
+          map.removeLayer(marcadorInicio);
+          marcadorInicio = null;
+        }
+      }
+    }
+  });
 
   function createSwimmerIcon(zoomLevel) {
     const minSize = 24;
@@ -128,6 +149,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+    // Agrega esta estructura para mantener historial por usuario
+    const rutaHistorial = new Map();
+    const iconoInicio = L.icon({
+        iconUrl: 'img/start_flag.png', // deberías tener esta imagen en tu /img
+        iconSize: [32, 32],
+        iconAnchor: [16, 32]
+    });
+
   async function getSwimmer() {
     try {
       const response = await fetch(api_url);
@@ -197,6 +226,30 @@ document.addEventListener("DOMContentLoaded", () => {
         // 👇 ESTA ES LA LÍNEA QUE AGREGA EL SEGUIMIENTO
         if (usuarioid === naveganteSeleccionadoId) {
           map.setView(position, map.getZoom());
+
+          if (trazaActiva) {
+            if (!rutaHistorial.has(usuarioid)) {
+              rutaHistorial.set(usuarioid, []);
+
+              // 🏁 Agrega bandera solo una vez (inicio)
+              marcadorInicio = L.marker(position, {
+                icon: L.icon({
+                  iconUrl: 'img/start_flag.png',
+                  iconSize: [30, 30],
+                  iconAnchor: [15, 30]
+                })
+              }).addTo(map).bindTooltip("Inicio", { permanent: false, direction: 'top' });
+            }
+
+            // 🔵 Agrega punto (círculo)
+            const punto = L.circleMarker(position, {
+              radius: 5,
+              color: "#007bff",
+              fillColor: "#007bff",
+              fillOpacity: 0.6
+            }).addTo(map);
+            rutaHistorial.get(usuarioid).push(punto);
+          }
         }
 
       }

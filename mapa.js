@@ -225,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
         li.dataset.nombre = nombre;
         li.className = "navegante-item";
         li.innerHTML = `
-          <span class="color-circle" style="background-color:${color};"></span>
+          <span class="color-circle" style="background-color: ${color}; margin-right: 8px;"></span>
           ${nombre}
         `;
 

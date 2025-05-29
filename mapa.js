@@ -1,7 +1,7 @@
 // Ejecutar cuando el DOM esté listo
 document.addEventListener("DOMContentLoaded", () => {
   const selectLocation = document.getElementById("select-location");
-  const selectNavegante = document.getElementById("select-navegante");
+  //const selectNavegante = document.getElementById("select-navegante");
   const latElem = document.getElementById("lat");
   const lonElem = document.getElementById("lon");
 
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const zonasOrdenadas = data.sort((a, b) => a.zona.localeCompare(b.zona));
       zonasOrdenadas.forEach(zona => {
-        const option = document.createElement("option");
+        //const option = document.createElement("option");
         option.value = zona.idzon;
         option.textContent = zona.zona;
         selectLocation.appendChild(option);
@@ -181,48 +181,89 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  selectNavegante.addEventListener('change', function (e) {
-    const coords = e.target.value.split(",").map(parseFloat);
-    map.flyTo(coords, 15);
-    naveganteSeleccionadoId = e.target.options[e.target.selectedIndex].dataset.id || null;
-    console.log("Navegante seleccionado:", naveganteSeleccionadoId);
-  });
+  //selectNavegante.addEventListener('change', function (e) {
+  //  const coords = e.target.value.split(",").map(parseFloat);
+  //  map.flyTo(coords, 15);
+  //  naveganteSeleccionadoId = e.target.options[e.target.selectedIndex].dataset.id || null;
+  //  console.log("Navegante seleccionado:", naveganteSeleccionadoId);
+  //});
 
   const api_url = new URL("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
   let firstTime = true;
 
   async function cargarNavegantes() {
-
+    try {
       const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
       const nadadores = await response.json();
-      const opciones = [];
+
+      const lista = document.getElementById("navegantesList");
+      lista.innerHTML = ""; // limpiar lista previa
+
+      const usuariosProcesados = new Set();
 
       for (const nadador of nadadores) {
         const lat = parseFloat(nadador.nadadorlat);
         const lng = parseFloat(nadador.nadadorlng);
-        if (!isNaN(lat) && !isNaN(lng)) {
-          const usuarioRes = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${nadador.usuarioid}`);
-          const usuario = await usuarioRes.json();
-          const nombre = usuario.nombre && usuario.apellido ? `👤 ${usuario.nombre} ${usuario.apellido}` : `👤 Navegante`;
-          opciones.push({ value: `${lat},${lng}`, label: nombre, id: nadador.usuarioid });
-        }
+        const id = nadador.usuarioid;
+
+        if (isNaN(lat) || isNaN(lng) || usuariosProcesados.has(id)) continue;
+
+        usuariosProcesados.add(id);
+
+        const usuarioRes = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${id}`);
+        const usuario = await usuarioRes.json();
+        const nombre = usuario.nombre && usuario.apellido
+          ? `${usuario.nombre} ${usuario.apellido}`
+          : usuario.nombre || "Navegante";
+
+        const color = obtenerColorParaUsuario(id);
+
+        const li = document.createElement("li");
+        li.dataset.id = id;
+        li.dataset.lat = lat;
+        li.dataset.lng = lng;
+        li.dataset.nombre = nombre;
+        li.className = "navegante-item";
+        li.innerHTML = `
+          <span class="color-circle" style="background-color:${color};"></span>
+          ${nombre}
+        `;
+
+        lista.appendChild(li);
       }
-
-      opciones.sort((a, b) => a.label.localeCompare(b.label));
-      opciones.forEach(opt => {
-        const option = document.createElement("option");
-        option.value = opt.value;
-        option.textContent = opt.label;
-        option.dataset.id = opt.id;
-
-        const color = obtenerColorParaUsuario(opt.id);
-        option.style.color = color;
-
-        selectNavegante.appendChild(option);
-      });
-
+    } catch (error) {
+      console.error("Error al cargar navegantes:", error);
+    }
   }
 
+
+  document.getElementById("navegantesList").addEventListener("click", function(e) {
+    const clickedItem = e.target.closest("li[data-id]");
+    if (!clickedItem) return;
+
+    const id = clickedItem.getAttribute("data-id");
+    const lat = parseFloat(clickedItem.dataset.lat);
+    const lng = parseFloat(clickedItem.dataset.lng);
+    const nombre = clickedItem.dataset.nombre;
+
+    naveganteSeleccionadoId = id;
+
+    // Cambiar el texto del botón
+    document.getElementById("dropdownButton").textContent = `👤 ${nombre}`;
+
+    // Centrar el mapa
+    if (!isNaN(lat) && !isNaN(lng)) {
+      map.flyTo([lat, lng], 15);
+    }
+
+    // Ocultar el menú desplegable
+    document.getElementById("navegantesList").style.display = "none";
+  });
+
+  document.getElementById("dropdownButton").addEventListener("click", () => {
+    const lista = document.getElementById("navegantesList");
+    lista.style.display = lista.style.display === "block" ? "none" : "block";
+  });
 
   async function getUsuarioNombre(id) {
     try {

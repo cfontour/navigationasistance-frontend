@@ -141,31 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Cargar lista de usuarios activos (nadadores)
-    //fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar")
-    //  .then(response => response.json())
-    //  .then(async nadadores => {
-    //    const opciones = [];
-    //    for (const nadador of nadadores) {
-    //      const lat = parseFloat(nadador.nadadorlat);
-    //      const lng = parseFloat(nadador.nadadorlng);
-    //      if (!isNaN(lat) && !isNaN(lng)) {
-    //        const usuarioRes = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${nadador.usuarioid}`);
-    //        const usuario = await usuarioRes.json();
-    //        const nombre = usuario.nombre && usuario.apellido ? `👤 ${usuario.nombre} ${usuario.apellido}` : `👤 Navegante`;
-    //        opciones.push({ value: `${lat},${lng}`, label: nombre, id: nadador.usuarioid });
-    //      }
-    //    }
-    //    opciones.sort((a, b) => a.label.localeCompare(b.label));
-    //    opciones.forEach(opt => {
-    //      const option = document.createElement("option");
-    //      option.value = opt.value;
-    //      option.textContent = opt.label;
-    //      option.dataset.id = opt.id;
-    //      selectNavegante.appendChild(option);
-    //    });
-    //});
-
     // Al cambiar la zona seleccionada, centrar el mapa
     selectLocation.addEventListener('change', function (e) {
     const zonaId = e.target.value;
@@ -219,8 +194,8 @@ document.addEventListener("DOMContentLoaded", () => {
         option.textContent = opt.label;
         option.dataset.id = opt.id;
 
-        //const color = obtenerColorParaUsuario(opt.id);
-        //option.style.color = color;
+        const color = obtenerColorParaUsuario(opt.id);
+        option.style.color = color;
 
         selectNavegante.appendChild(option);
       });
@@ -267,7 +242,24 @@ document.addEventListener("DOMContentLoaded", () => {
         const nombre = await getUsuarioNombre(usuarioid);
         const position = [lat, lng];
 
-        //
+        const coloresPorUsuario = new Map();
+        let indiceColor = 0;
+
+        function obtenerColorParaUsuario(usuarioid) {
+          if (!coloresPorUsuario.has(usuarioid)) {
+            const coloresDisponibles = [
+              "#e6194b", "#3cb44b", "#ffe119", "#4363d8",
+              "#f58231", "#911eb4", "#46f0f0", "#f032e6",
+              "#bcf60c", "#fabebe", "#008080", "#e6beff",
+              "#9a6324", "#fffac8", "#800000", "#aaffc3"
+            ];
+            const color = coloresDisponibles[indiceColor % coloresDisponibles.length];
+            coloresPorUsuario.set(usuarioid, color);
+            indiceColor++;
+          }
+          return coloresPorUsuario.get(usuarioid);
+        }
+
         // 📍 Agregar punto a la traza si está activa
               if (trazaActiva && usuarioid === naveganteSeleccionadoId) {
                 console.log("Trazando para:", usuarioid);
@@ -281,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // ➕ Mostrar puntos individuales de la ruta
                 const marker = L.circleMarker(position, {
                   radius: 5,
-                  color: "blue",
+                  color: color,
                   fillColor: color,
                   fillOpacity: 0.8
                 }).addTo(map);

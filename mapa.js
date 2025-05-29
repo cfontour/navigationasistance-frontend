@@ -5,6 +5,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const latElem = document.getElementById("lat");
   const lonElem = document.getElementById("lon");
 
+  const coloresPorUsuario = new Map();
+  const coloresDisponibles = [
+    "#e6194b", "#3cb44b", "#ffe119", "#4363d8",
+    "#f58231", "#911eb4", "#46f0f0", "#f032e6",
+    "#bcf60c", "#fabebe", "#008080", "#e6beff",
+    "#9a6324", "#fffac8", "#800000", "#aaffc3"
+  ];
+  let indiceColor = 0;
+
   const rutaHistorial = new Map();
   let trazaActiva = false;
   let marcadorInicio = null;
@@ -77,6 +86,15 @@ document.addEventListener("DOMContentLoaded", () => {
     map.flyTo([lat, lng], 15);
     latElem.textContent = lat.toFixed(5);
     lonElem.textContent = lng.toFixed(5);
+  }
+
+  function obtenerColorParaUsuario(usuarioid) {
+    if (!coloresPorUsuario.has(usuarioid)) {
+      const color = coloresDisponibles[indiceColor % coloresDisponibles.length];
+      coloresPorUsuario.set(usuarioid, color);
+      indiceColor++;
+    }
+    return coloresPorUsuario.get(usuarioid);
   }
 
   // Cargar lista de zonas
@@ -174,6 +192,10 @@ document.addEventListener("DOMContentLoaded", () => {
         option.value = opt.value;
         option.textContent = opt.label;
         option.dataset.id = opt.id;
+
+        const color = obtenerColorParaUsuario(opt.id);
+        option.style.color = color;
+
         selectNavegante.appendChild(option);
       });
 
@@ -228,11 +250,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 const puntos = rutaHistorial.get(usuarioid);
 
+                const color = obtenerColorParaUsuario(usuarioid);
+
                 // ➕ Mostrar puntos individuales de la ruta
                 const marker = L.circleMarker(position, {
                   radius: 5,
                   color: "blue",
-                  fillColor: "#3399ff",
+                  fillColor: color,
                   fillOpacity: 0.8
                 }).addTo(map);
 

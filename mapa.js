@@ -5,10 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const latElem = document.getElementById("lat");
   const lonElem = document.getElementById("lon");
 
-  const coloresPorUsuario = new Map();
-
-  let indiceColor = 0;
-
   const rutaHistorial = new Map();
   let trazaActiva = false;
   let marcadorInicio = null;
@@ -83,20 +79,31 @@ document.addEventListener("DOMContentLoaded", () => {
     lonElem.textContent = lng.toFixed(5);
   }
 
-  const coloresDisponibles = [
-      "#e6194b", "#3cb44b", "#ffe119", "#4363d8",
-      "#f58231", "#911eb4", "#46f0f0", "#f032e6",
-      "#bcf60c", "#fabebe", "#008080", "#e6beff",
-      "#9a6324", "#fffac8", "#800000", "#aaffc3"
-    ];
+  const iconosDisponibles = [
+      "marker_na_rojo.png",
+      "marker_na_verde.png",
+      "marker_na_anaranjado.png",
+      "marker_na_lila.png",
+      "marker_na_negro.png",
+      "marker_na_amarillo.png",
+      "marker_na_violeta.png",
+      "marker_na_azul.png"
+  ];
 
-  function obtenerColorParaUsuario(usuarioid) {
-    if (!coloresPorUsuario.has(usuarioid)) {
-      const color = coloresDisponibles[indiceColor % coloresDisponibles.length];
-      coloresPorUsuario.set(usuarioid, color);
-      indiceColor++;
+  let indiceIcono = 0;
+
+  function obtenerIconoParaUsuario(usuarioid) {
+    if (!iconosPorUsuario.has(usuarioid)) {
+      const archivo = iconosDisponibles[indiceIcono % iconosDisponibles.length];
+      const icono = L.icon({
+        iconUrl: `img/${archivo}`,
+        iconSize: [32, 32], // o el tamaño real del PNG
+        iconAnchor: [16, 16] // centro
+      });
+      iconosPorUsuario.set(usuarioid, icono);
+      indiceIcono++;
     }
-    return coloresPorUsuario.get(usuarioid);
+    return iconosPorUsuario.get(usuarioid);
   }
 
   // Cargar lista de zonas
@@ -300,25 +307,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const popupTexto = `👤 ${nombre}<br>🕒 ${hora}`;
         const tooltipTexto = `👤 ${nombre}\n🆔 ${usuarioid}\n🕒 ${hora}\n📶 Estado: ${estado}`;
 
+        const icono = obtenerIconoParaUsuario(usuarioid);
+
         if (swimmerMarkers.has(usuarioid)) {
           const marker = swimmerMarkers.get(usuarioid);
           marker.setLatLng(position);
-          marker.setStyle({ color, fillColor: color });
+          marker.setIcon(icono);
           marker.setPopupContent(popupTexto);
           marker.setTooltipContent(tooltipTexto);
         } else {
-            const color = obtenerColorParaUsuario(usuarioid);
-            const marker = L.marker(position, {
-                radius: 10,
-                color: color,
-                fillColor: color,
-                fillOpacity: 0.9
-            }).addTo(map)
-              .bindPopup(popupTexto)
-              .bindTooltip(tooltipTexto, { permanent: false, direction: 'top' });
+          const marker = L.marker(position, {
+            icon: icono
+          }).addTo(map)
+            .bindPopup(popupTexto)
+            .bindTooltip(tooltipTexto, { permanent: false, direction: 'top' });
           swimmerMarkers.set(usuarioid, marker);
         }
-
         //
         // ⛳ Marcar inicio si aún no lo hicimos
               if (trazaActiva && usuarioid === naveganteSeleccionadoId && !marcadorInicio) {

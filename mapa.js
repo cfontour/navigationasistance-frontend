@@ -431,4 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarNavegantes();
 
   setInterval(getSwimmer, 5000);
+
+  setInterval(cargarNavegantes, 5000); // o el intervalo que prefieras
+
 });

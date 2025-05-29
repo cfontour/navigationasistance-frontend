@@ -202,8 +202,8 @@ document.addEventListener("DOMContentLoaded", () => {
         option.textContent = opt.label;
         option.dataset.id = opt.id;
 
-        const color = obtenerColorParaUsuario(opt.id);
-        option.style.color = color;
+        //const color = obtenerColorParaUsuario(opt.id);
+        //option.style.color = color;
 
         selectNavegante.appendChild(option);
       });
@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 const puntos = rutaHistorial.get(usuarioid);
 
-                const color = obtenerColorParaUsuario(usuarioid);
+                //const color = obtenerColorParaUsuario(usuarioid);
 
                 // ➕ Mostrar puntos individuales de la ruta
                 const marker = L.circleMarker(position, {

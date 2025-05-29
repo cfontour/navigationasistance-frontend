@@ -6,12 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const lonElem = document.getElementById("lon");
 
   const coloresPorUsuario = new Map();
-  const coloresDisponibles = [
-    "#e6194b", "#3cb44b", "#ffe119", "#4363d8",
-    "#f58231", "#911eb4", "#46f0f0", "#f032e6",
-    "#bcf60c", "#fabebe", "#008080", "#e6beff",
-    "#9a6324", "#fffac8", "#800000", "#aaffc3"
-  ];
+
   let indiceColor = 0;
 
   const rutaHistorial = new Map();
@@ -87,6 +82,13 @@ document.addEventListener("DOMContentLoaded", () => {
     latElem.textContent = lat.toFixed(5);
     lonElem.textContent = lng.toFixed(5);
   }
+
+  const coloresDisponibles = [
+      "#e6194b", "#3cb44b", "#ffe119", "#4363d8",
+      "#f58231", "#911eb4", "#46f0f0", "#f032e6",
+      "#bcf60c", "#fabebe", "#008080", "#e6beff",
+      "#9a6324", "#fffac8", "#800000", "#aaffc3"
+    ];
 
   function obtenerColorParaUsuario(usuarioid) {
     if (!coloresPorUsuario.has(usuarioid)) {
@@ -301,7 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (swimmerMarkers.has(usuarioid)) {
           const marker = swimmerMarkers.get(usuarioid);
           marker.setLatLng(position);
-          marker.setIcon(createSwimmerIcon(map.getZoom()));
+          marker.setStyle({ color, fillColor: color });
           marker.setPopupContent(popupTexto);
           marker.setTooltipContent(tooltipTexto);
         } else {

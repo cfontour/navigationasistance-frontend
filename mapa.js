@@ -305,8 +305,12 @@ document.addEventListener("DOMContentLoaded", () => {
           marker.setPopupContent(popupTexto);
           marker.setTooltipContent(tooltipTexto);
         } else {
+            const color = obtenerColorParaUsuario(usuarioid);
             const marker = L.marker(position, {
-              icon: createSwimmerIcon(map.getZoom())
+                radius: 10,
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.9
             }).addTo(map)
               .bindPopup(popupTexto)
               .bindTooltip(tooltipTexto, { permanent: false, direction: 'top' });

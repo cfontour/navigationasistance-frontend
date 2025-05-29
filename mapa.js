@@ -33,6 +33,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  document.getElementById("btn-traza").addEventListener("click", () => {
+    trazaActiva = !trazaActiva;
+    alert(`Traza en vivo ${trazaActiva ? "activada" : "desactivada"}`);
+
+    if (!trazaActiva) {
+      rutaHistorial.forEach(puntos => puntos.forEach(p => map.removeLayer(p)));
+      rutaHistorial.clear();
+      if (marcadorInicio) {
+        map.removeLayer(marcadorInicio);
+        marcadorInicio = null;
+      }
+    }
+  });
+
   function createSwimmerIcon(zoomLevel) {
     const minSize = 24;
     const scaleFactor = 4;
@@ -287,9 +301,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 }).addTo(map);
               }
 
-              if (usuarioid === naveganteSeleccionadoId) {
+              //if (usuarioid === naveganteSeleccionadoId && !rutaHistorial.has(usuarioid)) {
+              //  map.setView(position, map.getZoom());
+              //}
+
+              // Solo seguir al nadador si la traza está desactivada
+              if (!trazaActiva && usuarioid === naveganteSeleccionadoId) {
                 map.setView(position, map.getZoom());
               }
+
+
         //
 
       }

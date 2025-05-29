@@ -5,6 +5,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const latElem = document.getElementById("lat");
   const lonElem = document.getElementById("lon");
 
+  const iconosDisponibles = [
+      "marker_na_rojo.png",
+      "marker_na_verde.png",
+      "marker_na_anaranjado.png",
+      "marker_na_lila.png",
+      "marker_na_negro.png",
+      "marker_na_amarillo.png",
+      "marker_na_violeta.png",
+      "marker_na_azul.png"
+  ];
+
+  const iconosPorUsuario = new Map();
+  let indiceIcono = 0;
+
+  function obtenerIconoParaUsuario(usuarioid) {
+      if (!iconosPorUsuario.has(usuarioid)) {
+        const archivo = iconosDisponibles[indiceIcono % iconosDisponibles.length];
+        const icono = L.icon({
+          iconUrl: `img/${archivo}`,
+          iconSize: [32, 32], // o el tamaño real del PNG
+          iconAnchor: [16, 16] // centro
+        });
+        iconosPorUsuario.set(usuarioid, icono);
+        indiceIcono++;
+      }
+      return iconosPorUsuario.get(usuarioid);
+  }
+
   const rutaHistorial = new Map();
   let trazaActiva = false;
   let marcadorInicio = null;
@@ -61,10 +89,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const swimmerMarkers = new Map();
 
   map.on('zoomend', function () {
-    const newZoom = map.getZoom();
     swimmerMarkers.forEach(marker => {
-      const newIcon = createSwimmerIcon(newZoom);
-      marker.setIcon(newIcon);
+      const id = marker.options.usuarioid;
+      if (id) {
+        const icono = obtenerIconoParaUsuario(id);
+        marker.setIcon(icono);
+      }
     });
   });
 
@@ -78,19 +108,6 @@ document.addEventListener("DOMContentLoaded", () => {
     latElem.textContent = lat.toFixed(5);
     lonElem.textContent = lng.toFixed(5);
   }
-
-  const iconosDisponibles = [
-      "marker_na_rojo.png",
-      "marker_na_verde.png",
-      "marker_na_anaranjado.png",
-      "marker_na_lila.png",
-      "marker_na_negro.png",
-      "marker_na_amarillo.png",
-      "marker_na_violeta.png",
-      "marker_na_azul.png"
-  ];
-
-  let indiceIcono = 0;
 
   function obtenerIconoParaUsuario(usuarioid) {
     if (!iconosPorUsuario.has(usuarioid)) {
@@ -315,6 +332,9 @@ document.addEventListener("DOMContentLoaded", () => {
           marker.setIcon(icono);
           marker.setPopupContent(popupTexto);
           marker.setTooltipContent(tooltipTexto);
+          if (!marker.options.usuarioid) {
+              marker.options.usuarioid = usuarioid; // necesario para zoomend
+          }
         } else {
           const marker = L.marker(position, {
             icon: icono

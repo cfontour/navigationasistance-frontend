@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function obtenerColorParaUsuario(usuarioid) {
     if (!coloresPorUsuario.has(usuarioid)) {
-       const color = coloresDisponibles[indiceColor % coloresDisponibles.length];
+       //const color = coloresDisponibles[indiceColor % coloresDisponibles.length];
        coloresPorUsuario.set(usuarioid, color);
        indiceColor++;
     }
@@ -215,6 +215,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const nombre = usuario.nombre && usuario.apellido
           ? `${usuario.nombre} ${usuario.apellido}`
           : usuario.nombre || "Navegante";
+
+        console.log("Color del navegante:", color);
 
         const color = obtenerColorParaUsuario(id);
 

@@ -216,9 +216,9 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `${usuario.nombre} ${usuario.apellido}`
           : usuario.nombre || "Navegante";
 
-        console.log("Color del navegante:", color);
-
         const color = obtenerColorParaUsuario(id);
+
+        console.log("Color del navegante:", color);
 
         const li = document.createElement("li");
         li.dataset.id = id;

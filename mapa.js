@@ -155,7 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const zonasOrdenadas = data.sort((a, b) => a.zona.localeCompare(b.zona));
       zonasOrdenadas.forEach(zona => {
-        //const option = document.createElement("option");
         option.value = zona.idzon;
         option.textContent = zona.zona;
         selectLocation.appendChild(option);

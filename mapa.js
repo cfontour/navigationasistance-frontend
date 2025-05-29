@@ -225,9 +225,10 @@ document.addEventListener("DOMContentLoaded", () => {
         li.dataset.nombre = nombre;
         li.className = "navegante-item";
         li.innerHTML = `
-          <span class="color-circle" style="background-color: ${color}; margin-right: 8px;"></span>
+          <span class="color-dot" style="background-color: ${color};"></span>
           ${nombre}
         `;
+
         lista.appendChild(li);
         console.log(`Añadiendo a lista: ${nombre} con color ${color}`);
       }

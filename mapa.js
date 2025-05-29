@@ -228,8 +228,8 @@ document.addEventListener("DOMContentLoaded", () => {
           <span class="color-circle" style="background-color: ${color}; margin-right: 8px;"></span>
           ${nombre}
         `;
-
         lista.appendChild(li);
+        console.log(`Añadiendo a lista: ${nombre} con color ${color}`);
       }
     } catch (error) {
       console.error("Error al cargar navegantes:", error);

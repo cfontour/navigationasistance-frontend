@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function obtenerColorParaUsuario(usuarioid) {
     if (!coloresPorUsuario.has(usuarioid)) {
-       //const color = coloresDisponibles[indiceColor % coloresDisponibles.length];
+       const color = coloresDisponibles[indiceColor % coloresDisponibles.length];
        coloresPorUsuario.set(usuarioid, color);
        indiceColor++;
     }
@@ -315,7 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 const puntos = rutaHistorial.get(usuarioid);
 
-                //const color = obtenerColorParaUsuario(usuarioid);
+                const color = obtenerColorParaUsuario(usuarioid);
 
                 // ➕ Mostrar puntos individuales de la ruta
                 const marker = L.circleMarker(position, {

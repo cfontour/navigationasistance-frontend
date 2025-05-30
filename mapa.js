@@ -60,6 +60,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let naveganteSeleccionadoId = null;
 
+  let colorSeleccionado = null;
+
   let map = L.map('map').setView([0, 0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
@@ -92,6 +94,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (marcadorInicio) {
         map.removeLayer(marcadorInicio);
         marcadorInicio = null;
+      }
+    } else {
+      if (naveganteSeleccionadoId && colorSeleccionado) {
+        cargarTrazaHistorica(naveganteSeleccionadoId, colorSeleccionado);
+      } else {
+        console.warn("No hay navegante seleccionado para mostrar traza histórica.");
       }
     }
   });
@@ -239,6 +247,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  async function cargarTrazaHistorica(uuid, color) {
+    try {
+      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${uuid}`);
+      const puntos = await res.json();
+
+      if (!puntos || puntos.length === 0) {
+        console.warn("Sin puntos para el recorrido.");
+        return;
+      }
+
+      const historial = [];
+      for (const punto of puntos) {
+        const lat = parseFloat(punto.latitud);
+        const lng = parseFloat(punto.longitud);
+
+        if (isNaN(lat) || isNaN(lng)) continue;
+
+        const marcador = L.circleMarker([lat, lng], {
+          radius: 5,
+          color: color,
+          fillColor: color,
+          fillOpacity: 0.8
+        }).addTo(map);
+
+        historial.push(marcador);
+      }
+
+      rutaHistorial.set(uuid, historial);
+    } catch (err) {
+      console.error("Error al cargar traza histórica:", err);
+    }
+  }
 
   document.getElementById("navegantesList").addEventListener("click", function(e) {
     const clickedItem = e.target.closest("li[data-id]");
@@ -253,6 +293,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Cambiar el texto del botón
     document.getElementById("dropdownButton").textContent = `👤 ${nombre}`;
+
+    colorSeleccionado = obtenerColorParaUsuario(id);
 
     // Centrar el mapa
     if (!isNaN(lat) && !isNaN(lng)) {

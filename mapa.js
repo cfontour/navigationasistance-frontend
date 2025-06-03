@@ -411,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const estado = nadador.estado ? nadador.estado : "Navegante";
 
         // Contenido del popup
-        const popupTexto = `👤 ${nombre}<br>🕒 ${hora}`;
+        const popupTexto = `👤 ${nombre}<br>📞 ${telefono}<br>🕒 ${hora}`;
         const tooltipTexto = `👤 ${nombre}\n🆔 ${usuarioid}\n🕒 ${hora}\n📶 Estado: ${estado}`;
 
         //const icono = obtenerIconoParaUsuario(usuarioid);

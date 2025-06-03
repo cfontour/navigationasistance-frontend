@@ -234,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
           : usuario.nombre || "Navegante";
 
         const telefono = usuario.telefono || "Sin teléfono";
-        
+
         const color = obtenerColorParaUsuario(id);
 
         console.log("Color del navegante:", color);
@@ -334,6 +334,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  async function getUsuarioTelefono(usuarioid) {
+      try {
+          const response = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${usuarioid}`);
+          if (response.ok) {
+              const data = await response.json();
+              return data.telefono || 'Sin teléfono';
+          }
+      } catch (error) {
+          console.error(`Error al obtener el teléfono de ${usuarioid}:`, error);
+      }
+      return 'Sin teléfono';
+  }
+
   // Agrega esta estructura para mantener historial por usuario
   //const rutaHistorial = new Map();
   const iconoInicio = L.icon({
@@ -358,6 +371,9 @@ document.addEventListener("DOMContentLoaded", () => {
         nuevosIds.add(usuarioid);
 
         const nombre = await getUsuarioNombre(usuarioid);
+
+        const telefon = await getUsuarioTelefon(usuarioid);
+
         const position = [lat, lng];
 
         // 📍 Agregar punto a la traza si está activa

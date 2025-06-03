@@ -121,7 +121,16 @@ document.addEventListener("DOMContentLoaded", () => {
     swimmerMarkers.forEach(marker => {
       const id = marker.options.usuarioid;
       if (id) {
-        const icono = obtenerIconoParaUsuario(id);
+        //const icono = obtenerIconoParaUsuario(id);
+        const icono = marker.options.emergency === true
+                ? L.icon({
+                    iconUrl: 'img/marker-emergencia-36x39.png',
+                    iconSize: [36, 39],
+                    iconAnchor: [18, 39],
+                    className: 'icono-emergencia'
+                  })
+                : obtenerIconoParaUsuario(id);
+
         marker.setIcon(icono);
       }
     });
@@ -405,7 +414,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const popupTexto = `👤 ${nombre}<br>🕒 ${hora}`;
         const tooltipTexto = `👤 ${nombre}\n🆔 ${usuarioid}\n🕒 ${hora}\n📶 Estado: ${estado}`;
 
-        const icono = obtenerIconoParaUsuario(usuarioid);
+        //const icono = obtenerIconoParaUsuario(usuarioid);
+        let icono;
+        if (nadador.emergency === true) {
+          icono = L.icon({
+            iconUrl: 'img/marker-emergencia-36x39.png',
+            iconSize: [36, 39],
+            iconAnchor: [18, 39],
+            className: 'icono-emergencia'
+          });
+        } else {
+          icono = obtenerIconoParaUsuario(usuarioid);
+        }
 
         if (swimmerMarkers.has(usuarioid)) {
           const marker = swimmerMarkers.get(usuarioid);
@@ -418,7 +438,9 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         } else {
           const marker = L.marker(position, {
-            icon: icono
+            icon: icono,
+            emergency: nadador.emergency === true, // 👈 necesario para zoomend
+            usuarioid: usuarioid                  // 👈 necesario para zoomend
           }).addTo(map)
             .bindPopup(popupTexto)
             .bindTooltip(tooltipTexto, { permanent: false, direction: 'top' });

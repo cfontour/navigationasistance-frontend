@@ -119,7 +119,7 @@ function mostrarVistaSoloDelUsuario(usuario) {
         <div class="card-header">Tus datos</div>
         <div class="card-body">
             <table class="table table-bordered">
-                <thead><tr><th>ID</th><th>Nombre Completo</th><th>Email</th></tr></thead>
+                <thead><tr><th>ID</th><th>Nombre Completo</th><th>Email</th><th>Teléfono</th></tr></thead>
                 <tbody>
                     <tr>
                         <td>${usuario.id}</td>

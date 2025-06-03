@@ -45,6 +45,7 @@ async function cargarUsuarios() {
             <td>${usuario.id}</td>
             <td>${usuario.nombre} ${usuario.apellido}</td>
             <td>${usuario.email}</td>
+            <td>${usuario.telefono || ''}</td>
             <td>${botonEliminar}</td>
         </tr>`;
         listadoHtml += usuarioHtml;
@@ -70,13 +71,14 @@ async function agregarUsuario() {
     const apellido = document.getElementById('inputApellido').value.trim();
     const email = document.getElementById('inputEmail').value.trim();
     const password = document.getElementById('inputPassword').value.trim();
+    const telefono = document.getElementById('inputTelefono').value.trim();
 
     if (!id || !nombre || !apellido || !email || !password) {
         alert("Por favor, completa todos los campos obligatorios.");
         return;
     }
 
-    const usuario = { id, nombre, apellido, email, password };
+    const usuario = { id, nombre, apellido, email, password, telefono };
 
     try {
         const response = await fetch('https://navigationasistance-backend-1.onrender.com/usuarios/agregar', {
@@ -123,6 +125,7 @@ function mostrarVistaSoloDelUsuario(usuario) {
                         <td>${usuario.id}</td>
                         <td>${usuario.nombre} ${usuario.apellido}</td>
                         <td>${usuario.email}</td>
+                        <td>${usuario.telefono}</td>
                     </tr>
                 </tbody>
             </table>

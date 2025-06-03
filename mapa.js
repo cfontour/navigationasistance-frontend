@@ -372,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const nombre = await getUsuarioNombre(usuarioid);
 
-        const telefon = await getUsuarioTelefon(usuarioid);
+        const telefono = await getUsuarioTelefono(usuarioid);
 
         const position = [lat, lng];
 

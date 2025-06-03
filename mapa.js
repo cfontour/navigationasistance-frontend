@@ -233,6 +233,8 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `${usuario.nombre} ${usuario.apellido}`
           : usuario.nombre || "Navegante";
 
+        const telefono = usuario.telefono || "Sin teléfono";
+        
         const color = obtenerColorParaUsuario(id);
 
         console.log("Color del navegante:", color);

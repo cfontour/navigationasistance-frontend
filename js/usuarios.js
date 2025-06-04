@@ -136,6 +136,9 @@ async function agregarUsuario() {
 }
 
 async function editarUsuario(id) {
+
+    modoEditar = true; // ✅ Esto debe ejecutarse SIEMPRE
+
     try {
         const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${id}`, {
             method: 'GET',

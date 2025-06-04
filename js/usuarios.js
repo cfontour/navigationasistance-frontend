@@ -186,6 +186,9 @@ async function cambiarPassword() {
     const usuario = JSON.parse(usuarioStr);
 
     try {
+        console.log("modoEditar:", modoEditar);
+        console.log("usuario:", usuario);
+
         const response = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/cambiarPassword/${usuario.id}`, {
             method: 'POST',
             headers: getHeaders(),

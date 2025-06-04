@@ -14,7 +14,8 @@ $(document).ready(function () {
         cargarUsuarios();
         $('#usuarios').DataTable();
     } else {
-        mostrarVistaSoloDelUsuario(usuario);
+        //mostrarVistaSoloDelUsuario(usuario);
+        cargarUsuarioUnico();
         document.getElementById("card-cambiar-password").classList.remove("d-none");
     }
 });
@@ -116,6 +117,7 @@ async function agregarUsuario() {
         alert(resultado);
 
         document.getElementById('formAgregarUsuario').reset();
+        document.getElementById('inputPassword').parentElement.classList.remove('d-none');
         modoEditar = false;
         cargarUsuarios();
     } catch (error) {
@@ -229,7 +231,6 @@ function mostrarVistaSoloDelUsuario(usuario) {
 
     container.appendChild(card);
 }
-
 
 function mostrarFormularioCambiarPassword() {
     document.getElementById("card-cambiar-password").scrollIntoView({ behavior: 'smooth' });

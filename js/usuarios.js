@@ -149,8 +149,8 @@ async function editarUsuario(id) {
 
         const usuario = await res.json();
 
-        console.log("modoEditar:", modoEditar);
-        console.log("usuario:", usuario);
+        //console.log("modoEditar:", modoEditar);
+        //console.log("usuario:", usuario);
 
         document.getElementById('inputId').value = usuario.id;
         document.getElementById('inputNombre').value = usuario.nombre;

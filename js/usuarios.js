@@ -14,7 +14,7 @@ $(document).ready(function () {
         cargarUsuarios();
         $('#usuarios').DataTable();
     } else {
-        cargarUsuarioUnico(usuario.id); // ✅ usamos su propio ID
+        cargarUsuarioUnico(usuario.id);
         document.getElementById("card-cambiar-password").classList.remove("d-none");
     }
 });
@@ -66,21 +66,7 @@ async function cargarUsuarioUnico(id) {
         });
 
         const usuario = await res.json();
-
-        // ✅ Mostrar solo la tabla con un registro (el logueado)
-        document.getElementById("card-tabla").classList.remove("d-none");
-        document.getElementById("card-formulario").classList.remove("d-none");
-
-        const filaHtml = `
-            <tr>
-                <td>${usuario.id}</td>
-                <td>${usuario.nombre} ${usuario.apellido}</td>
-                <td>${usuario.email}</td>
-                <td>${usuario.telefono || ''}</td>
-                <td><a href="#" onclick="editarUsuario('${usuario.id}')" class="btn btn-info btn-circle btn-sm"><i class="fas fa-edit"></i></a></td>
-            </tr>
-        `;
-        document.querySelector('#usuarios tbody').innerHTML = filaHtml;
+        mostrarVistaSoloDelUsuario(usuario);
     } catch (error) {
         console.error("Error al cargar el usuario logueado:", error);
     }
@@ -131,19 +117,21 @@ async function agregarUsuario() {
 
         document.getElementById('formAgregarUsuario').reset();
         document.getElementById('inputPassword').parentElement.classList.remove('d-none');
+        document.getElementById('inputId').readOnly = false;
+        document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Agregar";
         modoEditar = false;
 
         const usuarioStr = localStorage.getItem("usuarioLogueado");
-        const usuarioLocal = JSON.parse(usuarioStr);
-
-        if (usuarioLocal.rol === "ADMINISTRADOR") {
+        const usuario = JSON.parse(usuarioStr);
+        if (usuario.rol === "ADMINISTRADOR") {
             cargarUsuarios();
         } else {
-            cargarUsuarioUnico(usuarioLocal.id);
+            cargarUsuarioUnico(usuario.id);
         }
+
     } catch (error) {
-        console.error("Error al agregar usuario:", error);
-        alert("No se pudo agregar el usuario. Intente nuevamente.");
+        console.error("Error al agregar/modificar usuario:", error);
+        alert("No se pudo guardar el usuario. Intente nuevamente.");
     }
 }
 
@@ -166,10 +154,12 @@ async function editarUsuario(id) {
 
         document.getElementById('inputId').readOnly = true;
         document.getElementById('inputPassword').parentElement.classList.add('d-none');
+        document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Modificar";
 
         modoEditar = true;
 
         document.getElementById("card-formulario").scrollIntoView({ behavior: 'smooth' });
+
     } catch (error) {
         console.error("Error al cargar usuario para editar:", error);
         alert("No se pudo cargar el usuario.");
@@ -218,6 +208,22 @@ function mostrarItemRespaldoSiUsuarioLogueado() {
     if (userStr && itemRespaldo) {
         itemRespaldo.classList.remove("d-none");
     }
+}
+
+function mostrarVistaSoloDelUsuario(usuario) {
+    document.getElementById("card-formulario").classList.remove("d-none");
+    document.getElementById("card-tabla").classList.add("d-none");
+    document.getElementById("inputPassword").parentElement.classList.add("d-none");
+    document.getElementById("inputId").readOnly = true;
+
+    document.getElementById('inputId').value = usuario.id;
+    document.getElementById('inputNombre').value = usuario.nombre;
+    document.getElementById('inputApellido').value = usuario.apellido;
+    document.getElementById('inputEmail').value = usuario.email;
+    document.getElementById('inputTelefono').value = usuario.telefono || '';
+
+    document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Modificar";
+    modoEditar = true;
 }
 
 function mostrarFormularioCambiarPassword() {

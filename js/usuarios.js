@@ -15,6 +15,7 @@ $(document).ready(function () {
         $('#usuarios').DataTable();
     } else {
         mostrarVistaSoloDelUsuario(usuario);
+        document.getElementById("card-cambiar-password").classList.remove("d-none");
     }
 });
 
@@ -130,6 +131,41 @@ async function editarUsuario(id) {
     } catch (error) {
         console.error("Error al cargar usuario para editar:", error);
         alert("No se pudo cargar el usuario.");
+    }
+}
+
+async function cambiarPassword() {
+    const nueva = document.getElementById('inputNuevaPassword').value.trim();
+    const repetir = document.getElementById('inputRepetirPassword').value.trim();
+
+    if (!nueva || !repetir) {
+        alert("Por favor, completa ambos campos.");
+        return;
+    }
+
+    if (nueva !== repetir) {
+        alert("Las contraseñas no coinciden.");
+        return;
+    }
+
+    const usuarioStr = localStorage.getItem("usuarioLogueado");
+    if (!usuarioStr) return;
+
+    const usuario = JSON.parse(usuarioStr);
+
+    try {
+        const response = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/cambiarPassword/${usuario.id}`, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify({ password: nueva, id: usuario.id })
+        });
+
+        const resultado = await response.text();
+        alert(resultado);
+        document.getElementById('formCambiarPassword').reset();
+    } catch (error) {
+        console.error("Error al cambiar contraseña:", error);
+        alert("No se pudo cambiar la contraseña.");
     }
 }
 

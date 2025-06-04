@@ -1,5 +1,7 @@
 // usuarios.js
 
+let modoEditar = false;
+
 $(document).ready(function () {
     const usuarioStr = localStorage.getItem("usuarioLogueado");
     if (!usuarioStr) return;
@@ -41,12 +43,13 @@ async function cargarUsuarios() {
 
     for (let usuario of usuarios) {
         let botonEliminar = `<a href="#" onclick="eliminarUsuario('${usuario.id}')" class="btn btn-danger btn-circle btn-sm"><i class="fas fa-trash"></i></a>`;
+        let botonEditar = `<a href="#" onclick="editarUsuario('${usuario.id}')" class="btn btn-info btn-circle btn-sm"><i class="fas fa-edit"></i></a>`;
         let usuarioHtml = `<tr>
             <td>${usuario.id}</td>
             <td>${usuario.nombre} ${usuario.apellido}</td>
             <td>${usuario.email}</td>
             <td>${usuario.telefono || ''}</td>
-            <td>${botonEliminar}</td>
+            <td>${botonEditar} ${botonEliminar}</td>
         </tr>`;
         listadoHtml += usuarioHtml;
     }
@@ -73,16 +76,22 @@ async function agregarUsuario() {
     const password = document.getElementById('inputPassword').value.trim();
     const telefono = document.getElementById('inputTelefono').value.trim();
 
-    if (!id || !nombre || !apellido || !email || !password) {
+    if (!id || !nombre || !apellido || !email || !telefono || (!modoEditar && !password)) {
         alert("Por favor, completa todos los campos obligatorios.");
         return;
     }
 
     const usuario = { id, nombre, apellido, email, password, telefono };
 
+    const url = modoEditar
+        ? `https://navigationasistance-backend-1.onrender.com/usuarios/actualizar/${id}`
+        : 'https://navigationasistance-backend-1.onrender.com/usuarios/agregar';
+
+    const metodo = 'POST';
+
     try {
-        const response = await fetch('https://navigationasistance-backend-1.onrender.com/usuarios/agregar', {
-            method: 'POST',
+        const response = await fetch(url, {
+            method: metodo,
             headers: getHeaders(),
             body: JSON.stringify(usuario)
         });
@@ -91,10 +100,36 @@ async function agregarUsuario() {
         alert(resultado);
 
         document.getElementById('formAgregarUsuario').reset();
+        modoEditar = false;
         cargarUsuarios();
     } catch (error) {
         console.error("Error al agregar usuario:", error);
         alert("No se pudo agregar el usuario. Intente nuevamente.");
+    }
+}
+
+async function editarUsuario(id) {
+    try {
+        const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${id}`, {
+            method: 'GET',
+            headers: getHeaders()
+        });
+
+        const usuario = await res.json();
+        document.getElementById('inputId').value = usuario.id;
+        document.getElementById('inputNombre').value = usuario.nombre;
+        document.getElementById('inputApellido').value = usuario.apellido;
+        document.getElementById('inputEmail').value = usuario.email;
+        document.getElementById('inputTelefono').value = usuario.telefono || '';
+        document.getElementById('inputPassword').value = '';
+
+        // ID no editable en modo edición
+        document.getElementById('inputId').readOnly = true;
+
+        modoEditar = true;
+    } catch (error) {
+        console.error("Error al cargar usuario para editar:", error);
+        alert("No se pudo cargar el usuario.");
     }
 }
 

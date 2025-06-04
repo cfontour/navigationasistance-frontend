@@ -96,7 +96,7 @@ async function agregarUsuario() {
         return;
     }
 
-    const usuario = { id, nombre, apellido, email, password, telefono };
+    const usuario = { id, nombre, apellido, email, telefono };
     if (!modoEditar) usuario.password = password;
 
     const url = modoEditar
@@ -140,10 +140,11 @@ async function editarUsuario(id) {
         document.getElementById('inputApellido').value = usuario.apellido;
         document.getElementById('inputEmail').value = usuario.email;
         document.getElementById('inputTelefono').value = usuario.telefono || '';
-        //document.getElementById('inputPassword').value = '';
+        document.getElementById('inputPassword').value = '';
 
         // ID no editable en modo edición
         document.getElementById('inputId').readOnly = true;
+        document.getElementById('inputPassword').parentElement.classList.add('d-none'); // 🔧 ocultar campo
 
         modoEditar = true;
 
@@ -202,32 +203,21 @@ function mostrarItemRespaldoSiUsuarioLogueado() {
 
 // ✅ NUEVO: Vista restringida solo para rol USUARIO
 function mostrarVistaSoloDelUsuario(usuario) {
-    document.getElementById("card-formulario").classList.add("d-none");
-    document.getElementById("card-tabla").classList.add("d-none");
+    document.getElementById("card-formulario").classList.remove("d-none");
+    document.getElementById("card-tabla").classList.remove("d-none");
 
-    const container = document.querySelector(".container-fluid");
-    const card = document.createElement("div");
-    card.className = "card mb-4";
-    card.innerHTML = `
-        <div class="card-header">Tus datos</div>
-        <div class="card-body">
-            <table class="table table-bordered">
-                <thead><tr><th>ID</th><th>Nombre Completo</th><th>Email</th><th>Teléfono</th><th>Acciones</th></tr></thead>
-                <tbody>
-                    <tr>
-                        <td>${usuario.id}</td>
-                        <td>${usuario.nombre} ${usuario.apellido}</td>
-                        <td>${usuario.email}</td>
-                        <td>${usuario.telefono || ''}</td>
-                        <td><a href="#" onclick="editarUsuario('${usuario.id}')" class="btn btn-info btn-circle btn-sm"><i class="fas fa-edit"></i></a></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    `;
+    document.getElementById("inputPassword").parentElement.classList.add("d-none");
+    document.getElementById("inputId").readOnly = true;
 
-    container.appendChild(card);
+    document.getElementById('inputId').value = usuario.id;
+    document.getElementById('inputNombre').value = usuario.nombre;
+    document.getElementById('inputApellido').value = usuario.apellido;
+    document.getElementById('inputEmail').value = usuario.email;
+    document.getElementById('inputTelefono').value = usuario.telefono || '';
+
+    modoEditar = true;
 }
+
 
 function mostrarFormularioCambiarPassword() {
     document.getElementById("card-cambiar-password").scrollIntoView({ behavior: 'smooth' });

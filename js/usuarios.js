@@ -96,7 +96,7 @@ async function agregarUsuario() {
         return;
     }
 
-    const usuario = { id, nombre, apellido, email, telefono };
+    const usuarioParaGuardar = { id, nombre, apellido, email, telefono };
     if (!modoEditar) usuario.password = password;
 
     const url = modoEditar
@@ -109,7 +109,7 @@ async function agregarUsuario() {
         const response = await fetch(url, {
             method: metodo,
             headers: getHeaders(),
-            body: JSON.stringify(usuario)
+            body: JSON.stringify(usuarioParaGuardar)
         });
 
         const resultado = await response.text();

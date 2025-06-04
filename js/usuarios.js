@@ -145,6 +145,10 @@ async function editarUsuario(id) {
         document.getElementById("card-formulario").classList.remove("d-none");
 
         const usuario = await res.json();
+
+        console.log("modoEditar:", modoEditar);
+        console.log("usuario:", usuario);
+
         document.getElementById('inputId').value = usuario.id;
         document.getElementById('inputNombre').value = usuario.nombre;
         document.getElementById('inputApellido').value = usuario.apellido;
@@ -186,9 +190,6 @@ async function cambiarPassword() {
     const usuario = JSON.parse(usuarioStr);
 
     try {
-        console.log("modoEditar:", modoEditar);
-        console.log("usuario:", usuario);
-
         const response = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/cambiarPassword/${usuario.id}`, {
             method: 'POST',
             headers: getHeaders(),

@@ -131,6 +131,9 @@ async function editarUsuario(id) {
             headers: getHeaders()
         });
 
+        // Mostrar el formulario
+        document.getElementById("card-formulario").classList.remove("d-none");
+
         const usuario = await res.json();
         document.getElementById('inputId').value = usuario.id;
         document.getElementById('inputNombre').value = usuario.nombre;
@@ -143,6 +146,10 @@ async function editarUsuario(id) {
         document.getElementById('inputId').readOnly = true;
 
         modoEditar = true;
+
+        // Scroll hacia el formulario
+        document.getElementById("card-formulario").scrollIntoView({ behavior: 'smooth' });
+
     } catch (error) {
         console.error("Error al cargar usuario para editar:", error);
         alert("No se pudo cargar el usuario.");
@@ -205,7 +212,7 @@ function mostrarVistaSoloDelUsuario(usuario) {
         <div class="card-header">Tus datos</div>
         <div class="card-body">
             <table class="table table-bordered">
-                <thead><tr><th>ID</th><th>Nombre Completo</th><th>Email</th><th>Teléfono</th></tr></thead>
+                <thead><tr><th>ID</th><th>Nombre Completo</th><th>Email</th><th>Teléfono</th><th>Acciones</th></tr></thead>
                 <tbody>
                     <tr>
                         <td>${usuario.id}</td>
@@ -216,9 +223,9 @@ function mostrarVistaSoloDelUsuario(usuario) {
                     </tr>
                 </tbody>
             </table>
-            <button class="btn btn-primary mt-3" onclick="mostrarFormularioCambiarPassword()">Cambiar Contraseña</button>
         </div>
     `;
+
     container.appendChild(card);
 }
 

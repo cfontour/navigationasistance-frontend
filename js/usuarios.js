@@ -14,8 +14,7 @@ $(document).ready(function () {
         cargarUsuarios();
         $('#usuarios').DataTable();
     } else {
-        //mostrarVistaSoloDelUsuario(usuario);
-        cargarUsuarioUnico();
+        mostrarVistaSoloDelUsuario(usuario);
         document.getElementById("card-cambiar-password").classList.remove("d-none");
     }
 });

@@ -9,6 +9,7 @@ async function registrarUsuario() {
     datos.nombre = document.getElementById('txtNombre').value.trim();
     datos.apellido = document.getElementById('txtApellido').value.trim();
     datos.email = document.getElementById('txtEmail').value.trim();
+    datos.telefono = document.getElementById('txtTelefono').value.trim();
     datos.password = document.getElementById('txtPassword').value;
 
     let repetirPassword = document.getElementById('txtRepetirPassword').value;

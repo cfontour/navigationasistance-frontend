@@ -122,11 +122,11 @@ async function agregarUsuario() {
         modoEditar = false;
 
         const usuarioStr = localStorage.getItem("usuarioLogueado");
-        const usuario = JSON.parse(usuarioStr);
-        if (usuario.rol === "ADMINISTRADOR") {
+        const usuarioLogueado = JSON.parse(usuarioStr);
+        if (usuarioLogueado.rol === "ADMINISTRADOR") {
             cargarUsuarios();
         } else {
-            cargarUsuarioUnico(usuario.id);
+            cargarUsuarioUnico(usuarioLogueado.id);
         }
 
     } catch (error) {
@@ -149,7 +149,7 @@ async function editarUsuario(id) {
 
         const usuario = await res.json();
 
-        //console.log("modoEditar:", modoEditar);
+        console.log("modoEditar:", modoEditar);
         //console.log("usuario:", usuario);
 
         document.getElementById('inputId').value = usuario.id;

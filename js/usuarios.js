@@ -83,6 +83,7 @@ async function agregarUsuario() {
     }
 
     const usuario = { id, nombre, apellido, email, password, telefono };
+    if (!modoEditar) usuario.password = password;
 
     const url = modoEditar
         ? `https://navigationasistance-backend-1.onrender.com/usuarios/actualizar/${id}`
@@ -200,7 +201,13 @@ function mostrarVistaSoloDelUsuario(usuario) {
                     </tr>
                 </tbody>
             </table>
+            <button class="btn btn-primary mt-3" onclick="mostrarFormularioCambiarPassword()">Cambiar Contraseña</button>
         </div>
     `;
     container.appendChild(card);
+}
+
+function mostrarFormularioCambiarPassword() {
+    document.getElementById("card-cambiar-password").scrollIntoView({ behavior: 'smooth' });
+    document.getElementById("card-cambiar-password").classList.remove("d-none");
 }

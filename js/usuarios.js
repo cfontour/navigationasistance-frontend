@@ -140,7 +140,7 @@ async function editarUsuario(id) {
         document.getElementById('inputApellido').value = usuario.apellido;
         document.getElementById('inputEmail').value = usuario.email;
         document.getElementById('inputTelefono').value = usuario.telefono || '';
-        document.getElementById('inputPassword').value = '';
+        //document.getElementById('inputPassword').value = '';
 
         // ID no editable en modo edición
         document.getElementById('inputId').readOnly = true;

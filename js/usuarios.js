@@ -58,6 +58,20 @@ async function cargarUsuarios() {
     document.querySelector('#usuarios tbody').innerHTML = listadoHtml;
 }
 
+async function cargarUsuarioUnico(id) {
+    try {
+        const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${id}`, {
+            method: 'GET',
+            headers: getHeaders()
+        });
+
+        const usuario = await res.json();
+        mostrarVistaSoloDelUsuario(usuario);
+    } catch (error) {
+        console.error("Error al cargar el usuario logueado:", error);
+    }
+}
+
 async function eliminarUsuario(id) {
     if (!confirm('¿Desea eliminar el usuario?')) return;
 
@@ -198,6 +212,7 @@ function mostrarVistaSoloDelUsuario(usuario) {
                         <td>${usuario.nombre} ${usuario.apellido}</td>
                         <td>${usuario.email}</td>
                         <td>${usuario.telefono || ''}</td>
+                        <td><a href="#" onclick="editarUsuario('${usuario.id}')" class="btn btn-info btn-circle btn-sm"><i class="fas fa-edit"></i></a></td>
                     </tr>
                 </tbody>
             </table>

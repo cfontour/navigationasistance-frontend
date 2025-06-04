@@ -216,6 +216,19 @@ function mostrarVistaSoloDelUsuario(usuario) {
     document.getElementById('inputEmail').value = usuario.email;
     document.getElementById('inputTelefono').value = usuario.telefono || '';
 
+    // Limpiar y mostrar SOLO el usuario logueado en la tabla
+        const filaHtml = `
+            <tr>
+                <td>${usuario.id}</td>
+                <td>${usuario.nombre} ${usuario.apellido}</td>
+                <td>${usuario.email}</td>
+                <td>${usuario.telefono || ''}</td>
+                <td><a href="#" onclick="editarUsuario('${usuario.id}')" class="btn btn-info btn-circle btn-sm"><i class="fas fa-edit"></i></a></td>
+            </tr>
+        `;
+        
+    document.querySelector('#usuarios tbody').innerHTML = filaHtml;
+
     modoEditar = true;
 }
 

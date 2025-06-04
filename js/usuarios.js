@@ -97,7 +97,7 @@ async function agregarUsuario() {
     }
 
     const usuarioParaGuardar = { id, nombre, apellido, email, telefono };
-    if (!modoEditar) usuario.password = password;
+    if (!modoEditar) usuarioParaGuardar.password = password;
 
     const url = modoEditar
         ? `https://navigationasistance-backend-1.onrender.com/usuarios/actualizar/${id}`

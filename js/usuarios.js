@@ -221,46 +221,70 @@ function mostrarVistaSoloDelUsuario(usuario) {
     document.getElementById("card-formulario").classList.add("d-none");
     document.getElementById("card-tabla").classList.add("d-none");
 
-    // ✅ Eliminar grilla anterior si ya existe
-    const cardExistente = document.getElementById("card-usuario-unico");
-    if (cardExistente) {
-        cardExistente.remove();
-    }
-
     const container = document.querySelector(".container-fluid");
+
+    // 🧹 Limpiar versiones anteriores si las hay
+    const prevCard = document.querySelector("#cardUsuarioUnico");
+    if (prevCard) prevCard.remove();
+
+    // 🧱 Crear nueva estructura de tabla
     const card = document.createElement("div");
-    card.id = "card-usuario-unico"; // 👉 ID único para evitar duplicación
+    card.id = "cardUsuarioUnico";
     card.className = "card mb-4";
     card.innerHTML = `
         <div class="card-header">Tus datos</div>
         <div class="card-body">
-            <table class="table table-bordered">
-                <thead><tr><th>ID</th><th>Nombre Completo</th><th>Email</th><th>Teléfono</th><th>Acciones</th></tr></thead>
+            <table class="table table-bordered" id="tablaUsuarioUnico">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre Completo</th>
+                        <th>Email</th>
+                        <th>Teléfono</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
                         <td>${usuario.id}</td>
                         <td>${usuario.nombre} ${usuario.apellido}</td>
                         <td>${usuario.email}</td>
                         <td>${usuario.telefono || ''}</td>
-                        <td><a href="#" onclick="editarUsuario('${usuario.id}')" class="btn btn-info btn-circle btn-sm"><i class="fas fa-edit"></i></a></td>
+                        <td>
+                            <a href="#" onclick="editarUsuario('${usuario.id}')" class="btn btn-info btn-circle btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
                     </tr>
                 </tbody>
             </table>
         </div>
     `;
-
     container.appendChild(card);
 
-// ✅ Inicializamos DataTable sobre la tabla recién agregada
-    $('#tablaUsuarioUnico').DataTable({
-        searching: false,    // desactiva el buscador (opcional)
-        paging: false,       // desactiva la paginación (opcional)
-        info: false,         // desactiva el "Mostrando 1 de X" (opcional)
-        language: {
-            emptyTable: "No hay datos disponibles"
-        }
+    // ✅ Inicializar DataTable correctamente después de insertar la tabla en el DOM
+    $(document).ready(function () {
+        $('#tablaUsuarioUnico').DataTable({
+            paging: false,
+            searching: false,
+            info: false,
+            ordering: true,
+            language: {
+                emptyTable: "No hay datos disponibles",
+                zeroRecords: "No se encontraron resultados",
+                infoEmpty: "Sin resultados",
+                loadingRecords: "Cargando...",
+                processing: "Procesando...",
+                lengthMenu: "Mostrar _MENU_ registros",
+                info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                paginate: {
+                    next: "Siguiente",
+                    previous: "Anterior"
+                }
+            }
+        });
     });
-        
+
     document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Modificar";
     modoEditar = true;
 }

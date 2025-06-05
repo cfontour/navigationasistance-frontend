@@ -250,6 +250,17 @@ function mostrarVistaSoloDelUsuario(usuario) {
     `;
 
     container.appendChild(card);
+
+// ✅ Inicializamos DataTable sobre la tabla recién agregada
+    $('#tablaUsuarioUnico').DataTable({
+        searching: false,    // desactiva el buscador (opcional)
+        paging: false,       // desactiva la paginación (opcional)
+        info: false,         // desactiva el "Mostrando 1 de X" (opcional)
+        language: {
+            emptyTable: "No hay datos disponibles"
+        }
+    });
+        
     document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Modificar";
     modoEditar = true;
 }

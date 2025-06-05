@@ -5,6 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const latElem = document.getElementById("lat");
   const lonElem = document.getElementById("lon");
 
+  const sirenaAudio = new Audio('img/sirena.mp3'); // colocá el archivo en la misma carpeta que el mapa.html
+  sirenaAudio.loop = false;
+
   const iconosDisponibles = [
       "marker_na_rojo.png",
       "marker_na_verde.png",
@@ -441,6 +444,11 @@ document.addEventListener("DOMContentLoaded", () => {
             iconAnchor: [18, 39],
             className: 'icono-emergencia'
           });
+
+          // 🔊 Reproducir sonido de emergencia
+          if (sirenaAudio.paused) {
+             sirenaAudio.play().catch(e => console.warn("No se pudo reproducir la sirena:", e));
+          }
         } else {
           icono = obtenerIconoParaUsuario(usuarioid);
         }

@@ -218,39 +218,40 @@ function mostrarItemRespaldoSiUsuarioLogueado() {
 }
 
 function mostrarVistaSoloDelUsuario(usuario) {
-     document.getElementById("card-formulario").classList.add("d-none");
-     document.getElementById("card-tabla").classList.add("d-none");
+    document.getElementById("card-formulario").classList.add("d-none");
+    document.getElementById("card-tabla").classList.add("d-none");
 
-     // 💥 Eliminar tarjeta anterior si ya existe
-     const cardExistente = document.getElementById("card-usuario-unico");
-     if (cardExistente) {
-         cardExistente.remove();
-     }
+    // ✅ Eliminar grilla anterior si ya existe
+    const cardExistente = document.getElementById("card-usuario-unico");
+    if (cardExistente) {
+        cardExistente.remove();
+    }
 
-     const container = document.querySelector(".container-fluid");
-     const card = document.createElement("div");
-     card.className = "card mb-4";
-     card.innerHTML = `
-         <div class="card-header">Tus datos</div>
-         <div class="card-body">
-             <table class="table table-bordered">
-                 <thead><tr><th>ID</th><th>Nombre Completo</th><th>Email</th><th>Teléfono</th><th>Acciones</th></tr></thead>
-                 <tbody>
-                     <tr>
-                         <td>${usuario.id}</td>
-                         <td>${usuario.nombre} ${usuario.apellido}</td>
-                         <td>${usuario.email}</td>
-                         <td>${usuario.telefono || ''}</td>
-                         <td><a href="#" onclick="editarUsuario('${usuario.id}')" class="btn btn-info btn-circle btn-sm"><i class="fas fa-edit"></i></a></td>
-                     </tr>
-                 </tbody>
-             </table>
-         </div>
-     `;
+    const container = document.querySelector(".container-fluid");
+    const card = document.createElement("div");
+    card.id = "card-usuario-unico"; // 👉 ID único para evitar duplicación
+    card.className = "card mb-4";
+    card.innerHTML = `
+        <div class="card-header">Tus datos</div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead><tr><th>ID</th><th>Nombre Completo</th><th>Email</th><th>Teléfono</th><th>Acciones</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>${usuario.id}</td>
+                        <td>${usuario.nombre} ${usuario.apellido}</td>
+                        <td>${usuario.email}</td>
+                        <td>${usuario.telefono || ''}</td>
+                        <td><a href="#" onclick="editarUsuario('${usuario.id}')" class="btn btn-info btn-circle btn-sm"><i class="fas fa-edit"></i></a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
 
-     container.appendChild(card);
-     document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Modificar";
-     modoEditar = true;
+    container.appendChild(card);
+    document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Modificar";
+    modoEditar = true;
 }
 
 function mostrarFormularioCambiarPassword() {

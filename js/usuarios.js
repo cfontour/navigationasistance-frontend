@@ -221,6 +221,12 @@ function mostrarVistaSoloDelUsuario(usuario) {
      document.getElementById("card-formulario").classList.add("d-none");
      document.getElementById("card-tabla").classList.add("d-none");
 
+     // 💥 Eliminar tarjeta anterior si ya existe
+     const cardExistente = document.getElementById("card-usuario-unico");
+     if (cardExistente) {
+         cardExistente.remove();
+     }
+
      const container = document.querySelector(".container-fluid");
      const card = document.createElement("div");
      card.className = "card mb-4";

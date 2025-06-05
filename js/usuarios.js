@@ -262,6 +262,27 @@ function mostrarVistaSoloDelUsuario(usuario) {
     `;
     container.appendChild(card);
 
+    // Después de container.appendChild(card);
+    $('#tablaUsuarioUnico').DataTable({
+        paging: false,
+        searching: false,
+        info: false,
+        ordering: true,
+        language: {
+            emptyTable: "No hay datos disponibles",
+            zeroRecords: "No se encontraron resultados",
+            infoEmpty: "Sin resultados",
+            loadingRecords: "Cargando...",
+            processing: "Procesando...",
+            lengthMenu: "Mostrar _MENU_ registros",
+            info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+            paginate: {
+                next: "Siguiente",
+                previous: "Anterior"
+            }
+        }
+    });
+
     // ✅ Inicializar DataTable correctamente después de insertar la tabla en el DOM
     $(document).ready(function () {
         $('#tablaUsuarioUnico').DataTable({

@@ -1,17 +1,16 @@
-// Versión modificada para recibir el usuario por parámetro y no mostrar el selector de usuario
+// Versión extendida adaptada para uso con URL ?usuario=ID
+
+const params = new URLSearchParams(window.location.search);
+const usuarioId = params.get("usuario");
+
+if (!usuarioId) {
+  alert("ID de usuario no especificado en la URL.");
+}
 
 document.addEventListener("DOMContentLoaded", () => {
-  const params = new URLSearchParams(window.location.search);
-  const usuarioId = params.get("usuario");
-
-  if (!usuarioId) {
-    alert("ID de usuario no especificado en la URL.");
-    return;
-  }
-
-  const inputFecha = document.getElementById("fecha");
+  const inputFecha = document.getElementById("select-fecha");
   const selectRecorrido = document.getElementById("select-recorrido");
-  const exportBtn = document.getElementById("btn-exportar");
+  const exportBtn = document.getElementById("btn-exportar-csv");
   const map = L.map("map").setView([0, 0], 2);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -70,6 +69,22 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  async function cargarFechasDisponibles() {
+    try {
+      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/fechas/${usuarioId}`);
+      const fechas = await res.json();
+      const selectFecha = document.getElementById("select-fecha");
+      fechas.forEach(fecha => {
+        const opt = document.createElement("option");
+        opt.value = fecha;
+        opt.textContent = fecha;
+        selectFecha.appendChild(opt);
+      });
+    } catch (err) {
+      console.error("Error al cargar fechas disponibles:", err);
+    }
   }
 
   async function cargarRecorridos(usuarioId, fecha) {
@@ -159,10 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
     mostrarGrafico(datosRuta);
   }
 
-  document.getElementById("btn-cargar").addEventListener("click", () => {
-    const params = new URLSearchParams(window.location.search);
-    const usuarioId = params.get("usuario");
-    const fecha = inputFecha.value;
+  document.getElementById("btn-cargar-rutas").addEventListener("click", () => {
+    const fecha = document.getElementById("select-fecha").value;
     if (!usuarioId || !fecha) return;
     cargarRecorridos(usuarioId, fecha);
   });
@@ -175,4 +188,6 @@ document.addEventListener("DOMContentLoaded", () => {
   exportBtn.addEventListener("click", () => {
     if (datosRuta.length > 0) exportarCSV(datosRuta);
   });
+
+  cargarFechasDisponibles();
 });

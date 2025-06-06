@@ -72,6 +72,103 @@ document.addEventListener("DOMContentLoaded", () => {
     attribution: '&copy; OpenStreetMap'
   }).addTo(map);
 
+  async function getSwimmer() {
+    const params = new URLSearchParams(window.location.search);
+    const usuarioId = params.get("usuario");
+
+    if (!usuarioId) {
+      console.error("No se especificó el parámetro ?usuario= en la URL.");
+      return;
+    }
+
+    try {
+      const response = await fetch(api_url);
+      const data = await response.json();
+
+      const nadador = data.find(n => n.usuarioid === usuarioId);
+      if (!nadador) {
+        console.warn("El usuario especificado no se encuentra activo:", usuarioId);
+        return;
+      }
+
+      const { nadadorlat, nadadorlng } = nadador;
+      const lat = parseFloat(nadadorlat);
+      const lng = parseFloat(nadadorlng);
+      if (isNaN(lat) || isNaN(lng)) return;
+
+      const nombre = await getUsuarioNombre(usuarioId);
+      const telefono = await getUsuarioTelefono(usuarioId);
+      const position = [lat, lng];
+
+      const fechaRaw = nadador.fechaUltimaActualizacion;
+      let hora = "Sin fecha";
+      try {
+        const date = new Date(fechaRaw);
+        if (!isNaN(date.getTime())) {
+          const dia = String(date.getDate()).padStart(2, '0');
+          const mes = String(date.getMonth() + 1).padStart(2, '0');
+          const anio = date.getFullYear();
+          const horaTxt = date.toLocaleTimeString('es-UY', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+          hora = `${dia}/${mes}/${anio} ${horaTxt}`;
+        }
+      } catch (e) {
+        console.error("Error formateando hora:", e);
+      }
+
+      const estado = nadador.estado || "Navegante";
+
+      const popupTexto = `👤 ${nombre}<br>📞 ${telefono}<br>🕒 ${hora}`;
+      const tooltipTexto = `👤 ${nombre}\n🆔 ${usuarioId}\n🕒 ${hora}\n📶 Estado: ${estado}`;
+
+      let icono;
+      if (nadador.emergency === true) {
+        icono = L.icon({
+          iconUrl: 'img/marker-emergencia-36x39.png',
+          iconSize: [36, 39],
+          iconAnchor: [18, 39],
+          className: 'icono-emergencia'
+        });
+
+        if (sirenaAudio.paused) {
+          sirenaAudio.play().catch(e => console.warn("No se pudo reproducir la sirena:", e));
+        }
+      } else {
+        icono = obtenerIconoParaUsuario(usuarioId);
+      }
+
+      if (swimmerMarkers.has(usuarioId)) {
+        const marker = swimmerMarkers.get(usuarioId);
+        marker.setLatLng(position);
+        marker.setIcon(icono);
+        marker.setPopupContent(popupTexto);
+        marker.setTooltipContent(tooltipTexto);
+      } else {
+        const marker = L.marker(position, {
+          icon: icono,
+          usuarioid: usuarioId
+        }).addTo(map)
+          .bindPopup(popupTexto)
+          .bindTooltip(tooltipTexto, { permanent: false, direction: 'top' });
+        swimmerMarkers.set(usuarioId, marker);
+      }
+
+      if (!trazaActiva && map) {
+        map.setView(position, map.getZoom());
+      }
+
+      latElem.textContent = lat.toFixed(2);
+      lonElem.textContent = lng.toFixed(2);
+
+    } catch (error) {
+      console.error("Error al obtener la posición del nadador:", error);
+    }
+  }
+
+
   function updateMap(coords) {
     if (!Array.isArray(coords) || coords.length !== 2) return;
     const lat = parseFloat(coords[0]);
@@ -93,6 +190,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (marcadorInicio) {
         map.removeLayer(marcadorInicio);
         marcadorInicio = null;
+      }
+
+      // 💣 BORRAR MARKER DEL NAVEGANTE
+      if (swimmerMarkers.has(naveganteSeleccionadoId)) {
+        map.removeLayer(swimmerMarkers.get(naveganteSeleccionadoId));
+        swimmerMarkers.delete(naveganteSeleccionadoId);
       }
     } else {
       if (naveganteSeleccionadoId && colorSeleccionado) {
@@ -143,109 +246,124 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function actualizarNadador() {
+    const usuarioid = naveganteSeleccionadoId;
+
+    if (!usuarioid) {
+      console.error("No se especificó ningún ID de usuario en la URL.");
+      return;
+    }
+
     try {
       const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
       const nadadores = await res.json();
 
-      for (const nadador of nadadores) {
-        const { usuarioid, nadadorlat, nadadorlng, emergency, fechaUltimaActualizacion, estado } = nadador;
-        if (usuarioid !== naveganteSeleccionadoId) continue;
-
-        const lat = parseFloat(nadadorlat);
-        const lng = parseFloat(nadadorlng);
-        if (isNaN(lat) || isNaN(lng)) continue;
-
-        const usuario = await getUsuario(usuarioid);
-        const nombre = usuario?.nombre || "Nombre desconocido";
-        const apellido = usuario?.apellido || "";
-        const telefono = usuario?.telefono || "Sin teléfono";
-        const nombreCompleto = `${nombre} ${apellido}`.trim();
-
-        let hora = "Sin fecha";
-        try {
-          const date = new Date(fechaUltimaActualizacion);
-          if (!isNaN(date.getTime())) {
-            const dia = String(date.getDate()).padStart(2, '0');
-            const mes = String(date.getMonth() + 1).padStart(2, '0');
-            const anio = date.getFullYear();
-            const horaTxt = date.toLocaleTimeString('es-UY', {
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit'
-            });
-            hora = `${dia}/${mes}/${anio} ${horaTxt}`;
-          }
-        } catch {}
-
-        const position = [lat, lng];
-        const estadoTexto = estado || "Navegante";
-
-        const popupTexto = `👤 ${nombreCompleto}<br>📞 ${telefono}<br>🕒 ${hora}`;
-        const tooltipTexto = `👤 ${nombreCompleto}\n🆔 ${usuarioid}\n🕒 ${hora}\n📶 Estado: ${estadoTexto}`;
-
-        let icono;
-        if (emergency === true) {
-          icono = L.icon({
-            iconUrl: 'img/marker-emergencia-36x39.png',
-            iconSize: [36, 39],
-            iconAnchor: [18, 39],
-            className: 'icono-emergencia'
-          });
-
-          if (sirenaAudio.paused) {
-            sirenaAudio.play().catch(e => console.warn("No se pudo reproducir la sirena:", e));
-          }
-        } else {
-          icono = obtenerIconoParaUsuario(usuarioid);
-        }
-
-        if (swimmerMarkers.has(usuarioid)) {
-          const marker = swimmerMarkers.get(usuarioid);
-          marker.setLatLng(position);
-          marker.setIcon(icono);
-          marker.setPopupContent(popupTexto);
-          marker.setTooltipContent(tooltipTexto);
-        } else {
-          const marker = L.marker(position, {
-            icon: icono,
-            emergency: emergency === true,
-            usuarioid: usuarioid
-          }).addTo(map)
-            .bindPopup(popupTexto)
-            .bindTooltip(tooltipTexto, { permanent: false, direction: 'top' });
-
-          swimmerMarkers.set(usuarioid, marker);
-        }
-
-        if (!trazaActiva) {
-          map.setView(position, 15);
-        }
-
-        if (trazaActiva) {
-          if (!rutaHistorial.has(usuarioid)) rutaHistorial.set(usuarioid, []);
-          const puntos = rutaHistorial.get(usuarioid);
-          const punto = L.circleMarker(position, {
-            radius: 5,
-            color: colorSeleccionado,
-            fillColor: colorSeleccionado,
-            fillOpacity: 0.8
-          }).addTo(map);
-          puntos.push(punto);
-
-          if (!marcadorInicio) {
-            marcadorInicio = L.marker(position, {
-              icon: L.icon({
-                iconUrl: "img/start_flag.png",
-                iconSize: [24, 24],
-                iconAnchor: [12, 24]
-              })
-            }).addTo(map);
-          }
-        }
-
-        latElem.textContent = lat.toFixed(5);
-        lonElem.textContent = lng.toFixed(5);
+      const nadador = nadadores.find(n => n.usuarioid === usuarioid);
+      if (!nadador) {
+        console.warn("El usuario especificado no se encuentra activo:", usuarioid);
+        return;
       }
+
+      const { nadadorlat, nadadorlng, emergency, fechaUltimaActualizacion, estado } = nadador;
+      const lat = parseFloat(nadadorlat);
+      const lng = parseFloat(nadadorlng);
+      if (isNaN(lat) || isNaN(lng)) return;
+
+      const usuario = await getUsuario(usuarioid);
+      const nombre = usuario?.nombre || "Nombre desconocido";
+      const apellido = usuario?.apellido || "";
+      const telefono = usuario?.telefono || "Sin teléfono";
+      const nombreCompleto = `${nombre} ${apellido}`.trim();
+
+      let hora = "Sin fecha";
+      try {
+        const date = new Date(fechaUltimaActualizacion);
+        if (!isNaN(date.getTime())) {
+          const dia = String(date.getDate()).padStart(2, '0');
+          const mes = String(date.getMonth() + 1).padStart(2, '0');
+          const anio = date.getFullYear();
+          const horaTxt = date.toLocaleTimeString('es-UY', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+          hora = `${dia}/${mes}/${anio} ${horaTxt}`;
+        }
+      } catch (e) {
+        console.error("Error formateando hora:", e);
+      }
+
+      const position = [lat, lng];
+      const estadoTexto = estado || "Navegante";
+
+      const popupTexto = `👤 ${nombreCompleto}<br>📞 ${telefono}<br>🕒 ${hora}`;
+      const tooltipTexto = `👤 ${nombreCompleto}\n🆔 ${usuarioid}\n🕒 ${hora}\n📶 Estado: ${estadoTexto}`;
+
+      let icono;
+      if (emergency === true) {
+        icono = L.icon({
+          iconUrl: 'img/marker-emergencia-36x39.png',
+          iconSize: [36, 39],
+          iconAnchor: [18, 39],
+          className: 'icono-emergencia'
+        });
+
+        if (sirenaAudio.paused) {
+          sirenaAudio.play().catch(e => console.warn("No se pudo reproducir la sirena:", e));
+        }
+      } else {
+        icono = obtenerIconoParaUsuario(usuarioid);
+      }
+
+      if (swimmerMarkers.has(usuarioid)) {
+        const marker = swimmerMarkers.get(usuarioid);
+        marker.setLatLng(position);
+        marker.setIcon(icono);
+        marker.setPopupContent(popupTexto);
+        marker.setTooltipContent(tooltipTexto);
+      } else {
+        const marker = L.marker(position, {
+          icon: icono,
+          emergency: emergency === true,
+          usuarioid: usuarioid
+        }).addTo(map)
+          .bindPopup(popupTexto)
+          .bindTooltip(tooltipTexto, { permanent: false, direction: 'top' });
+
+        swimmerMarkers.set(usuarioid, marker);
+      }
+
+      // Actualizar posición del mapa
+      if (!trazaActiva) {
+        map.setView(position, 15);
+      }
+
+      // Si traza activa, dibujar punto
+      if (trazaActiva) {
+        if (!rutaHistorial.has(usuarioid)) rutaHistorial.set(usuarioid, []);
+        const puntos = rutaHistorial.get(usuarioid);
+        const punto = L.circleMarker(position, {
+          radius: 5,
+          color: colorSeleccionado,
+          fillColor: colorSeleccionado,
+          fillOpacity: 0.8
+        }).addTo(map);
+        puntos.push(punto);
+
+        if (!marcadorInicio) {
+          marcadorInicio = L.marker(position, {
+            icon: L.icon({
+              iconUrl: "img/start_flag.png",
+              iconSize: [24, 24],
+              iconAnchor: [12, 24]
+            })
+          }).addTo(map);
+        }
+      }
+
+      // Mostrar coordenadas en pantalla
+      latElem.textContent = lat.toFixed(5);
+      lonElem.textContent = lng.toFixed(5);
+
     } catch (err) {
       console.error("Error al actualizar nadador:", err);
     }

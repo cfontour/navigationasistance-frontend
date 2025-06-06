@@ -1,22 +1,12 @@
-// mapaView.js
-
-// ✅ Adaptación para mapaView.html con usuario por parámetro
-// ✅ Se elimina selector de navegante y se usa usuarioId fijo desde la URL
-// ✅ Se mantiene el botón de traza
-
-// Obtener parámetro de la URL
-function getUsuarioDesdeURL() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get("usuario");
-}
-
-const usuarioFijo = getUsuarioDesdeURL();
-if (!usuarioFijo) {
-  alert("Falta el parámetro ?usuario en la URL");
-  throw new Error("Usuario no definido");
-}
-
 // Ejecutar cuando el DOM esté listo
+
+const params = new URLSearchParams(window.location.search);
+const naveganteSeleccionadoId = params.get("usuario");
+
+if (!naveganteSeleccionadoId) {
+  alert("ID de usuario no especificado en la URL.");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const latElem = document.getElementById("lat");
   const lonElem = document.getElementById("lon");
@@ -24,72 +14,73 @@ document.addEventListener("DOMContentLoaded", () => {
   const sirenaAudio = new Audio('img/sirena.mp3');
   sirenaAudio.loop = false;
 
-  const map = L.map("map").setView([0, 0], 2);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap"
+  const iconosDisponibles = [
+    "marker_na_rojo.png",
+    "marker_na_verde.png",
+    "marker_na_anaranjado.png",
+    "marker_na_lila.png",
+    "marker_na_negro.png",
+    "marker_na_amarillo.png",
+    "marker_na_violeta.png",
+    "marker_na_azul.png"
+  ];
+
+  const iconosPorUsuario = new Map();
+  let indiceIcono = 0;
+
+  function obtenerIconoParaUsuario(usuarioid) {
+    if (!iconosPorUsuario.has(usuarioid)) {
+      const archivo = iconosDisponibles[indiceIcono % iconosDisponibles.length];
+      const icono = L.icon({
+        iconUrl: `img/${archivo}`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+      });
+      iconosPorUsuario.set(usuarioid, icono);
+      indiceIcono++;
+    }
+    return iconosPorUsuario.get(usuarioid);
+  }
+
+  const coloresDisponibles = [
+    "#e6194b", "#3cb44b", "#ffe119", "#4363d8",
+    "#f58231", "#911eb4", "#46f0f0", "#f032e6",
+    "#bcf60c", "#fabebe", "#008080", "#e6beff",
+    "#9a6324", "#fffac8", "#800000", "#aaffc3"
+  ];
+
+  const coloresPorUsuario = new Map();
+  let indiceColor = 0;
+
+  function obtenerColorParaUsuario(usuarioid) {
+    if (!coloresPorUsuario.has(usuarioid)) {
+      const color = coloresDisponibles[indiceColor % coloresDisponibles.length];
+      coloresPorUsuario.set(usuarioid, color);
+      indiceColor++;
+    }
+    return coloresPorUsuario.get(usuarioid);
+  }
+
+  const rutaHistorial = new Map();
+  let trazaActiva = false;
+  let marcadorInicio = null;
+
+  const colorSeleccionado = obtenerColorParaUsuario(naveganteSeleccionadoId);
+
+  const map = L.map('map').setView([0, 0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap'
   }).addTo(map);
 
-  let marcadorInicio = null;
-  let trazaActiva = false;
-  const rutaHistorial = [];
+  function updateMap(coords) {
+    if (!Array.isArray(coords) || coords.length !== 2) return;
+    const lat = parseFloat(coords[0]);
+    const lng = parseFloat(coords[1]);
+    if (isNaN(lat) || isNaN(lng)) return;
 
-  const iconoInicio = L.icon({
-    iconUrl: "img/start_flag.png",
-    iconSize: [32, 32],
-    iconAnchor: [16, 32]
-  });
-
-  const iconoNadador = L.icon({
-    iconUrl: 'img/optimist_marker_30x30.png',
-    iconSize: [30, 30],
-    iconAnchor: [15, 15]
-  });
-
-  let marker = null;
-
-  async function obtenerPosicion() {
-    try {
-      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar`);
-      const data = await res.json();
-
-      const nadador = data.find(n => n.usuarioid === usuarioFijo);
-      if (!nadador) return;
-
-      const lat = parseFloat(nadador.nadadorlat);
-      const lng = parseFloat(nadador.nadadorlng);
-      if (isNaN(lat) || isNaN(lng)) return;
-
-      const position = [lat, lng];
-
-      // Actualizar marcador
-      if (!marker) {
-        marker = L.marker(position, { icon: iconoNadador }).addTo(map);
-      } else {
-        marker.setLatLng(position);
-      }
-
-      // Actualizar mapa y coordenadas
-      if (!trazaActiva) map.setView(position, 15);
-      latElem.textContent = lat.toFixed(5);
-      lonElem.textContent = lng.toFixed(5);
-
-      // Dibujar traza si está activa
-      if (trazaActiva) {
-        const punto = L.circleMarker(position, {
-          radius: 5,
-          color: "red",
-          fillColor: "red",
-          fillOpacity: 0.8
-        }).addTo(map);
-        rutaHistorial.push(punto);
-
-        if (!marcadorInicio) {
-          marcadorInicio = L.marker(position, { icon: iconoInicio }).addTo(map);
-        }
-      }
-    } catch (err) {
-      console.error("Error al obtener datos del nadador:", err);
-    }
+    map.flyTo([lat, lng], 15);
+    latElem.textContent = lat.toFixed(5);
+    lonElem.textContent = lng.toFixed(5);
   }
 
   document.getElementById("btn-traza").addEventListener("click", () => {
@@ -97,15 +88,168 @@ document.addEventListener("DOMContentLoaded", () => {
     alert(`Traza en vivo ${trazaActiva ? "activada" : "desactivada"}`);
 
     if (!trazaActiva) {
-      rutaHistorial.forEach(p => map.removeLayer(p));
-      rutaHistorial.length = 0;
+      rutaHistorial.forEach(puntos => puntos.forEach(p => map.removeLayer(p)));
+      rutaHistorial.clear();
       if (marcadorInicio) {
         map.removeLayer(marcadorInicio);
         marcadorInicio = null;
       }
+    } else {
+      if (naveganteSeleccionadoId && colorSeleccionado) {
+        cargarTrazaHistorica(naveganteSeleccionadoId, colorSeleccionado);
+      }
     }
   });
 
-  obtenerPosicion();
-  setInterval(obtenerPosicion, 5000);
+  const swimmerMarkers = new Map();
+
+  async function getUsuario(id) {
+    try {
+      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${id}`);
+      return await res.json();
+    } catch (err) {
+      console.error("Error al obtener usuario:", err);
+      return null;
+    }
+  }
+
+  async function cargarTrazaHistorica(uuid, color) {
+    try {
+      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${uuid}`);
+      const puntos = await res.json();
+
+      if (!puntos || puntos.length === 0) return;
+
+      const historial = [];
+      for (const punto of puntos) {
+        const lat = parseFloat(punto.latitud);
+        const lng = parseFloat(punto.longitud);
+        if (isNaN(lat) || isNaN(lng)) continue;
+
+        const marcador = L.circleMarker([lat, lng], {
+          radius: 5,
+          color: color,
+          fillColor: color,
+          fillOpacity: 0.8
+        }).addTo(map);
+
+        historial.push(marcador);
+      }
+
+      rutaHistorial.set(uuid, historial);
+    } catch (err) {
+      console.error("Error al cargar traza histórica:", err);
+    }
+  }
+
+  async function actualizarNadador() {
+    try {
+      const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
+      const nadadores = await res.json();
+
+      for (const nadador of nadadores) {
+        const { usuarioid, nadadorlat, nadadorlng, emergency, fechaUltimaActualizacion, estado } = nadador;
+        if (usuarioid !== naveganteSeleccionadoId) continue;
+
+        const lat = parseFloat(nadadorlat);
+        const lng = parseFloat(nadadorlng);
+        if (isNaN(lat) || isNaN(lng)) continue;
+
+        const usuario = await getUsuario(usuarioid);
+        const nombre = usuario?.nombre || "Nombre desconocido";
+        const apellido = usuario?.apellido || "";
+        const telefono = usuario?.telefono || "Sin teléfono";
+        const nombreCompleto = `${nombre} ${apellido}`.trim();
+
+        let hora = "Sin fecha";
+        try {
+          const date = new Date(fechaUltimaActualizacion);
+          if (!isNaN(date.getTime())) {
+            const dia = String(date.getDate()).padStart(2, '0');
+            const mes = String(date.getMonth() + 1).padStart(2, '0');
+            const anio = date.getFullYear();
+            const horaTxt = date.toLocaleTimeString('es-UY', {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            });
+            hora = `${dia}/${mes}/${anio} ${horaTxt}`;
+          }
+        } catch {}
+
+        const position = [lat, lng];
+        const estadoTexto = estado || "Navegante";
+
+        const popupTexto = `👤 ${nombreCompleto}<br>📞 ${telefono}<br>🕒 ${hora}`;
+        const tooltipTexto = `👤 ${nombreCompleto}\n🆔 ${usuarioid}\n🕒 ${hora}\n📶 Estado: ${estadoTexto}`;
+
+        let icono;
+        if (emergency === true) {
+          icono = L.icon({
+            iconUrl: 'img/marker-emergencia-36x39.png',
+            iconSize: [36, 39],
+            iconAnchor: [18, 39],
+            className: 'icono-emergencia'
+          });
+
+          if (sirenaAudio.paused) {
+            sirenaAudio.play().catch(e => console.warn("No se pudo reproducir la sirena:", e));
+          }
+        } else {
+          icono = obtenerIconoParaUsuario(usuarioid);
+        }
+
+        if (swimmerMarkers.has(usuarioid)) {
+          const marker = swimmerMarkers.get(usuarioid);
+          marker.setLatLng(position);
+          marker.setIcon(icono);
+          marker.setPopupContent(popupTexto);
+          marker.setTooltipContent(tooltipTexto);
+        } else {
+          const marker = L.marker(position, {
+            icon: icono,
+            emergency: emergency === true,
+            usuarioid: usuarioid
+          }).addTo(map)
+            .bindPopup(popupTexto)
+            .bindTooltip(tooltipTexto, { permanent: false, direction: 'top' });
+
+          swimmerMarkers.set(usuarioid, marker);
+        }
+
+        if (!trazaActiva) {
+          map.setView(position, 15);
+        }
+
+        if (trazaActiva) {
+          if (!rutaHistorial.has(usuarioid)) rutaHistorial.set(usuarioid, []);
+          const puntos = rutaHistorial.get(usuarioid);
+          const punto = L.circleMarker(position, {
+            radius: 5,
+            color: colorSeleccionado,
+            fillColor: colorSeleccionado,
+            fillOpacity: 0.8
+          }).addTo(map);
+          puntos.push(punto);
+
+          if (!marcadorInicio) {
+            marcadorInicio = L.marker(position, {
+              icon: L.icon({
+                iconUrl: "img/start_flag.png",
+                iconSize: [24, 24],
+                iconAnchor: [12, 24]
+              })
+            }).addTo(map);
+          }
+        }
+
+        latElem.textContent = lat.toFixed(5);
+        lonElem.textContent = lng.toFixed(5);
+      }
+    } catch (err) {
+      console.error("Error al actualizar nadador:", err);
+    }
+  }
+
+  setInterval(actualizarNadador, 5000);
 });

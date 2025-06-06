@@ -211,10 +211,12 @@
 
                 <!-- Controles del Mapa -->
                 <div class="controls">
-                    <label for="select-location">Ubicación inicial:</label>
-                    <select id="select-location" style="display: none;">
-                        <option value="">-- Seleccionar --</option>
-                    </select>
+                    <div id="zonaSelector" style="display: none;">
+                        <label for="select-location">Ubicación inicial:</label>
+                        <select id="select-location">
+                            <option value="">-- Seleccionar --</option>
+                        </select>
+                    </div>
 
                     <span>Seleccionar navegante:</span>
                     <div id="navegantes-dropdown" class="dropdown">

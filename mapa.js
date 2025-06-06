@@ -164,6 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return iconosPorUsuario.get(usuarioid);
   }
 
+  /*
   // Cargar lista de zonas
   fetch("https://navigationasistance-backend-1.onrender.com/zonas/listar")
     .then(response => response.json())
@@ -201,13 +202,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  //selectNavegante.addEventListener('change', function (e) {
-  //  const coords = e.target.value.split(",").map(parseFloat);
-  //  map.flyTo(coords, 15);
-  //  naveganteSeleccionadoId = e.target.options[e.target.selectedIndex].dataset.id || null;
-  //  console.log("Navegante seleccionado:", naveganteSeleccionadoId);
-  //});
-
+  */
+  
   const api_url = new URL("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
   let firstTime = true;
 

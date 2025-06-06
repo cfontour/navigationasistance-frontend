@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ruta Histórica</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+    <style>
+        #map { height: 75vh; width: 100%; }
+        .info-box {
+          background: white;
+          border-radius: 12px;
+          padding: 10px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          margin: 20px;
+        }
+        .logo-pie {
+          width: 100px;
+          background-color: white;
+          padding: 8px;
+          border-radius: 8px;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 20px;
+        }
+        .icono-emergencia.parpadeo {
+          animation: blink 1.2s infinite;
+        }
+        @keyframes blink {
+          0%, 100% { filter: brightness(100%); }
+          50%      { filter: brightness(220%); }
+        }
+    </style>
+</head>
+<body>
+<div class="info-box">
+    <h2 id="tituloUsuario">Ruta histórica del navegante</h2>
+    <p>Latitud: <span id="lat">--</span> | Longitud: <span id="lon">--</span></p>
+    <button id="btn-traza">Alternar Traza</button>
+</div>
+<div id="map"></div>
+<div class="footer">
+    <img src="img/logo_geotraser.png" alt="GeoTraser" class="logo-pie">
+</div>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="mapahistoricoView.js"></script>
+</body>
+</html>

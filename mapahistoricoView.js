@@ -1,48 +1,28 @@
-// Ejecutar cuando el DOM esté listo
-
-const params = new URLSearchParams(window.location.search);
-const naveganteSeleccionadoId = params.get("usuario");
-
-if (!naveganteSeleccionadoId) {
-  alert("ID de usuario no especificado en la URL.");
-}
+// Versión modificada para recibir el usuario por parámetro y no mostrar el selector de usuario
 
 document.addEventListener("DOMContentLoaded", () => {
-  const latElem = document.getElementById("lat");
-  const lonElem = document.getElementById("lon");
-  const selectFecha = document.getElementById("select-fecha");
-  const selectRecorrido = document.getElementById("select-recorrido");
-  const btnCargarRutas = document.getElementById("btn-cargar-rutas");
-  const btnExportarCSV = document.getElementById("btn-exportar-csv");
-  const canvas = document.getElementById("graficoRitmo");
+  const params = new URLSearchParams(window.location.search);
+  const usuarioId = params.get("usuario");
 
+  if (!usuarioId) {
+    alert("ID de usuario no especificado en la URL.");
+    return;
+  }
+
+  const inputFecha = document.getElementById("fecha");
+  const selectRecorrido = document.getElementById("select-recorrido");
+  const exportBtn = document.getElementById("btn-exportar");
   const map = L.map("map").setView([0, 0], 2);
+
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap",
   }).addTo(map);
 
-  const rutaHistorial = [];
-  let marcadorInicio = null;
   let routeLine = null;
   let routeMarkers = [];
   let infoControl = null;
   let datosRuta = [];
   let chartInstance = null;
-
-  function updateMap(lat, lng) {
-    map.setView([lat, lng], 15);
-    latElem.textContent = lat.toFixed(5);
-    lonElem.textContent = lng.toFixed(5);
-  }
-
-  function limpiarMapa() {
-    if (routeLine) map.removeLayer(routeLine);
-    routeLine = null;
-    routeMarkers.forEach(m => map.removeLayer(m));
-    routeMarkers = [];
-    if (infoControl) map.removeControl(infoControl);
-    infoControl = null;
-  }
 
   function calcularDistancia(lat1, lon1, lat2, lon2) {
     const toRad = deg => deg * Math.PI / 180;
@@ -56,8 +36,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function mostrarGrafico(datos) {
+    const canvas = document.getElementById("graficoRitmo");
     const ctx = canvas.getContext("2d");
-    if (chartInstance) chartInstance.destroy();
+    if (chartInstance) {
+      chartInstance.destroy();
+    }
     const labels = datos.map((d, i) => `Punto ${i + 1}`);
     const ritmos = datos.map(d => d.ritmo);
     chartInstance = new Chart(ctx, {
@@ -89,22 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.removeChild(link);
   }
 
-  async function cargarFechasDisponibles() {
-    try {
-      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/fechas/${naveganteSeleccionadoId}`);
-      const fechas = await res.json();
-      selectFecha.innerHTML = '<option value="">-- Seleccionar fecha --</option>';
-      fechas.forEach(fecha => {
-        const option = document.createElement("option");
-        option.value = fecha;
-        option.textContent = fecha;
-        selectFecha.appendChild(option);
-      });
-    } catch (error) {
-      console.error("Error al cargar fechas disponibles:", error);
-    }
-  }
-
   async function cargarRecorridos(usuarioId, fecha) {
     selectRecorrido.innerHTML = '<option value="">-- Seleccionar recorrido --</option>';
     const url = `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/recorridos/${usuarioId}/${fecha}`;
@@ -130,7 +97,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     datos.sort((a, b) => a.secuencia - b.secuencia);
     datosRuta = [];
-    limpiarMapa();
+
+    if (routeLine) map.removeLayer(routeLine);
+    routeMarkers.forEach((m) => map.removeLayer(m));
+    routeMarkers = [];
+    if (infoControl) map.removeControl(infoControl);
 
     const latlngs = datos.map(p => [parseFloat(p.nadadorlat), parseFloat(p.nadadorlng)]);
     routeLine = L.polyline(latlngs, { color: "blue" }).addTo(map);
@@ -188,10 +159,10 @@ document.addEventListener("DOMContentLoaded", () => {
     mostrarGrafico(datosRuta);
   }
 
-  btnCargarRutas.addEventListener("click", () => {
-    const fecha = selectFecha.value;
-    if (!naveganteSeleccionadoId || !fecha) return;
-    cargarRecorridos(naveganteSeleccionadoId, fecha);
+  document.getElementById("btn-cargar").addEventListener("click", () => {
+    const fecha = inputFecha.value;
+    if (!usuarioId || !fecha) return;
+    cargarRecorridos(usuarioId, fecha);
   });
 
   selectRecorrido.addEventListener("change", () => {
@@ -199,9 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (recorridoId) cargarRutaPorRecorrido(recorridoId);
   });
 
-  btnExportarCSV.addEventListener("click", () => {
+  exportBtn.addEventListener("click", () => {
     if (datosRuta.length > 0) exportarCSV(datosRuta);
   });
-
-  cargarFechasDisponibles();
 });

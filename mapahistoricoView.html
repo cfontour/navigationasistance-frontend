@@ -44,11 +44,6 @@
             text-shadow: 1px 1px 2px black;
         }
 
-        footer img {
-            max-width: 300px;
-            opacity: 0.95;
-        }
-
         .panel-controles {
             background: white;
             color: black;
@@ -63,6 +58,11 @@
             padding: 6px 10px;
             font-size: 14px;
             border-radius: 6px;
+        }
+
+        footer img {
+            max-width: 300px;
+            opacity: 0.95;
         }
 
         footer::after {
@@ -91,15 +91,6 @@
 <body>
 <h1>🧭 Visualización de las Rutas Navegadas</h1>
 
-<!-- Mapa -->
-<div id="map"></div>
-
-<!-- Coordenadas -->
-<div class="coordenadas">
-    <span>📍 Latitud: <span id="lat">-</span></span> |
-    <span>Longitud: <span id="lon">-</span></span>
-</div>
-
 <div class="panel-controles">
     <label for="select-fecha">Fecha:</label>
     <select id="select-fecha">
@@ -114,6 +105,15 @@
     </select>
 
     <button id="btn-exportar-csv">Exportar CSV</button>
+</div>
+
+<!-- Mapa -->
+<div id="map"></div>
+
+<!-- Coordenadas -->
+<div class="coordenadas">
+    <span>📍 Latitud: <span id="lat">-</span></span> |
+    <span>Longitud: <span id="lon">-</span></span>
 </div>
 
 <footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">

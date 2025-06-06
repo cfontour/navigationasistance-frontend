@@ -364,6 +364,29 @@ document.addEventListener("DOMContentLoaded", () => {
       latElem.textContent = lat.toFixed(5);
       lonElem.textContent = lng.toFixed(5);
 
+      // 👇 Esto es al final de actualizarNadador()
+      const sigueActivo = nadadores.some(n => n.usuarioid === usuarioid);
+      if (!sigueActivo) {
+        if (swimmerMarkers.has(usuarioid)) {
+          map.removeLayer(swimmerMarkers.get(usuarioid));
+          swimmerMarkers.delete(usuarioid);
+        }
+
+        if (rutaHistorial.has(usuarioid)) {
+          rutaHistorial.get(usuarioid).forEach(p => map.removeLayer(p));
+          rutaHistorial.delete(usuarioid);
+        }
+
+        if (marcadorInicio) {
+          map.removeLayer(marcadorInicio);
+          marcadorInicio = null;
+        }
+
+        console.warn("El usuario especificado ya no está activo:", usuarioid);
+        return;
+      }
+
+
     } catch (err) {
       console.error("Error al actualizar nadador:", err);
     }

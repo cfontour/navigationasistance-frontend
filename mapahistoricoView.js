@@ -166,6 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     infoControl.onAdd = () => {
       const div = L.DomUtil.create("div", "info");
       div.style.background = "white";
+      div.style.color = "black"; // ✅ ahora el texto se verá
       div.style.padding = "10px";
       div.style.border = "1px solid #ccc";
       div.style.borderRadius = "8px";

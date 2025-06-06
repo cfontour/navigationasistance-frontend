@@ -88,6 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function cargarRecorridos(usuarioId, fecha) {
     selectRecorrido.innerHTML = '<option value="">-- Seleccionar recorrido --</option>';
+    const usuarioId = 18783783
     console.log("Llamando endpoint:", `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/recorridos/${usuarioId}/${fecha}`);
     const url = `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/recorridos/${usuarioId}/${fecha}`;
     const res = await fetch(url);

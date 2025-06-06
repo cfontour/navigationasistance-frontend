@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const selectUsuario = document.getElementById("select-usuario");
   const inputFecha = document.getElementById("fecha");
   const selectRecorrido = document.getElementById("select-recorrido");
-  const exportBtn = document.getElementById("btn-exportar");
+  const exportBtn = document.getElementById("btn-exportar-csv");
   const map = L.map("map").setView([0, 0], 2);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {

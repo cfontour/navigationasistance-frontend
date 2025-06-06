@@ -4,47 +4,80 @@
     <meta charset="UTF-8">
     <title>Ruta Histórica</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
-        #map { height: 75vh; width: 100%; }
-        .info-box {
-          background: white;
-          border-radius: 12px;
-          padding: 10px;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-          margin: 20px;
+        body {
+          margin: 0;
+          font-family: Arial, sans-serif;
+          background: linear-gradient(to bottom, #003366, #336699);
+          color: white;
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
         }
-        .logo-pie {
-          width: 100px;
-          background-color: white;
-          padding: 8px;
-          border-radius: 8px;
-        }
-        .footer {
+
+        header {
           text-align: center;
-          margin-top: 20px;
+          padding: 1em;
+          font-size: 1.5em;
+          font-weight: bold;
         }
-        .icono-emergencia.parpadeo {
-          animation: blink 1.2s infinite;
+
+        #map {
+          flex-grow: 1;
+          height: 100%;
         }
-        @keyframes blink {
-          0%, 100% { filter: brightness(100%); }
-          50%      { filter: brightness(220%); }
+
+        footer {
+          background: white;
+          text-align: center;
+          padding: 10px;
+        }
+
+        footer img {
+          height: 50px;
+        }
+
+        .coordenadas {
+          background-color: rgba(0, 0, 0, 0.5);
+          padding: 5px 10px;
+          border-radius: 8px;
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          font-size: 14px;
+          z-index: 1000;
+        }
+
+        .parpadeo {
+          animation: parpadear 1s infinite;
+        }
+
+        @keyframes parpadear {
+          0% { opacity: 1; }
+          50% { opacity: 0.2; }
+          100% { opacity: 1; }
         }
     </style>
 </head>
 <body>
-<div class="info-box">
-    <h2 id="tituloUsuario">Ruta histórica del navegante</h2>
-    <p>Latitud: <span id="lat">--</span> | Longitud: <span id="lon">--</span></p>
-    <button id="btn-traza">Alternar Traza</button>
-</div>
+<header>
+    Ruta Histórica del Navegante
+</header>
+
 <div id="map"></div>
-<div class="footer">
-    <img src="img/logo_geotraser.png" alt="GeoTraser" class="logo-pie">
+
+<div class="coordenadas">
+    <span>📍 Latitud: <span id="lat">-</span></span> |
+    <span>Longitud: <span id="lon">-</span></span>
 </div>
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<footer>
+    <img src="img/logo_geotraser.png" alt="GeoTraser">
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="mapahistoricoView.js"></script>
 </body>
 </html>

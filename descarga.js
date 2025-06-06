@@ -1,10 +1,7 @@
 // descarga.js
-
 document.addEventListener("DOMContentLoaded", () => {
     console.log("descarga.js cargado correctamente");
 
-// descarga.js
-document.addEventListener("DOMContentLoaded", () => {
     const userStr = localStorage.getItem("usuarioLogueado");
     const usuarioInfo = document.getElementById("usuario-info");
 
@@ -18,6 +15,4 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
         usuarioInfo.textContent = "No hay usuario logueado.";
     }
-});
-
 });

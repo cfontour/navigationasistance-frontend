@@ -15,9 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCargarRutas = document.getElementById("btn-cargar-rutas");
   const btnExportarCSV = document.getElementById("btn-exportar-csv");
 
-  const sirenaAudio = new Audio("img/sirena.mp3");
-  sirenaAudio.loop = false;
-
   const map = L.map("map").setView([0, 0], 2);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap",
@@ -44,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function cargarFechasDisponibles() {
     try {
       const res = await fetch(
-        `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/recorridos/${naveganteSeleccionadoId}`
+        `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/fechas/${naveganteSeleccionadoId}`
       );
       const fechas = await res.json();
       selectFecha.innerHTML = "";

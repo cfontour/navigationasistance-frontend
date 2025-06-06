@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("descarga.js cargado correctamente");
-
     const usuarioInfo = document.getElementById("usuario-info");
     const userStr = localStorage.getItem("usuarioLogueado");
 
@@ -11,6 +9,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
         const user = JSON.parse(userStr);
+        if (!user.id) {
+            usuarioInfo.textContent = "Usuario sin ID.";
+            return;
+        }
 
         fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${user.id}`)
             .then(res => {

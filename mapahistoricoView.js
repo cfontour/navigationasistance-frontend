@@ -4,7 +4,14 @@
 // - Soporte para seleccionar recorrido_id
 
 document.addEventListener("DOMContentLoaded", () => {
-  const selectUsuario = document.getElementById("select-usuario");
+  //const selectUsuario = document.getElementById("select-usuario");
+  const params = new URLSearchParams(window.location.search);
+  const usuarioId = params.get("usuario");
+
+  if (!usuarioId) {
+    alert("Falta el parámetro ?usuario= en la URL.");
+    return;
+  }
   const inputFecha = document.getElementById("fecha");
   const selectRecorrido = document.getElementById("select-recorrido");
   const exportBtn = document.getElementById("btn-exportar-csv");

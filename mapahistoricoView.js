@@ -1,16 +1,13 @@
-// Versión extendida adaptada para uso con URL ?usuario=ID
-
-const params = new URLSearchParams(window.location.search);
-const usuarioId = params.get("usuario");
-
-if (!usuarioId) {
-  alert("ID de usuario no especificado en la URL.");
-}
+// Versión extendida de mapahistorico.js con:
+// - Exportación a CSV
+// - Gráfico de ritmo con Chart.js
+// - Soporte para seleccionar recorrido_id
 
 document.addEventListener("DOMContentLoaded", () => {
-  const inputFecha = document.getElementById("select-fecha");
+  const selectUsuario = document.getElementById("select-usuario");
+  const inputFecha = document.getElementById("fecha");
   const selectRecorrido = document.getElementById("select-recorrido");
-  const exportBtn = document.getElementById("btn-exportar-csv");
+  const exportBtn = document.getElementById("btn-exportar");
   const map = L.map("map").setView([0, 0], 2);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -22,6 +19,17 @@ document.addEventListener("DOMContentLoaded", () => {
   let infoControl = null;
   let datosRuta = [];
   let chartInstance = null;
+
+  //async function cargarUsuarios() {
+  //  const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuarios/listar");
+  //  const usuarios = await res.json();
+  //  usuarios.forEach((u) => {
+  //    const opt = document.createElement("option");
+  //    opt.value = u.id;
+  //     opt.textContent = `👤 ${u.nombre} ${u.apellido}`;
+  //    selectUsuario.appendChild(opt);
+  //  });
+  //}
 
   function calcularDistancia(lat1, lon1, lat2, lon2) {
     const toRad = deg => deg * Math.PI / 180;
@@ -69,22 +77,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
-
-  async function cargarFechasDisponibles() {
-    try {
-      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/fechas/${usuarioId}`);
-      const fechas = await res.json();
-      const selectFecha = document.getElementById("select-fecha");
-      fechas.forEach(fecha => {
-        const opt = document.createElement("option");
-        opt.value = fecha;
-        opt.textContent = fecha;
-        selectFecha.appendChild(opt);
-      });
-    } catch (err) {
-      console.error("Error al cargar fechas disponibles:", err);
-    }
   }
 
   async function cargarRecorridos(usuarioId, fecha) {
@@ -174,8 +166,8 @@ document.addEventListener("DOMContentLoaded", () => {
     mostrarGrafico(datosRuta);
   }
 
-  document.getElementById("btn-cargar-rutas").addEventListener("click", () => {
-    const fecha = document.getElementById("select-fecha").value;
+  document.getElementById("btn-cargar").addEventListener("click", () => {
+    const fecha = inputFecha.value;
     if (!usuarioId || !fecha) return;
     cargarRecorridos(usuarioId, fecha);
   });
@@ -189,5 +181,5 @@ document.addEventListener("DOMContentLoaded", () => {
     if (datosRuta.length > 0) exportarCSV(datosRuta);
   });
 
-  cargarFechasDisponibles();
+  //cargarUsuarios();
 });

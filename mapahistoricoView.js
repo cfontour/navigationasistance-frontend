@@ -160,6 +160,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("btn-cargar").addEventListener("click", () => {
+    const params = new URLSearchParams(window.location.search);
+    const usuarioId = params.get("usuario");
     const fecha = inputFecha.value;
     if (!usuarioId || !fecha) return;
     cargarRecorridos(usuarioId, fecha);

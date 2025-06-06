@@ -192,5 +192,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (datosRuta.length > 0) exportarCSV(datosRuta);
   });
 
+  cargarFechas(usuarioId);
   //cargarUsuarios();
 });

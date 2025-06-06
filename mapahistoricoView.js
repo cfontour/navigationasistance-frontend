@@ -3,12 +3,10 @@
 // - Gráfico de ritmo con Chart.js
 // - Soporte para seleccionar recorrido_id
 
-const usuarioId params.get("usuario");
-
 document.addEventListener("DOMContentLoaded", () => {
   //const selectUsuario = document.getElementById("select-usuario");
   const params = new URLSearchParams(window.location.search);
-  //const usuarioId params.get("usuario");
+  const usuarioId params.get("usuario");
 
   if (!usuarioId) {
     alert("Falta el parámetro ?usuario= en la URL.");
@@ -90,7 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function cargarRecorridos(usuarioId, fecha) {
     selectRecorrido.innerHTML = '<option value="">-- Seleccionar recorrido --</option>';
-    console.log("Llamando endpoint:", `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/recorridos/${usuarioId}/${fecha}`);
     const url = `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/recorridos/${usuarioId}/${fecha}`;
     const res = await fetch(url);
     const lista = await res.json();
@@ -177,9 +174,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("btn-cargar-rutas").addEventListener("click", () => {
-
-    console.log("usuarioId:", usuarioId);
-    console.log("fecha seleccionada:", inputFecha.value);
 
     const fecha = inputFecha.value;
     if (!usuarioId || !fecha) return;

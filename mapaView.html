@@ -10,20 +10,21 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
     <style>
-        body {
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 1rem;
+            font-family: Arial, sans-serif;
             background-image: url('img/fondo-navigationasistance.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            margin: 0;
-            padding: 1rem;
-            font-family: Arial, sans-serif;
-            color: #333;
+            position: relative;
+            color: white;
         }
 
         h1 {
             text-align: center;
-            color: white;
             margin-bottom: 1rem;
             text-shadow: 1px 1px 2px black;
         }
@@ -33,12 +34,12 @@
             width: 100%;
             border: 1px solid #ccc;
             border-radius: 8px;
+            z-index: 0;
         }
 
         .info-box {
             text-align: center;
             margin-top: 1rem;
-            color: white;
             font-size: 1.1rem;
             text-shadow: 1px 1px 2px black;
         }
@@ -64,8 +65,17 @@
         }
 
         footer img {
-            max-height: 150px;
-            opacity: 0.9;
+            max-width: 300px;
+            opacity: 0.95;
+        }
+
+        footer::after {
+            content: "GEOTRASER";
+            display: block;
+            margin-top: 0.5rem;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -85,7 +95,7 @@
 <button id="btn-traza">🔁 Traza</button>
 
 <footer>
-    <img src="img/logo-geotraser-marine.png" alt="GEOTRASER">
+    <img src="img/logo-geotraser-marine.png" alt="">
 </footer>
 
 <!-- Scripts -->

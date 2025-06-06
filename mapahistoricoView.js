@@ -6,7 +6,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   //const selectUsuario = document.getElementById("select-usuario");
   const params = new URLSearchParams(window.location.search);
-  const usuarioId params.get("usuario");
+  const usuarioId = params.get("usuario");
 
   if (!usuarioId) {
     alert("Falta el parámetro ?usuario= en la URL.");

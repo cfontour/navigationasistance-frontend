@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("Falta el parámetro ?usuario= en la URL.");
     return;
   }
-  const inputFecha = document.getElementById("fecha");
+  const inputFecha = document.getElementById("select-fecha");
   const selectRecorrido = document.getElementById("select-recorrido");
   const exportBtn = document.getElementById("btn-exportar-csv");
   const map = L.map("map").setView([0, 0], 2);

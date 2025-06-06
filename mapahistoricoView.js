@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const selectRecorrido = document.getElementById("select-recorrido");
   const btnCargarRutas = document.getElementById("btn-cargar-rutas");
   const btnExportarCSV = document.getElementById("btn-exportar-csv");
+  const canvas = document.getElementById("graficoRitmo");
 
   const map = L.map("map").setView([0, 0], 2);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -22,6 +23,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const rutaHistorial = [];
   let marcadorInicio = null;
+  let routeLine = null;
+  let routeMarkers = [];
+  let infoControl = null;
+  let datosRuta = [];
+  let chartInstance = null;
 
   function updateMap(lat, lng) {
     map.setView([lat, lng], 15);
@@ -30,15 +36,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function limpiarMapa() {
-    rutaHistorial.forEach((m) => map.removeLayer(m));
-    rutaHistorial.length = 0;
-    if (marcadorInicio) {
-      map.removeLayer(marcadorInicio);
-      marcadorInicio = null;
-    }
+    if (routeLine) map.removeLayer(routeLine);
+    routeLine = null;
+    routeMarkers.forEach(m => map.removeLayer(m));
+    routeMarkers = [];
+    if (infoControl) map.removeControl(infoControl);
+    infoControl = null;
   }
 
-function calcularDistancia(lat1, lon1, lat2, lon2) {
+  function calcularDistancia(lat1, lon1, lat2, lon2) {
     const toRad = deg => deg * Math.PI / 180;
     const R = 6371e3;
     const φ1 = toRad(lat1), φ2 = toRad(lat2);
@@ -50,11 +56,8 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
   }
 
   function mostrarGrafico(datos) {
-    const canvas = document.getElementById("graficoRitmo");
     const ctx = canvas.getContext("2d");
-    if (chartInstance) {
-      chartInstance.destroy();
-    }
+    if (chartInstance) chartInstance.destroy();
     const labels = datos.map((d, i) => `Punto ${i + 1}`);
     const ritmos = datos.map(d => d.ritmo);
     chartInstance = new Chart(ctx, {
@@ -86,6 +89,22 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
     document.body.removeChild(link);
   }
 
+  async function cargarFechasDisponibles() {
+    try {
+      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/fechas/${naveganteSeleccionadoId}`);
+      const fechas = await res.json();
+      selectFecha.innerHTML = '<option value="">-- Seleccionar fecha --</option>';
+      fechas.forEach(fecha => {
+        const option = document.createElement("option");
+        option.value = fecha;
+        option.textContent = fecha;
+        selectFecha.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Error al cargar fechas disponibles:", error);
+    }
+  }
+
   async function cargarRecorridos(usuarioId, fecha) {
     selectRecorrido.innerHTML = '<option value="">-- Seleccionar recorrido --</option>';
     const url = `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/recorridos/${usuarioId}/${fecha}`;
@@ -111,11 +130,7 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
 
     datos.sort((a, b) => a.secuencia - b.secuencia);
     datosRuta = [];
-
-    if (routeLine) map.removeLayer(routeLine);
-    routeMarkers.forEach((m) => map.removeLayer(m));
-    routeMarkers = [];
-    if (infoControl) map.removeControl(infoControl);
+    limpiarMapa();
 
     const latlngs = datos.map(p => [parseFloat(p.nadadorlat), parseFloat(p.nadadorlng)]);
     routeLine = L.polyline(latlngs, { color: "blue" }).addTo(map);
@@ -173,11 +188,10 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
     mostrarGrafico(datosRuta);
   }
 
-  document.getElementById("btn-cargar").addEventListener("click", () => {
-    const usuarioId = selectUsuario.value;
-    const fecha = inputFecha.value;
-    if (!usuarioId || !fecha) return;
-    cargarRecorridos(usuarioId, fecha);
+  btnCargarRutas.addEventListener("click", () => {
+    const fecha = selectFecha.value;
+    if (!naveganteSeleccionadoId || !fecha) return;
+    cargarRecorridos(naveganteSeleccionadoId, fecha);
   });
 
   selectRecorrido.addEventListener("change", () => {
@@ -185,7 +199,7 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
     if (recorridoId) cargarRutaPorRecorrido(recorridoId);
   });
 
-  exportBtn.addEventListener("click", () => {
+  btnExportarCSV.addEventListener("click", () => {
     if (datosRuta.length > 0) exportarCSV(datosRuta);
   });
 

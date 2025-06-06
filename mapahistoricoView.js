@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const usuarioId = params.get("usuario");
 
   console.log("usuarioId dentro del script:", usuarioId);
+  window.usuarioId = usuarioId;  // 👈 para poder verlo desde la consola del navegador
 
   if (!usuarioId) {
     alert("Falta el parámetro ?usuario= en la URL.");

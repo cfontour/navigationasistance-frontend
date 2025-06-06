@@ -49,6 +49,22 @@
             opacity: 0.95;
         }
 
+        .panel-controles {
+            background: white;
+            color: black;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 20px;
+            text-align: center;
+        }
+
+        .panel-controles select, .panel-controles button {
+            margin: 5px;
+            padding: 6px 10px;
+            font-size: 14px;
+            border-radius: 6px;
+        }
+
         footer::after {
             content: "GEOTRASER";
             display: block;
@@ -82,6 +98,22 @@
 <div class="coordenadas">
     <span>📍 Latitud: <span id="lat">-</span></span> |
     <span>Longitud: <span id="lon">-</span></span>
+</div>
+
+<div class="panel-controles">
+    <label for="select-fecha">Fecha:</label>
+    <select id="select-fecha">
+        <option value="">-- Seleccionar fecha --</option>
+    </select>
+
+    <button id="btn-cargar-rutas">Cargar Rutas</button>
+
+    <label for="select-recorrido">Recorrido:</label>
+    <select id="select-recorrido">
+        <option value="">-- Seleccionar ruta --</option>
+    </select>
+
+    <button id="btn-exportar-csv">Exportar CSV</button>
 </div>
 
 <footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">

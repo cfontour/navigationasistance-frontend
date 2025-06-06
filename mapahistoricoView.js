@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   const usuarioId = params.get("usuario");
 
+  console.log("usuarioId dentro del script:", usuarioId);
+
   if (!usuarioId) {
     alert("Falta el parámetro ?usuario= en la URL.");
     return;

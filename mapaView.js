@@ -247,7 +247,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function actualizarNadador() {
     const usuarioid = naveganteSeleccionadoId;
-
     if (!usuarioid) {
       console.error("No se especificó ningún ID de usuario en la URL.");
       return;
@@ -258,8 +257,28 @@ document.addEventListener("DOMContentLoaded", () => {
       const nadadores = await res.json();
 
       const nadador = nadadores.find(n => n.usuarioid === usuarioid);
+
+      // 👇 Si ya no está activo, limpiamos todo
       if (!nadador) {
-        console.warn("El usuario especificado no se encuentra activo:", usuarioid);
+        console.warn("El usuario ya no está activo:", usuarioid);
+
+        if (swimmerMarkers.has(usuarioid)) {
+          map.removeLayer(swimmerMarkers.get(usuarioid));
+          swimmerMarkers.delete(usuarioid);
+        }
+
+        if (rutaHistorial.has(usuarioid)) {
+          rutaHistorial.get(usuarioid).forEach(p => map.removeLayer(p));
+          rutaHistorial.delete(usuarioid);
+        }
+
+        if (marcadorInicio) {
+          map.removeLayer(marcadorInicio);
+          marcadorInicio = null;
+        }
+
+        latElem.textContent = "--";
+        lonElem.textContent = "--";
         return;
       }
 
@@ -332,12 +351,10 @@ document.addEventListener("DOMContentLoaded", () => {
         swimmerMarkers.set(usuarioid, marker);
       }
 
-      // Actualizar posición del mapa
       if (!trazaActiva) {
         map.setView(position, 15);
       }
 
-      // Si traza activa, dibujar punto
       if (trazaActiva) {
         if (!rutaHistorial.has(usuarioid)) rutaHistorial.set(usuarioid, []);
         const puntos = rutaHistorial.get(usuarioid);
@@ -360,32 +377,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Mostrar coordenadas en pantalla
       latElem.textContent = lat.toFixed(5);
       lonElem.textContent = lng.toFixed(5);
-
-      // 👇 Esto es al final de actualizarNadador()
-      const sigueActivo = nadadores.some(n => n.usuarioid === usuarioid);
-      if (!sigueActivo) {
-        if (swimmerMarkers.has(usuarioid)) {
-          map.removeLayer(swimmerMarkers.get(usuarioid));
-          swimmerMarkers.delete(usuarioid);
-        }
-
-        if (rutaHistorial.has(usuarioid)) {
-          rutaHistorial.get(usuarioid).forEach(p => map.removeLayer(p));
-          rutaHistorial.delete(usuarioid);
-        }
-
-        if (marcadorInicio) {
-          map.removeLayer(marcadorInicio);
-          marcadorInicio = null;
-        }
-
-        console.warn("El usuario especificado ya no está activo:", usuarioid);
-        return;
-      }
-
 
     } catch (err) {
       console.error("Error al actualizar nadador:", err);

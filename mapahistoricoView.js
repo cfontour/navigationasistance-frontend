@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.removeChild(link);
   }
 
-  async function (usuarioId, fecha) {
+  async function cargarRecorridos (usuarioId, fecha) {
     selectRecorrido.innerHTML = '<option value="">-- Seleccionar recorrido --</option>';
     const url = `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/recorridos/${usuarioId}/${fecha}`;
     const res = await fetch(url);
@@ -191,6 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (datosRuta.length > 0) exportarCSV(datosRuta);
   });
 
-  cargarRecorridos(usuarioId);
+  //cargarRecorridos(usuarioId);
   //cargarUsuarios();
 });

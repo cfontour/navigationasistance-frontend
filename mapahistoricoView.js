@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("Falta el parámetro ?usuario= en la URL.");
     return;
   }
-  const inputFecha = document.getElementById("select-fecha");
+  const inputFecha = document.getElementById("fecha");
   const selectRecorrido = document.getElementById("select-recorrido");
   const exportBtn = document.getElementById("btn-exportar-csv");
   const map = L.map("map").setView([0, 0], 2);
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.removeChild(link);
   }
 
-  async function cargarRecorridos(usuarioId, fecha) {
+  async function (usuarioId, fecha) {
     selectRecorrido.innerHTML = '<option value="">-- Seleccionar recorrido --</option>';
     const url = `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/recorridos/${usuarioId}/${fecha}`;
     const res = await fetch(url);
@@ -177,7 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("btn-cargar-rutas").addEventListener("click", () => {
-
     const fecha = inputFecha.value;
     if (!usuarioId || !fecha) return;
     cargarRecorridos(usuarioId, fecha);
@@ -192,6 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (datosRuta.length > 0) exportarCSV(datosRuta);
   });
 
-  cargarFechas(usuarioId);
+  cargarRecorridos(usuarioId);
   //cargarUsuarios();
 });

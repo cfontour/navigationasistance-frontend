@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     mostrarGrafico(datosRuta);
   }
 
-  document.getElementById("btn-cargar").addEventListener("click", () => {
+  document.getElementById("btn-cargar-rutas").addEventListener("click", () => {
     const fecha = inputFecha.value;
     if (!usuarioId || !fecha) return;
     cargarRecorridos(usuarioId, fecha);

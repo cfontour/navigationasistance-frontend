@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Mapa de Rutas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+    <!-- Controlador -->
+    <style>
+        #map { height: 90vh; }
+        .controls { padding: 10px; background: white; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <label for="color">Color de la Ruta:</label>
+    <select id="color">
+        <option value="red">Rojo</option>
+        <option value="blue">Azul</option>
+        <option value="green">Verde</option>
+        <option value="orange">Naranja</option>
+        <option value="purple">Violeta</option>
+        <option value="brown">Marrón</option>
+        <option value="black">Negro</option>
+        <option value="pink">Rosa</option>
+        <option value="gray">Gris</option>
+        <option value="cyan">Cian</option>
+    </select>
+
+    <button onclick="confirmarRuta()">Confirmar Ruta</button>
+    <button onclick="finalizar()">Finalizar</button>
+</div>
+
+<div id="map"></div>
+
+<script src="maparutas.js"></script>
+
+</body>
+</html>

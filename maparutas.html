@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
-    <title>Mapa de Rutas</title>
+    <title>Navigation Assitance - Mapa de Rutas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Leaflet -->
@@ -11,11 +11,60 @@
 
     <!-- Controlador -->
     <style>
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 1rem;
+            font-family: Arial, sans-serif;
+            background-image: url('img/fondo-navigationasistance.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 1rem;
+            text-shadow: 1px 1px 2px black;
+        }
+
         #map { height: 90vh; }
         .controls { padding: 10px; background: white; }
+
+        .info-box {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        footer img {
+            max-width: 300px;
+            opacity: 0.95;
+        }
+
+        footer::after {
+            content: "GEOTRASER";
+            display: block;
+            margin-top: 0.5rem;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
     </style>
+
 </head>
 <body>
+<h1>🧭 Visualización de Rutas en Tiempo Real - Carreras de Aventura</h1>
 
 <div class="controls">
     <label for="color">Color de la Ruta:</label>
@@ -37,6 +86,10 @@
 </div>
 
 <div id="map"></div>
+
+<footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">
+    <img src="img/logo-geotraser-marine.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
+</footer>
 
 <script src="maparutas.js"></script>
 

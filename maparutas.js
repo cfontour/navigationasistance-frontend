@@ -45,7 +45,7 @@
       const color = document.getElementById("color").value;
 
       // Paso 1: enviar la ruta base
-      fetch('https://tu-backend.com/rutas/agregar', {
+      fetch('https://navigationasistance-backend-1.onrender.com/rutas/agregar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ color })
@@ -56,7 +56,7 @@
 
         // Paso 2: enviar puntos
         puntosActuales.forEach(p => {
-          fetch('https://tu-backend.com/rutaspuntos/agregar', {
+          fetch('https://navigationasistance-backend-1.onrender.com/rutaspuntos/agregar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

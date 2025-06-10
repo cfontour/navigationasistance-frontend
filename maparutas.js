@@ -82,7 +82,7 @@ function confirmarRuta() {
     return Promise.all(
       puntosActuales.map(p => {
         const body = {
-          ruta: { id: rutaId },
+          rutaId: rutaId,       // ✅ Correcto
           secuencia: p.secuencia,
           latitud: p.latitud,
           longitud: p.longitud

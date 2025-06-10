@@ -11,10 +11,6 @@
     let lineaActual = null;
     let secuencia = 1;
 
-    marker.on('mouseup touchend', function () {
-      clearTimeout(pressTimer);
-    });
-
     map.on('click', function (e) {
       const color = document.getElementById("color").value;
 
@@ -40,6 +36,10 @@
         pressTimer = setTimeout(() => {
           eliminarPunto(punto);
         }, 2000); // 2 segundos
+      });
+
+      marker.on('mouseup touchend', function () {
+        clearTimeout(pressTimer);
       });
 
       puntosActuales.push(punto)

@@ -85,25 +85,30 @@ function confirmarRuta() {
             latitud: p.latitud,
             longitud: p.longitud
           })
-        }).then(res => {
+        })
+        .then(res => {
           if (!res.ok) {
-            throw new Error("Error al guardar punto");
+            return res.text().then(text => {
+              throw new Error(`Error al guardar punto ${p.secuencia}: ${text}`);
+            });
           }
           return res.json();
-        }).then(data => {
+        })
+        .then(data => {
           p.id = data.id;
         })
       )
-    ).then(() => {
-      rutasConfirmadas.push({
-        rutaId: rutaId,
-        color: color,
-        puntos: [...puntosActuales]
-      });
-
-      alert("Ruta confirmada");
-      limpiarRutaActual();
+    );
+  })
+  .then(() => {
+    rutasConfirmadas.push({
+      rutaId: rutasConfirmadas.length + 1,
+      color: document.getElementById("color").value,
+      puntos: [...puntosActuales]
     });
+
+    alert("Ruta confirmada");
+    limpiarRutaActual();
   })
   .catch(err => {
     alert("Error al guardar: " + err.message);

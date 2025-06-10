@@ -20,7 +20,7 @@
         fillOpacity: 0.9
       }).addTo(map);
 
-      marker.bindTooltip("Punto " + secuencia).openTooltip();
+      marker.bindTooltip("Punto " + secuencia);
 
       // Asociamos este punto al marcador
       const punto = {
@@ -81,11 +81,10 @@
               latitud: p.latitud,
               longitud: p.longitud
             })
-          }).then(res => {
-            if (!res.ok) {
-              throw new Error(`Error en punto ${p.secuencia}`);
-            }
-          })
+          }).then(res => res.json())
+            .then(data => {
+              p.id = data.id; // ✅ ahora sí seteamos el id real
+            })
         ))
         .then(() => {
           rutasConfirmadas.push({
@@ -95,8 +94,9 @@
           });
 
           alert("Ruta confirmada");
-          //limpiarRutaActual();
+          limpiarRutaActual();
         })
+
         .catch(err => alert("Error al guardar puntos: " + err));
 
         // Guardar ruta localmente para mostrar al final

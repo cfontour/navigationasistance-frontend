@@ -75,16 +75,30 @@ function confirmarRuta() {
     const rutaId = rutaCreada.id;
 
     return Promise.all(
-      puntosActuales.map(p =>
-        fetch('https://navigationasistance-backend-1.onrender.com/rutaspuntos/agregar', {
+      puntosActuales.map(p => {
+        const body = {
+          ruta: { id: rutaId },
+          secuencia: p.secuencia,
+          latitud: p.latitud,
+          longitud: p.longitud
+        };
+
+        console.log("Enviando punto al backend:", JSON.stringify(body));
+
+        if (
+          typeof body.ruta.id !== "number" ||
+          typeof body.secuencia !== "number" ||
+          typeof body.latitud !== "number" ||
+          typeof body.longitud !== "number"
+        ) {
+          console.error("💥 ERROR: cuerpo con tipos inválidos:", body);
+          throw new Error("Se detectaron valores inválidos en punto. Abortando.");
+        }
+
+        return fetch('https://navigationasistance-backend-1.onrender.com/rutaspuntos/agregar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ruta: { id: rutaId },
-            secuencia: p.secuencia,
-            latitud: p.latitud,
-            longitud: p.longitud
-          })
+          body: JSON.stringify(body)
         })
         .then(res => {
           if (!res.ok) {
@@ -96,9 +110,10 @@ function confirmarRuta() {
         })
         .then(data => {
           p.id = data.id;
-        })
-      )
+        });
+      })
     );
+
   })
   .then(() => {
     rutasConfirmadas.push({

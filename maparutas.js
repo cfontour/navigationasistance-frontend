@@ -1,160 +1,154 @@
+let map = L.map('map').setView([-34.9, -56.2], 13); // Coordenadas de Uruguay por defecto
 
-    let map = L.map('map').setView([-34.9, -56.2], 13); // Coordenadas de Uruguay por defecto
+L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+  subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+  maxZoom: 20,
+}).addTo(map);
 
-    L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-      maxZoom: 20,
-    }).addTo(map);
+let rutasConfirmadas = []; // Acumula rutas confirmadas
+let puntosActuales = [];
+let lineaActual = null;
+let secuencia = 1;
 
-    let rutasConfirmadas = []; // Acumula rutas confirmadas
-    let puntosActuales = [];
-    let lineaActual = null;
-    let secuencia = 1;
+map.on('click', function (e) {
+  const color = document.getElementById("color").value;
 
-    map.on('click', function (e) {
-      const color = document.getElementById("color").value;
+  const marker = L.circleMarker(e.latlng, {
+    radius: 6,
+    color: color,
+    fillOpacity: 0.9
+  }).addTo(map);
 
-      const marker = L.circleMarker(e.latlng, {
-        radius: 6,
-        color: color,
-        fillOpacity: 0.9
-      }).addTo(map);
+  marker.bindTooltip("Punto " + secuencia).openTooltip();
+  setTimeout(() => marker.closeTooltip(), 1000);
 
-      marker.bindTooltip("Punto " + secuencia);
+  // Asociamos este punto al marcador
+  const punto = {
+    secuencia: secuencia++,
+    latitud: e.latlng.lat,
+    longitud: e.latlng.lng,
+    marker: marker // vinculamos el objeto Leaflet
+  };
 
-      // Asociamos este punto al marcador
-      const punto = {
-        secuencia: secuencia++,
-        latitud: e.latlng.lat,
-        longitud: e.latlng.lng,
-        marker: marker // vinculamos el objeto Leaflet
-      };
+  let pressTimer;
 
-      let pressTimer;
+  marker.on('mousedown touchstart', function () {
+    pressTimer = setTimeout(() => {
+      eliminarPunto(punto);
+    }, 2000); // 2 segundos
+  });
 
-      marker.on('mousedown touchstart', function () {
-        pressTimer = setTimeout(() => {
-          eliminarPunto(punto);
-        }, 2000); // 2 segundos
-      });
+  marker.on('mouseup touchend', function () {
+    clearTimeout(pressTimer);
+  });
 
-      marker.on('mouseup touchend', function () {
-        clearTimeout(pressTimer);
-      });
+  puntosActuales.push(punto);
 
-      puntosActuales.push(punto)
+  // Dibujar línea actual
+  if (lineaActual) {
+    map.removeLayer(lineaActual);
+  }
+  const latlngs = puntosActuales.map(p => [p.latitud, p.longitud]);
+  lineaActual = L.polyline(latlngs, { color: color }).addTo(map);
+});
 
-      // Dibujar línea actual
-      if (lineaActual) {
-        map.removeLayer(lineaActual);
-      }
-      const latlngs = puntosActuales.map(p => [p.latitud, p.longitud]);
-      lineaActual = L.polyline(latlngs, { color: color }).addTo(map);
-    });
+function confirmarRuta() {
+  if (puntosActuales.length < 2) {
+    alert("Debe haber al menos 2 puntos para guardar una ruta.");
+    return;
+  }
 
-    function confirmarRuta() {
-      if (puntosActuales.length < 2) {
-        alert("Debe haber al menos 2 puntos para guardar una ruta.");
-        return;
-      }
+  const color = document.getElementById("color").value;
 
-      const color = document.getElementById("color").value;
+  fetch('https://navigationasistance-backend-1.onrender.com/rutas/agregar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ color })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error("Error al guardar la ruta");
+    }
+    return response.json();
+  })
+  .then(rutaCreada => {
+    const rutaId = rutaCreada.id;
 
-      // Paso 1: enviar la ruta base
-      fetch('https://navigationasistance-backend-1.onrender.com/rutas/agregar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ color })
-      })
-      .then(response => response.json())
-      .then(rutaCreada => {
-        const rutaId = rutaCreada.id;
-
-        // Paso 2: enviar puntos
-        Promise.all(puntosActuales.map(p =>
-          fetch('https://navigationasistance-backend-1.onrender.com/rutaspuntos/agregar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              ruta: { id: rutaId },
-              secuencia: p.secuencia,
-              latitud: p.latitud,
-              longitud: p.longitud
-            })
-          }).then(res => res.json())
-            .then(data => {
-              p.id = data.id; // ✅ ahora sí seteamos el id real
-            })
-        ))
-        .then(() => {
-          rutasConfirmadas.push({
-            rutaId: rutaId,
-            color: color,
-            puntos: [...puntosActuales]
-          });
-
-          alert("Ruta confirmada");
-          limpiarRutaActual();
+    return Promise.all(
+      puntosActuales.map(p =>
+        fetch('https://navigationasistance-backend-1.onrender.com/rutaspuntos/agregar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ruta: { id: rutaId },
+            secuencia: p.secuencia,
+            latitud: p.latitud,
+            longitud: p.longitud
+          })
+        }).then(res => {
+          if (!res.ok) {
+            throw new Error("Error al guardar punto");
+          }
+          return res.json();
+        }).then(data => {
+          p.id = data.id;
         })
-
-        .catch(err => alert("Error al guardar puntos: " + err));
-
-        // Guardar ruta localmente para mostrar al final
-        rutasConfirmadas.push({
-          rutaId: rutaId,
-          color: color,
-          puntos: [...puntosActuales]
-        });
-
-        alert("Ruta confirmada");
-        limpiarRutaActual();
-      })
-      .catch(err => alert("Error al guardar la ruta: " + err));
-    }
-
-    function limpiarRutaActual() {
-      puntosActuales = [];
-      secuencia = 1;
-      if (lineaActual) {
-        map.removeLayer(lineaActual);
-        lineaActual = null;
-      }
-    }
-
-    function eliminarPunto(punto) {
-      if (punto.marker) {
-        map.removeLayer(punto.marker);
-      }
-
-      // Eliminar de la lista de puntos
-      puntosActuales = puntosActuales.filter(p => p !== punto);
-
-      // Recalcular línea
-      if (lineaActual) {
-        map.removeLayer(lineaActual);
-      }
-      const latlngs = puntosActuales.map(p => [p.latitud, p.longitud]);
-      if (latlngs.length > 1) {
-        lineaActual = L.polyline(latlngs, { color: document.getElementById("color").value }).addTo(map);
-      }
-
-      // Si ya fue guardado en backend, eliminarlo también
-      if (punto.id) {
-        fetch(`https://navigationasistance-backend-1.onrender.com/rutaspuntos/eliminar/${punto.id}`, {
-          method: 'DELETE'
-        }).then(() => {
-          console.log("Punto eliminado del backend:", punto.id);
-        }).catch(err => {
-          alert("Error al eliminar el punto: " + err);
-        });
-      }
-    }
-
-    function finalizar() {
-      // Mostrar todas las rutas dibujadas
-      rutasConfirmadas.forEach(r => {
-        const latlngs = r.puntos.map(p => [p.latitud, p.longitud]);
-        L.polyline(latlngs, { color: r.color }).addTo(map);
+      )
+    ).then(() => {
+      rutasConfirmadas.push({
+        rutaId: rutaId,
+        color: color,
+        puntos: [...puntosActuales]
       });
-      alert("Todas las rutas han sido visualizadas.");
-    }
+
+      alert("Ruta confirmada");
+      limpiarRutaActual();
+    });
+  })
+  .catch(err => {
+    alert("Error al guardar: " + err.message);
+  });
+}
+
+function limpiarRutaActual() {
+  puntosActuales = [];
+  secuencia = 1;
+  if (lineaActual) {
+    map.removeLayer(lineaActual);
+    lineaActual = null;
+  }
+}
+
+function eliminarPunto(punto) {
+  if (punto.marker) {
+    map.removeLayer(punto.marker);
+  }
+
+  puntosActuales = puntosActuales.filter(p => p !== punto);
+
+  if (lineaActual) {
+    map.removeLayer(lineaActual);
+  }
+  const latlngs = puntosActuales.map(p => [p.latitud, p.longitud]);
+  if (latlngs.length > 1) {
+    lineaActual = L.polyline(latlngs, { color: document.getElementById("color").value }).addTo(map);
+  }
+
+  if (punto.id) {
+    fetch(`https://navigationasistance-backend-1.onrender.com/rutaspuntos/eliminar/${punto.id}`, {
+      method: 'DELETE'
+    }).then(() => {
+      console.log("Punto eliminado del backend:", punto.id);
+    }).catch(err => {
+      alert("Error al eliminar el punto: " + err);
+    });
+  }
+}
+
+function finalizar() {
+  rutasConfirmadas.forEach(r => {
+    const latlngs = r.puntos.map(p => [p.latitud, p.longitud]);
+    L.polyline(latlngs, { color: r.color }).addTo(map);
+  });
+  alert("Todas las rutas han sido visualizadas.");
+}

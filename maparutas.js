@@ -66,39 +66,25 @@ function confirmarRuta() {
     body: JSON.stringify({ color })
   })
   .then(response => {
-    if (!response.ok) {
-      throw new Error("Error al guardar la ruta");
-    }
-    return response.json();
+    if (!response.ok) throw new Error("Error al guardar la ruta");
+    return response.text(); // <-- usamos text()
   })
-  .then(rutaCreada => {
-    console.log("📦 Respuesta de rutaCreada:", rutaCreada);
-    const rutaId = rutaCreada?.id || rutaCreada?.data?.id || Number(rutaCreada);
+  .then(text => {
+    console.log("📦 Respuesta de rutaCreada (texto):", text);
+    const rutaId = parseInt(text.trim(), 10);
 
-    if (!rutaId) {
-      throw new Error("No se pudo obtener el ID de la ruta creada.");
-    }
+    if (isNaN(rutaId)) throw new Error("ID inválido de la ruta creada.");
 
     return Promise.all(
       puntosActuales.map(p => {
         const body = {
-          rutaId: rutaId,       // ✅ Correcto
+          ruta: { id: rutaId }, // Se mantiene estructura esperada por backend
           secuencia: p.secuencia,
           latitud: p.latitud,
           longitud: p.longitud
         };
 
         console.log("Enviando punto al backend:", JSON.stringify(body));
-
-        if (
-          typeof body.ruta.id !== "number" ||
-          typeof body.secuencia !== "number" ||
-          typeof body.latitud !== "number" ||
-          typeof body.longitud !== "number"
-        ) {
-          console.error("💥 ERROR: cuerpo con tipos inválidos:", body);
-          throw new Error("Se detectaron valores inválidos en punto. Abortando.");
-        }
 
         return fetch('https://navigationasistance-backend-1.onrender.com/rutaspuntos/agregar', {
           method: 'POST',
@@ -123,7 +109,7 @@ function confirmarRuta() {
   .then(() => {
     rutasConfirmadas.push({
       rutaId: rutasConfirmadas.length + 1,
-      color: document.getElementById("color").value,
+      color: color,
       puntos: [...puntosActuales]
     });
 

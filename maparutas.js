@@ -72,7 +72,12 @@ function confirmarRuta() {
     return response.json();
   })
   .then(rutaCreada => {
-    const rutaId = rutaCreada.id;
+    console.log("📦 Respuesta de rutaCreada:", rutaCreada);
+    const rutaId = rutaCreada?.id || rutaCreada?.data?.id || Number(rutaCreada);
+
+    if (!rutaId) {
+      throw new Error("No se pudo obtener el ID de la ruta creada.");
+    }
 
     return Promise.all(
       puntosActuales.map(p => {

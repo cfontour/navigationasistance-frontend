@@ -11,14 +11,6 @@
     let lineaActual = null;
     let secuencia = 1;
 
-    let pressTimer;
-
-    marker.on('mousedown touchstart', function () {
-      pressTimer = setTimeout(() => {
-        eliminarPunto(punto);
-      }, 2000); // 2 segundos
-    });
-
     marker.on('mouseup touchend', function () {
       clearTimeout(pressTimer);
     });
@@ -41,6 +33,14 @@
         longitud: e.latlng.lng,
         marker: marker // vinculamos el objeto Leaflet
       };
+
+      let pressTimer;
+
+      marker.on('mousedown touchstart', function () {
+        pressTimer = setTimeout(() => {
+          eliminarPunto(punto);
+        }, 2000); // 2 segundos
+      });
 
       puntosActuales.push(punto)
 

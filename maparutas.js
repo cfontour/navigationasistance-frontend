@@ -69,7 +69,11 @@ function confirmarRuta() {
   })
   .then(text => {
     const rutaId = parseInt(text.trim(), 10);
+    console.log("ID generado por backend:", rutaId); // 👈 Verificá esto
+
     if (isNaN(rutaId)) throw new Error("ID inválido de la ruta creada.");
+
+    document.getElementById("ruta-id-confirmada").innerText = `Ruta confirmada con ID: ${rutaId}`;
 
     const puntosParaEnviar = puntosActuales.map(p => ({
       ruta: { id: rutaId },

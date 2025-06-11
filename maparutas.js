@@ -68,26 +68,30 @@ function confirmarRuta() {
     return response.text();
   })
   .then(text => {
-    console.log("📦 Respuesta de rutaCreada (texto):", text);
     const rutaId = parseInt(text.trim(), 10);
-
     if (isNaN(rutaId)) throw new Error("ID inválido de la ruta creada.");
 
-    const cuerpoMasivo = puntosActuales.map(p => ({
+    const puntosParaEnviar = puntosActuales.map(p => ({
       ruta: { id: rutaId },
       secuencia: p.secuencia,
       latitud: p.latitud,
       longitud: p.longitud
     }));
 
+    console.log("JSON final a enviar:", JSON.stringify(puntosParaEnviar)); // 👈 console.log agregado
+
     return fetch('https://navigationasistance-backend-1.onrender.com/rutaspuntos/agregar-masivo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(cuerpoMasivo)
+      body: JSON.stringify(puntosParaEnviar)
     });
   })
   .then(res => {
-    if (!res.ok) return res.text().then(t => { throw new Error("Error en carga masiva de puntos: " + t); });
+    if (!res.ok) {
+      return res.text().then(text => {
+        throw new Error(`Error en carga masiva de puntos: ${text}`);
+      });
+    }
     return res.json();
   })
   .then(() => {
@@ -104,6 +108,7 @@ function confirmarRuta() {
     alert("Error al guardar: " + err.message);
   });
 }
+
 
 function limpiarRutaActual() {
   puntosActuales = [];

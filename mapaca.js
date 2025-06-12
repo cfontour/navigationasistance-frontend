@@ -76,19 +76,28 @@ async function cargarNavegantesVinculados() {
     console.log("🔍 Respuesta de nadadores:", nadadores); // 👈 clave para entender el error
 
     nadadores.forEach(n => {
-      const latlng = [parseFloat(n.latitud), parseFloat(n.longitud)];
-      const marcador = L.circleMarker([n.latitud, n.longitud], {
+      const lat = parseFloat(n.nadadorlat);
+      const lng = parseFloat(n.nadadorlng);
+
+      // ⚠️ Verificar que sean coordenadas numéricas válidas
+      if (isNaN(lat) || isNaN(lng)) {
+        console.warn(`❌ Coordenadas inválidas para usuario ${n.usuarioid}:`, n);
+        return; // salta al siguiente
+      }
+
+      const marcador = L.circleMarker([lat, lng], {
         radius: 8,
-        fillColor: "deeppink",
-        color: "magenta",
+        fillColor: "magenta",
+        color: "black",
         weight: 1,
         opacity: 1,
-        fillOpacity: 0.8
-      })
-        .addTo(map)
-        .bindPopup(`🧍 Usuario: ${n.usuarioId}<br>⏱ ${n.fechaHora}`);
+        fillOpacity: 0.9
+      }).addTo(map)
+        .bindPopup(`🧍 Usuario: ${n.usuarioid}<br>🕓 ${n.fechaUltimaActualizacion}`);
+
       marcadores.push(marcador);
     });
+
   } catch (error) {
     console.error("Error al cargar nadadores vinculados:", error);
   }

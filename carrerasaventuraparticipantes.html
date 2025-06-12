@@ -31,47 +31,62 @@
           text-align: left;
         }
         th {
-         background-color: #eee;
+          background-color: #eee;
+        }
+        .section-box {
+          background-color: rgba(255, 255, 255, 0.95);
+          padding: 2rem;
+          border-radius: 10px;
+          box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+          margin: 2rem;
         }
     </style>
 </head>
 <body id="page-top" style="background-image: url('img/fondo-navigationasistance.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
-<h1>🧭 Participantes Carreras de Aventura</h1>
-<h2>Gestión de Participantes - Carrera de Aventuras</h2>
+
 <section class="section">
-    <h1 class="title has-text-centered">Participantes - Carrera de Aventura</h1>
+    <div class="section-box">
+        <h1 class="title is-3 has-text-centered">🧭 Participantes Carreras de Aventura</h1>
+        <h2 class="subtitle is-4 has-text-centered">Gestión de Participantes - Carrera de Aventuras</h2>
 
-    <div class="dual-list">
-        <div>
-            <h2 class="subtitle">USUARIOS</h2>
-            <select id="usuariosDisponibles" multiple></select>
-        </div>
+        <h1 class="title has-text-centered">Participantes - Carrera de Aventura</h1>
 
-        <div class="buttons">
-            <button onclick="asignarUsuario()">➤</button>
-            <button onclick="quitarUsuario()">⬅</button>
-        </div>
+        <div class="dual-list">
+            <div>
+                <h2 class="subtitle">USUARIOS</h2>
+                <select id="usuariosDisponibles" multiple></select>
+            </div>
 
-        <div>
-            <h2 class="subtitle">COMPETIDORES CARRERA DE AVENTURAS</h2>
-            <select id="usuariosAsignados" multiple disabled></select>
+            <div class="buttons">
+                <button onclick="asignarUsuario()">➤</button>
+                <button onclick="quitarUsuario()">⬅</button>
+            </div>
+
+            <div>
+                <h2 class="subtitle">COMPETIDORES CARRERA DE AVENTURAS</h2>
+                <select id="usuariosAsignados" multiple disabled></select>
+            </div>
         </div>
     </div>
+</section>
 
-    <div class="table-container">
-        <h3>Listado de Participantes Registrados</h3>
-        <table id="tablaParticipantes">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Mail</th>
-                <th>Teléfono</th>
-            </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+<section class="section">
+    <div class="section-box">
+        <h3 class="title is-4 has-text-centered">Listado de Participantes Registrados</h3>
+        <div class="table-container">
+            <table id="tablaParticipantes">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Mail</th>
+                    <th>Teléfono</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </section>
 

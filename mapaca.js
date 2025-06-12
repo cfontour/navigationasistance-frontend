@@ -73,7 +73,10 @@ async function cargarNavegantesVinculados() {
     marcadores.forEach(m => map.removeLayer(m));
     marcadores = [];
 
+    console.log("🔍 Respuesta de nadadores:", nadadores); // 👈 clave para entender el error
+
     nadadores.forEach(n => {
+      const latlng = [parseFloat(n.latitud), parseFloat(n.longitud)];
       const marcador = L.circleMarker([n.latitud, n.longitud], {
         radius: 8,
         fillColor: "deeppink",

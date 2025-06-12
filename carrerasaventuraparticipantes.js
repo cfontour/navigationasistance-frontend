@@ -1,5 +1,6 @@
 let usuarios = [];
 let rutaIdGlobal = null;
+let asignaciones = []; // guarda usuarioId → nadadorRutaId
 
 async function obtenerRutaIdPorNombre(nombreRuta = "JACKSONVILLE") {
   const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar");
@@ -77,18 +78,24 @@ function quitarUsuario() {
   const destino = document.getElementById("usuariosAsignados");
 
   Array.from(destino.selectedOptions).forEach(async opt => {
-    const id = parseInt(opt.value);
+    const usuarioId = opt.value;
+    const match = asignaciones.find(a => a.usuarioId === usuarioId);
+
+    if (!match) {
+      console.warn("No se encontró asignación para usuarioId:", usuarioId);
+      return;
+    }
 
     try {
-      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorrutas/eliminar/${id}`, {
+      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorrutas/eliminar/${match.nadadorRutaId}`, {
         method: "DELETE"
       });
 
       if (res.ok) {
         opt.remove();
-        cargarParticipantes(); // Actualiza la tabla
+        cargarParticipantes(); // refresca
       } else {
-        console.warn(`❌ No se pudo eliminar el usuario con ID ${id}`);
+        console.warn(`❌ No se pudo eliminar nadadorrutaId ${match.nadadorRutaId}`);
       }
     } catch (err) {
       console.error("Error al eliminar:", err);
@@ -96,11 +103,11 @@ function quitarUsuario() {
   });
 }
 
-
 async function cargarParticipantes() {
   const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
   const participantes = await res.json();
   const tbody = document.querySelector("#tablaParticipantes tbody");
+  if (!tbody) return;
   tbody.innerHTML = "";
 
   participantes.forEach(p => {
@@ -108,10 +115,10 @@ async function cargarParticipantes() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${p.id}</td>
-      <td>${u.nombre}</td>
-      <td>${u.apellido}</td>
-      <td>${u.mail}</td>
-      <td>${u.telefono}</td>
+      <td>${u.nombre || "-"}</td>
+      <td>${u.apellido || "-"}</td>
+      <td>${u.mail || "-"}</td>
+      <td>${u.telefono || "-"}</td>
     `;
     tbody.appendChild(tr);
   });

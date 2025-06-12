@@ -15,7 +15,7 @@ async function procesarCarga() {
   let idRuta;
 
   try {
-    const resRuta = await fetch("https://tu-backend.com/rutas/agregar", {
+    const resRuta = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/agregar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(rutaPayload)
@@ -48,7 +48,7 @@ async function procesarCarga() {
 
     // Paso 3: Enviar puntos al backend
     try {
-      const resPuntos = await fetch("https://tu-backend.com/rutaspuntos/agregar-masivo", {
+      const resPuntos = await fetch("https://navigationasistance-backend-1.onrender.com/rutaspuntos/agregar-masivo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(puntos)

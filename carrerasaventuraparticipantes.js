@@ -37,35 +37,35 @@ function asignarUsuario() {
   }
 
   Array.from(origen.selectedOptions).forEach(async opt => {
-    // Verifica que no esté ya asignado
-    if ([...destino.options].some(o => o.value === opt.value)) return;
+    const usuarioId = opt.value;  // ✅ Definimos acá
 
-    // Enviar POST
+    // Verifica que no esté ya asignado
+    if ([...destino.options].some(o => o.value === usuarioId)) return;
+
     try {
       const body = {
         usuarioId: usuarioId,
         rutaId: rutaIdGlobal
       };
 
-      // 🟡 LOG #2: Body del POST
+      // 🟡 LOG: cuerpo del POST
       console.log("🟡 Preparando body para POST /nadadorrutas/agregar:");
       console.log(JSON.stringify(body, null, 2));
-      
+
       const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/agregar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuario: { id: parseInt(opt.value) } })
+        body: JSON.stringify(body)
       });
 
       if (res.ok) {
         const nuevo = opt.cloneNode(true);
         destino.appendChild(nuevo);
         opt.selected = false;
-        cargarParticipantes(); // actualizar tabla
+        cargarParticipantes();
       } else {
         const err = await res.text();
-        console.warn("Error en la respuesta:", err);
-        alert("Error al asignar participante.");
+        console.warn("❌ Error en la respuesta del POST:", err);
       }
     } catch (e) {
       console.error("Error POST:", e);

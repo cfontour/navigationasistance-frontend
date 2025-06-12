@@ -11,6 +11,8 @@ const iconoInicio = L.icon({ iconUrl: 'img/start_flag.png', iconSize: [32, 32] }
 const iconoIntermedio = L.icon({ iconUrl: 'img/white_flag.png', iconSize: [24, 24] });
 const iconoFinal = L.icon({ iconUrl: 'img/finish_flag.png', iconSize: [32, 32] });
 
+let marcadores = []; // ⬅️ Para limpiar luego los círculos de competidores
+
 async function cargarRutas() {
   try {
     const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar");
@@ -20,6 +22,9 @@ async function cargarRutas() {
       // Título destacado
       const titulo = document.createElement("h2");
       titulo.innerText = ruta.nombre;
+      titulo.style.color = "white";
+      titulo.style.fontSize = "1.5em";
+      titulo.style.textShadow = "1px 1px 3px black";
       document.body.insertBefore(titulo, document.getElementById("map"));
 
       const puntos = ruta.puntos;
@@ -58,4 +63,36 @@ async function cargarRutas() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", cargarRutas);
+// ➕ NUEVO: Cargar competidores en tiempo real
+async function cargarNavegantesVinculados() {
+  try {
+    const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/vinculados");
+    const nadadores = await response.json();
+
+    // Limpiar anteriores
+    marcadores.forEach(m => map.removeLayer(m));
+    marcadores = [];
+
+    nadadores.forEach(n => {
+      const marcador = L.circleMarker([n.latitud, n.longitud], {
+        radius: 8,
+        fillColor: "deeppink",
+        color: "magenta",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+      })
+        .addTo(map)
+        .bindPopup(`🧍 Usuario: ${n.usuarioId}<br>⏱ ${n.fechaHora}`);
+      marcadores.push(marcador);
+    });
+  } catch (error) {
+    console.error("Error al cargar nadadores vinculados:", error);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  cargarRutas();
+  cargarNavegantesVinculados();
+  setInterval(cargarNavegantesVinculados, 5000); // Actualiza cada 5s
+});

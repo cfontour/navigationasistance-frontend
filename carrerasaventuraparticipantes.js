@@ -104,13 +104,14 @@ async function cargarParticipantes() {
   tbody.innerHTML = "";
 
   participantes.forEach(p => {
+    const u = p.usuario || {}; // por si viene anidado
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${p.id}</td>
-      <td>${p.nombre}</td>
-      <td>${p.apellido}</td>
-      <td>${p.mail}</td>
-      <td>${p.telefono}</td>
+      <td>${u.nombre}</td>
+      <td>${u.apellido}</td>
+      <td>${u.mail}</td>
+      <td>${u.telefono}</td>
     `;
     tbody.appendChild(tr);
   });

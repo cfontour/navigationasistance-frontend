@@ -127,14 +127,27 @@ async function verificarPuntosDeControl(usuarioId, lat, lng) {
       try {
         const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/agregar", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            nadadorruta: { id: n.id }, // 👈 ID del nadadorruta
+            puntoControl: punto.etiqueta || `Punto ${punto.secuencia}`,
+            fechaHora: new Date().toISOString()
+          })
+        });
+
+        console.log("📤 Intentando enviar:", {
+          nadadorruta: { id: n.id },
+          puntoControl: punto.etiqueta || `Punto ${punto.secuencia}`,
+          fechaHora: new Date().toISOString()
         });
 
         if (res.ok) {
           console.log(`✅ Punto de control registrado: ${payload.puntoControl}`);
         } else {
-          console.warn("❌ Error al registrar punto de control", await res.text());
+          const errBody = await res.json();
+          console.error("❌ Error al registrar punto de control", errBody);
         }
 
       } catch (err) {

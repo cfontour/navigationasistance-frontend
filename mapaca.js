@@ -19,7 +19,7 @@ async function cargarRutas() {
     for (const ruta of rutas) {
       document.getElementById("tituloRuta").innerText = ruta.nombre;
 
-      const resPuntos = await fetch(`https://tu-backend.com/rutaspuntos/listarporruta/${ruta.id}`);
+      const resPuntos = await fetch(`https://navigationasistance-backend-1.onrender.com/rutaspuntos/listarporruta/${ruta.id}`);
       const puntos = await resPuntos.json();
 
       if (!puntos.length) continue;

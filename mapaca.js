@@ -36,8 +36,16 @@ async function cargarRutas() {
       puntos.forEach((p, i) => {
         const latlng = [p.latitud, p.longitud];
         bounds.push(latlng);
-        puntosControl.push({ ...p, lat: p.latitud, lng: p.longitud }); // para uso posterior
 
+        // Guardar este punto como punto de control completo
+        puntosControl.push({
+          latitud: p.latitud,
+          longitud: p.longitud,
+          etiqueta: p.etiqueta || `Punto ${i + 1}`,
+          nadadorruta_id: p.nadadorruta_id // 👈 asegurate que este campo venga en el JSON
+        });
+
+        // Círculo del color de la ruta
         L.circle(latlng, {
           radius: 5,
           color: ruta.color,
@@ -45,6 +53,7 @@ async function cargarRutas() {
           fillOpacity: 1
         }).addTo(map);
 
+        // Ícono correspondiente
         let icon = iconoIntermedio;
         if (i === 0) icon = iconoInicio;
         else if (i === puntos.length - 1) icon = iconoFinal;
@@ -53,6 +62,9 @@ async function cargarRutas() {
           .addTo(map)
           .bindPopup(`<b>${p.etiqueta || `Punto ${i + 1}`}</b><br>Secuencia: ${p.secuencia}`);
       });
+
+      // ✅ AÑADIDO: revisar que los puntos tengan nadadorruta_id
+      console.log("🧭 puntosControl cargados:", puntosControl);
 
       map.fitBounds(bounds);
     });

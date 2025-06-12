@@ -1,58 +1,73 @@
 let usuarios = [];
 
 async function cargarUsuarios() {
-  try {
-    const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuarios/listar");
-    usuarios = await res.json();
+  const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuarios/listar");
+  usuarios = await res.json();
 
-    const lista = document.getElementById("usuariosDisponibles");
-    usuarios.forEach(u => {
-      const option = document.createElement("option");
-      option.value = u.id;
-      option.text = `${u.nombre} ${u.apellido}`;
-      lista.appendChild(option);
-    });
-  } catch (err) {
-    console.error("Error al cargar usuarios:", err);
-  }
+  const lista = document.getElementById("usuariosDisponibles");
+  usuarios.forEach(u => {
+    const opt = document.createElement("option");
+    opt.value = u.id;
+    opt.text = `${u.nombre} ${u.apellido}`;
+    lista.appendChild(opt);
+  });
 }
 
-async function asignarUsuarios() {
-  const select = document.getElementById("usuariosDisponibles");
-  const seleccionados = Array.from(select.selectedOptions);
+function asignarUsuario() {
+  const origen = document.getElementById("usuariosDisponibles");
+  const destino = document.getElementById("usuariosAsignados");
 
-  for (const opt of seleccionados) {
-    const usuarioId = parseInt(opt.value);
-    const usuario = usuarios.find(u => u.id === usuarioId);
-    if (!usuario) continue;
+  Array.from(origen.selectedOptions).forEach(async opt => {
+    // Verifica que no esté ya asignado
+    if ([...destino.options].some(o => o.value === opt.value)) return;
 
+    // Enviar POST
     try {
       const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/agregar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuario: { id: usuarioId } }) // adaptado al backend esperado
+        body: JSON.stringify({ usuario: { id: parseInt(opt.value) } })
       });
 
       if (res.ok) {
-        // Añadir al lado derecho visualmente
-        const listaAsignados = document.getElementById("usuariosAsignados");
-        const nuevo = document.createElement("option");
-        nuevo.text = `${usuario.nombre} ${usuario.apellido}`;
-        listaAsignados.appendChild(nuevo);
+        const nuevo = opt.cloneNode(true);
+        destino.appendChild(nuevo);
+        opt.selected = false;
+        cargarParticipantes(); // actualizar tabla
       } else {
-        console.warn("No se pudo asignar usuario:", usuarioId);
+        alert("Error al asignar participante.");
       }
-
-    } catch (err) {
-      console.error("Error al asignar usuario:", err);
+    } catch (e) {
+      console.error("Error POST:", e);
     }
-  }
+  });
+}
 
-  // Refrescar tabla de participantes
-  cargarParticipantes();
+function quitarUsuario() {
+  const destino = document.getElementById("usuariosAsignados");
+  Array.from(destino.selectedOptions).forEach(opt => opt.remove());
 }
 
 async function cargarParticipantes() {
-  try {
-    const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
-    const participantes = await res
+  const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
+  const participantes = await res.json();
+  const tbody = document.querySelector("#tablaParticipantes tbody");
+  tbody.innerHTML = "";
+
+  participantes.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.id}</td>
+      <td>${p.nombre}</td>
+      <td>${p.apellido}</td>
+      <td>${p.mail}</td>
+      <td>${p.telefono}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  cargarUsuarios();
+  cargarParticipantes();
+});

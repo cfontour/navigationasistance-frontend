@@ -9,9 +9,22 @@
 <body id="page-top" style="background-image: url('img/fondo-navigationasistance.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
 <h1>🧭 Carga de Puntos de rutas - Carreras de Aventura</h1>
 
-<input type="file" id="excelFile" accept=".xlsx" />
-<button onclick="procesarArchivo()">Cargar Puntos</button>
+<label for="nombreRuta">Nombre de la Ruta:</label>
+<input type="text" id="nombreRuta" required><br><br>
 
+<label for="colorRuta">Color:</label>
+<select id="colorRuta">
+    <option value="#FF0000">Rojo</option>
+    <option value="#FFFF00">Amarillo</option>
+    <option value="#0000FF">Azul</option>
+    <option value="#00FFFF">Cyan</option>
+    <option value="#FFC0CB">Pink</option>
+</select><br><br>
+
+<label for="excelFile">Seleccionar archivo Excel (.xlsx):</label>
+<input type="file" id="excelFile" accept=".xlsx"><br><br>
+
+<button onclick="procesarCarga()">Cargar Ruta</button>
 <div id="resultado"></div>
 
 <footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">

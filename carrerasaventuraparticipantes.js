@@ -1,68 +1,58 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Participantes Carrera de Aventura</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-  <style>
-    .dual-list {
-      display: flex;
-      justify-content: space-around;
-      margin: 20px;
+let usuarios = [];
+
+async function cargarUsuarios() {
+  try {
+    const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuarios/listar");
+    usuarios = await res.json();
+
+    const lista = document.getElementById("usuariosDisponibles");
+    usuarios.forEach(u => {
+      const option = document.createElement("option");
+      option.value = u.id;
+      option.text = `${u.nombre} ${u.apellido}`;
+      lista.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Error al cargar usuarios:", err);
+  }
+}
+
+async function asignarUsuarios() {
+  const select = document.getElementById("usuariosDisponibles");
+  const seleccionados = Array.from(select.selectedOptions);
+
+  for (const opt of seleccionados) {
+    const usuarioId = parseInt(opt.value);
+    const usuario = usuarios.find(u => u.id === usuarioId);
+    if (!usuario) continue;
+
+    try {
+      const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/agregar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuario: { id: usuarioId } }) // adaptado al backend esperado
+      });
+
+      if (res.ok) {
+        // Añadir al lado derecho visualmente
+        const listaAsignados = document.getElementById("usuariosAsignados");
+        const nuevo = document.createElement("option");
+        nuevo.text = `${usuario.nombre} ${usuario.apellido}`;
+        listaAsignados.appendChild(nuevo);
+      } else {
+        console.warn("No se pudo asignar usuario:", usuarioId);
+      }
+
+    } catch (err) {
+      console.error("Error al asignar usuario:", err);
     }
-    select {
-      width: 300px;
-      height: 300px;
-    }
-    .buttons {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 10px;
-    }
-    table {
-      margin: 20px auto;
-      width: 90%;
-    }
-  </style>
-</head>
-<body>
-  <section class="section">
-    <h1 class="title has-text-centered">Participantes - Carrera de Aventura</h1>
+  }
 
-    <div class="dual-list">
-      <div>
-        <h2 class="subtitle">USUARIOS</h2>
-        <select id="usuariosDisponibles" multiple></select>
-      </div>
+  // Refrescar tabla de participantes
+  cargarParticipantes();
+}
 
-      <div class="buttons">
-        <button class="button is-primary" onclick="asignarUsuarios()">➤</button>
-      </div>
-
-      <div>
-        <h2 class="subtitle">COMPETIDORES CARRERA DE AVENTURAS</h2>
-        <select id="usuariosAsignados" multiple disabled></select>
-      </div>
-    </div>
-
-    <div class="table-container">
-      <h2 class="subtitle has-text-centered">Grilla de Participantes</h2>
-      <table class="table is-striped is-fullwidth">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-          </tr>
-        </thead>
-        <tbody id="tablaParticipantes"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <script src="carrerasaventuraparticipantes.js"></script>
-</body>
-</html>
+async function cargarParticipantes() {
+  try {
+    const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
+    const participantes = await res

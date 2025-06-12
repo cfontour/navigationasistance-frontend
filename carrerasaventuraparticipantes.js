@@ -28,45 +28,28 @@ async function cargarUsuarios() {
   });
 }
 
-function asignarUsuario() {
+async function asignarUsuario() {
   const origen = document.getElementById("usuariosDisponibles");
-  const destino = document.getElementById("usuariosAsignados");
-
-  if (!rutaIdGlobal) {
-    alert("No se pudo obtener el ID de la ruta.");
-    return;
-  }
 
   Array.from(origen.selectedOptions).forEach(async opt => {
-    const usuarioId = opt.value;  // ✅ Definimos acá
-
-    // Verifica que no esté ya asignado
-    if ([...destino.options].some(o => o.value === usuarioId)) return;
+    const usuarioId = opt.value;
 
     try {
-      const body = {
-        usuarioId: usuarioId,
-        rutaId: rutaIdGlobal
-      };
-
-      // 🟡 LOG: cuerpo del POST
-      console.log("🟡 Preparando body para POST /nadadorrutas/agregar:");
-      console.log(JSON.stringify(body, null, 2));
-
       const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/agregar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
+        body: JSON.stringify({
+          usuarioId,
+          rutaId: rutaIdGlobal
+        })
       });
 
       if (res.ok) {
-        const nuevo = opt.cloneNode(true);
-        destino.appendChild(nuevo);
-        opt.selected = false;
-        cargarParticipantes();
+        console.log(`🟢 Agregado usuarioId=${usuarioId} a rutaId=${rutaIdGlobal}`);
+        cargarParticipantes(); // 🔁 recarga la lista derecha y grilla
       } else {
         const err = await res.text();
-        console.warn("❌ Error en la respuesta del POST:", err);
+        console.warn("❌ Error en el POST:", err);
       }
     } catch (e) {
       console.error("Error POST:", e);
@@ -82,9 +65,12 @@ function quitarUsuario() {
     const match = asignaciones.find(a => a.usuarioId === usuarioId);
 
     if (!match) {
-      console.warn("No se encontró asignación para usuarioId:", usuarioId);
+      alert(`No se encontró asignación para usuario ID: ${usuarioId}`);
       return;
     }
+
+    const confirmar = confirm(`¿Eliminar al usuario ${opt.text}?`);
+    if (!confirmar) return;
 
     try {
       const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorrutas/eliminar/${match.nadadorRutaId}`, {
@@ -93,9 +79,9 @@ function quitarUsuario() {
 
       if (res.ok) {
         opt.remove();
-        cargarParticipantes(); // refresca
+        cargarParticipantes(); // 🔁 recarga grilla y lista derecha
       } else {
-        console.warn(`❌ No se pudo eliminar nadadorrutaId ${match.nadadorRutaId}`);
+        alert("❌ Error eliminando participante.");
       }
     } catch (err) {
       console.error("Error al eliminar:", err);
@@ -103,25 +89,52 @@ function quitarUsuario() {
   });
 }
 
+//let asignaciones = [];
+
 async function cargarParticipantes() {
   const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
-  const participantes = await res.json();
+  const lista = await res.json();
   const tbody = document.querySelector("#tablaParticipantes tbody");
-  if (!tbody) return;
-  tbody.innerHTML = "";
+  const destino = document.getElementById("usuariosAsignados");
 
-  participantes.forEach(p => {
-    const u = p.usuario || {}; // por si viene anidado
+  tbody.innerHTML = "";
+  destino.innerHTML = "";
+  asignaciones = [];
+
+  for (const p of lista) {
+    const usuarioId = String(p.usuario?.id || p.usuarioId);
+
+    // 🧠 Ir a buscar los datos completos del usuario
+    let datosUsuario = {};
+    try {
+      const resU = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${usuarioId}`);
+      datosUsuario = await resU.json();
+    } catch (e) {
+      console.warn(`⚠️ No se pudieron obtener datos para usuario ${usuarioId}`);
+    }
+
+    const { nombre = "-", apellido = "-", mail = "-", telefono = "-" } = datosUsuario;
+
+    // Guardamos para futuras eliminaciones
+    asignaciones.push({ usuarioId, nadadorRutaId: p.id });
+
+    // Lista derecha (select)
+    const opt = document.createElement("option");
+    opt.value = usuarioId;
+    opt.text = `${nombre} ${apellido}`;
+    destino.appendChild(opt);
+
+    // Fila grilla
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${p.id}</td>
-      <td>${u.nombre || "-"}</td>
-      <td>${u.apellido || "-"}</td>
-      <td>${u.mail || "-"}</td>
-      <td>${u.telefono || "-"}</td>
+      <td>${nombre}</td>
+      <td>${apellido}</td>
+      <td>${mail}</td>
+      <td>${telefono}</td>
     `;
     tbody.appendChild(tr);
-  });
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {

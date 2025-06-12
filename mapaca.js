@@ -66,7 +66,7 @@ async function cargarRutas() {
 // ➕ NUEVO: Cargar competidores en tiempo real
 async function cargarNavegantesVinculados() {
   try {
-    const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/vinculados");
+    const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listarActivosEnCarrera");
     const nadadores = await response.json();
 
     // Limpiar anteriores

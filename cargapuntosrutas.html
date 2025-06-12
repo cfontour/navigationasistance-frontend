@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Navigation Assistance - Cargar Puntos de Ruta</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script src="cargaPuntosRutas.js"></script>
+</head>
+<body>
+<h1>🧭 Carga de Puntos de rutas - Carreras de Aventura</h1>
+
+<input type="file" id="excelFile" accept=".xlsx" />
+<button onclick="procesarArchivo()">Cargar Puntos</button>
+
+<div id="resultado"></div>
+
+<footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">
+    <img src="img/logo-geotraser-marine.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
+</footer>
+
+</body>
+</html>

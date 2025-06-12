@@ -91,7 +91,15 @@ async function cargarNavegantesVinculados() {
 
       marcadores.push(marcador);
 
-      verificarPuntosDeControl(n.usuarioid, lat, lng);
+      console.log("📡 Marcador agregado, verificando puntos de control para:", n.usuarioid);
+      console.log("📌 Total de puntos de control disponibles:", puntosControl.length);
+
+      if (puntosControl.length > 0) {
+        verificarPuntosDeControl(n.usuarioid, lat, lng);
+      } else {
+        console.warn("⚠️ No hay puntos de control disponibles para comparar.");
+      }
+
     });
 
   } catch (error) {
@@ -110,50 +118,35 @@ function distanciaMetros(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-async function verificarPuntosDeControl(usuarioId, lat, lng) {
-  for (const punto of puntosControl) {
-    const distancia = distanciaMetros(lat, lng, punto.lat, punto.lng);
-    const clave = `${usuarioId}_${punto.etiqueta}`;
+async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
+  try {
+    puntosControl.forEach(async p => {
+      const distancia = distanciaMetros(latActual, lngActual, p.latitud, p.longitud);
 
-    if (distancia < 20 && !registrosHechos.has(clave)) {
-      registrosHechos.add(clave);
+      if (distancia < 20) {
+        const payload = {
+          nadadorruta: { id: p.nadadorruta_id },
+          puntoControl: p.etiqueta,
+          fechaHora: new Date().toISOString(),
+        };
 
-      const payload = {
-        nadadorrutaId: punto.nadadorrutaId || 0, // asegúrate que se incluya este dato si lo tenés
-        puntoControl: punto.etiqueta || `Punto ${punto.secuencia}`,
-        fechaHora: new Date().toISOString()
-      };
+        console.log("📤 Intentando enviar:", payload);
 
-      try {
         const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/agregar", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            nadadorruta: { id: n.id }, // 👈 ID del nadadorruta
-            puntoControl: punto.etiqueta || `Punto ${punto.secuencia}`,
-            fechaHora: new Date().toISOString()
-          })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
         });
 
-        console.log("📤 Intentando enviar:", {
-          nadadorruta: { id: n.id },
-          puntoControl: punto.etiqueta || `Punto ${punto.secuencia}`,
-          fechaHora: new Date().toISOString()
-        });
-
-        if (res.ok) {
-          console.log(`✅ Punto de control registrado: ${payload.puntoControl}`);
+        if (!res.ok) {
+          console.error("❌ Error al registrar punto de control:", await res.text());
         } else {
-          const errBody = await res.json();
-          console.error("❌ Error al registrar punto de control", errBody);
+          console.log(`✅ Punto de control "${p.etiqueta}" registrado para usuario ${usuarioid}`);
         }
-
-      } catch (err) {
-        console.error("❌ Falló conexión con el backend al registrar punto de control", err);
       }
-    }
+    });
+  } catch (err) {
+    console.error("❌ Falló conexión con el backend al registrar punto de control", err);
   }
 }
 

@@ -16,43 +16,46 @@ async function cargarRutas() {
     const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar");
     const rutas = await res.json();
 
-    for (const ruta of rutas) {
-      document.getElementById("tituloRuta").innerText = ruta.nombre;
+    rutas.forEach(ruta => {
+      // Título destacado
+      const titulo = document.createElement("h2");
+      titulo.innerText = ruta.nombre;
+      document.body.insertBefore(titulo, document.getElementById("map"));
 
-      const resPuntos = await fetch(`https://navigationasistance-backend-1.onrender.com/rutaspuntos/listarporruta/${ruta.id}`);
-      const puntos = await resPuntos.json();
+      const puntos = ruta.puntos;
+      if (!puntos || puntos.length === 0) return;
 
-      if (!puntos.length) continue;
+      const bounds = [];
 
-      puntos.forEach((punto, i) => {
-        const latlng = [punto.latitud, punto.longitud];
+      puntos.forEach((p, i) => {
+        const latlng = [p.latitud, p.longitud];
+        bounds.push(latlng);
 
         // Círculo del color de la ruta
         L.circle(latlng, {
           radius: 5,
-          color: ruta.color || "#3388ff",
-          fillColor: ruta.color || "#3388ff",
+          color: ruta.color,
+          fillColor: ruta.color,
           fillOpacity: 1
         }).addTo(map);
 
-        // Bandera según posición
+        // Ícono correspondiente
         let icon = iconoIntermedio;
         if (i === 0) icon = iconoInicio;
         else if (i === puntos.length - 1) icon = iconoFinal;
 
-        L.marker(latlng, { icon }).addTo(map)
-          .bindPopup(`Secuencia ${punto.secuencia}<br>${punto.etiqueta || ''}`);
+        L.marker(latlng, { icon })
+          .addTo(map)
+          .bindPopup(`<b>${p.etiqueta || `Punto ${i + 1}`}</b><br>Secuencia: ${p.secuencia}`);
       });
 
-      // Ajustar vista
-      const grupo = puntos.map(p => [p.latitud, p.longitud]);
-      map.fitBounds(grupo);
-    }
+      // Ajustar vista a la ruta
+      map.fitBounds(bounds);
+    });
 
   } catch (err) {
     console.error("Error al cargar rutas:", err);
-    document.getElementById("tituloRuta").innerText = "Error cargando rutas";
   }
 }
 
-cargarRutas();
+document.addEventListener("DOMContentLoaded", cargarRutas);

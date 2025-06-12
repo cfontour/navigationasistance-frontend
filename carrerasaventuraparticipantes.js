@@ -1,4 +1,17 @@
 let usuarios = [];
+let rutaIdGlobal = null;
+
+async function obtenerRutaIdPorNombre(nombreRuta = "JACKSONVILLE") {
+  const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar");
+  const rutas = await res.json();
+  const ruta = rutas.find(r => r.nombre === nombreRuta);
+  if (ruta) {
+    rutaIdGlobal = ruta.id;
+    console.log("🟢 rutaId obtenido:", rutaIdGlobal);
+  } else {
+    console.warn("❌ No se encontró la ruta con nombre:", nombreRuta);
+  }
+}
 
 async function cargarUsuarios() {
   const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuarios/listar");
@@ -16,6 +29,11 @@ async function cargarUsuarios() {
 function asignarUsuario() {
   const origen = document.getElementById("usuariosDisponibles");
   const destino = document.getElementById("usuariosAsignados");
+
+  if (!rutaIdGlobal) {
+    alert("No se pudo obtener el ID de la ruta.");
+    return;
+  }
 
   Array.from(origen.selectedOptions).forEach(async opt => {
     // Verifica que no esté ya asignado
@@ -35,6 +53,8 @@ function asignarUsuario() {
         opt.selected = false;
         cargarParticipantes(); // actualizar tabla
       } else {
+        const err = await res.text();
+        console.warn("Error en la respuesta:", err);
         alert("Error al asignar participante.");
       }
     } catch (e) {
@@ -87,6 +107,7 @@ async function cargarParticipantes() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  obtenerRutaIdPorNombre("JACKSONVILLE"); // o el nombre exacto de la ruta
   cargarUsuarios();
   cargarParticipantes();
 });

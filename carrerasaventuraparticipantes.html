@@ -38,19 +38,23 @@
           padding: 2rem;
           border-radius: 10px;
           box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-          margin: 2rem;
+          margin: 2rem auto;
+          max-width: 1200px;
         }
     </style>
 </head>
 <body id="page-top" style="background-image: url('img/fondo-navigationasistance.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
 
+<!-- 🧭 TÍTULOS FUERA DE LA SECCIÓN -->
+<section class="section has-text-centered">
+    <h1 class="title is-2 has-text-white">🧭 Participantes Carreras de Aventura</h1>
+    <h2 class="subtitle is-3 has-text-white">Gestión de Participantes - Carrera de Aventuras</h2>
+    <h3 class="subtitle is-4 has-text-white">Participantes - Carrera de Aventura</h3>
+</section>
+
+<!-- 💠 SECCIÓN PRINCIPAL -->
 <section class="section">
     <div class="section-box">
-        <h1 class="title is-3 has-text-centered">🧭 Participantes Carreras de Aventura</h1>
-        <h2 class="subtitle is-4 has-text-centered">Gestión de Participantes - Carrera de Aventuras</h2>
-
-        <h1 class="title has-text-centered">Participantes - Carrera de Aventura</h1>
-
         <div class="dual-list">
             <div>
                 <h2 class="subtitle">USUARIOS</h2>
@@ -70,6 +74,7 @@
     </div>
 </section>
 
+<!-- 📋 TABLA -->
 <section class="section">
     <div class="section-box">
         <h3 class="title is-4 has-text-centered">Listado de Participantes Registrados</h3>
@@ -92,9 +97,12 @@
 
 <script src="carrerasaventuraparticipantes.js"></script>
 
-<footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">
-    <img src="img/logo-geotraser-marine.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
-</footer>
+<!-- ✅ FOOTER CON MISMO ANCHO Y ESTILO -->
+<section class="section">
+    <div class="section-box has-text-centered">
+        <img src="img/logo-geotraser-marine.png" alt="GEOTRASER" style="max-width: 300px;">
+    </div>
+</section>
 
 </body>
 </html>

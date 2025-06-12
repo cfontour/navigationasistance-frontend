@@ -12,6 +12,8 @@ const iconoIntermedio = L.icon({ iconUrl: 'img/white_flag.png', iconSize: [24, 2
 const iconoFinal = L.icon({ iconUrl: 'img/finish_flag.png', iconSize: [32, 32] });
 
 let marcadores = []; // ⬅️ Para limpiar luego los círculos de competidores
+let puntosControl = []; // guardará todos los puntos
+let registrosHechos = new Set(); // para evitar múltiples registros del mismo punto
 
 async function cargarRutas() {
   try {
@@ -19,7 +21,6 @@ async function cargarRutas() {
     const rutas = await res.json();
 
     rutas.forEach(ruta => {
-      // Título destacado
       const titulo = document.createElement("h2");
       titulo.innerText = ruta.nombre;
       titulo.style.color = "white";
@@ -35,8 +36,8 @@ async function cargarRutas() {
       puntos.forEach((p, i) => {
         const latlng = [p.latitud, p.longitud];
         bounds.push(latlng);
+        puntosControl.push({ ...p, lat: p.latitud, lng: p.longitud }); // para uso posterior
 
-        // Círculo del color de la ruta
         L.circle(latlng, {
           radius: 5,
           color: ruta.color,
@@ -44,7 +45,6 @@ async function cargarRutas() {
           fillOpacity: 1
         }).addTo(map);
 
-        // Ícono correspondiente
         let icon = iconoIntermedio;
         if (i === 0) icon = iconoInicio;
         else if (i === puntos.length - 1) icon = iconoFinal;
@@ -54,7 +54,6 @@ async function cargarRutas() {
           .bindPopup(`<b>${p.etiqueta || `Punto ${i + 1}`}</b><br>Secuencia: ${p.secuencia}`);
       });
 
-      // Ajustar vista a la ruta
       map.fitBounds(bounds);
     });
 
@@ -63,26 +62,21 @@ async function cargarRutas() {
   }
 }
 
-// ➕ NUEVO: Cargar competidores en tiempo real
 async function cargarNavegantesVinculados() {
   try {
     const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listarActivosEnCarrera");
     const nadadores = await response.json();
 
-    // Limpiar anteriores
     marcadores.forEach(m => map.removeLayer(m));
     marcadores = [];
-
-    console.log("🔍 Respuesta de nadadores:", nadadores); // 👈 clave para entender el error
 
     nadadores.forEach(n => {
       const lat = parseFloat(n.nadadorlat);
       const lng = parseFloat(n.nadadorlng);
 
-      // ⚠️ Verificar que sean coordenadas numéricas válidas
       if (isNaN(lat) || isNaN(lng)) {
         console.warn(`❌ Coordenadas inválidas para usuario ${n.usuarioid}:`, n);
-        return; // salta al siguiente
+        return;
       }
 
       const marcador = L.circleMarker([lat, lng], {
@@ -96,6 +90,8 @@ async function cargarNavegantesVinculados() {
         .bindPopup(`🧍 Usuario: ${n.usuarioid}<br>🕓 ${n.fechaUltimaActualizacion}`);
 
       marcadores.push(marcador);
+
+      verificarPuntosDeControl(n.usuarioid, lat, lng);
     });
 
   } catch (error) {
@@ -103,8 +99,53 @@ async function cargarNavegantesVinculados() {
   }
 }
 
+function distanciaMetros(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+async function verificarPuntosDeControl(usuarioId, lat, lng) {
+  for (const punto of puntosControl) {
+    const distancia = distanciaMetros(lat, lng, punto.lat, punto.lng);
+    const clave = `${usuarioId}_${punto.etiqueta}`;
+
+    if (distancia < 20 && !registrosHechos.has(clave)) {
+      registrosHechos.add(clave);
+
+      const payload = {
+        nadadorrutaId: punto.nadadorrutaId || 0, // asegúrate que se incluya este dato si lo tenés
+        puntoControl: punto.etiqueta || `Punto ${punto.secuencia}`,
+        fechaHora: new Date().toISOString()
+      };
+
+      try {
+        const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/agregar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          console.log(`✅ Punto de control registrado: ${payload.puntoControl}`);
+        } else {
+          console.warn("❌ Error al registrar punto de control", await res.text());
+        }
+
+      } catch (err) {
+        console.error("❌ Falló conexión con el backend al registrar punto de control", err);
+      }
+    }
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   cargarRutas();
   cargarNavegantesVinculados();
-  setInterval(cargarNavegantesVinculados, 5000); // Actualiza cada 5s
+  setInterval(cargarNavegantesVinculados, 5000);
 });

@@ -137,6 +137,31 @@ async function cargarParticipantes() {
   }
 }
 
+async function exportarPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFontSize(16);
+  doc.text("Listado de Participantes Registrados", 14, 20);
+
+  const head = [["ID", "Nombre", "Apellido", "Mail", "Teléfono"]];
+  const body = [];
+
+  const tabla = document.querySelectorAll("#tablaParticipantes tbody tr");
+  tabla.forEach(row => {
+    const cols = Array.from(row.querySelectorAll("td")).map(td => td.textContent.trim());
+    body.push(cols);
+  });
+
+  doc.autoTable({
+    startY: 30,
+    head: head,
+    body: body
+  });
+
+  doc.save("participantes-carrera.pdf");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   obtenerRutaIdPorNombre("JACKSONVILLE"); // o el nombre exacto de la ruta
   cargarUsuarios();

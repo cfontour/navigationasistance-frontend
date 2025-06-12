@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Navigation Assistance - Participantes Carrera de Aventura</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
         .dual-list {
           display: flex;
@@ -80,7 +82,10 @@
 <!-- 📋 TABLA -->
 <section class="section">
     <div class="section-box">
-        <h3 class="title is-4 has-text-centered">Listado de Participantes Registrados</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 class="title is-4">Listado de Participantes Registrados</h3>
+            <button class="button is-info" onclick="exportarPDF()">Exportar PDF</button>
+        </div>
         <div class="table-container">
             <table id="tablaParticipantes">
                 <thead>

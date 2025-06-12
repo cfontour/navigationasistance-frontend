@@ -13,7 +13,7 @@ const iconoFinal = L.icon({ iconUrl: 'finish_flag.png', iconSize: [32, 32] });
 
 async function cargarRutas() {
   try {
-    const res = await fetch("https://tu-backend.com/rutas/listar");
+    const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar");
     const rutas = await res.json();
 
     for (const ruta of rutas) {

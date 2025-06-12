@@ -22,11 +22,19 @@ async function procesarCarga() {
     });
 
     if (!resRuta.ok) throw new Error("No se pudo crear la ruta.");
-    const dataRuta = await resRuta.json();
-    idRuta = dataRuta.id;
+      const dataRuta = await resRuta.json();
+      console.log("🧾 Respuesta completa de /rutas/agregar:", dataRuta);
 
-    // 🟢 LOG #1: ID de la ruta creada
-    console.log(`🟢 Ruta creada con ID: ${idRuta}`);
+      // Intenta extraer el ID de distintas formas posibles
+      idRuta = dataRuta.id || dataRuta.ruta?.id || dataRuta.rutaId || dataRuta;
+
+      // Validación final
+      if (!idRuta || isNaN(idRuta)) {
+        throw new Error("No se pudo determinar el ID de la ruta. Revisa la respuesta del backend.");
+      }
+
+      // 🟢 LOG #1: ID de la ruta creada
+      console.log(`🟢 Ruta creada con ID: ${idRuta}`);
 
   } catch (err) {
     resultado.innerText = "❌ Error al crear la ruta: " + err.message;

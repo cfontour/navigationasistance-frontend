@@ -21,13 +21,23 @@
           gap: 10px;
         }
         table {
-          margin: 20px auto;
-          width: 90%;
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 30px;
+        }
+        th, td {
+          padding: 8px;
+          border: 1px solid #ccc;
+          text-align: left;
+        }
+        th {
+         background-color: #eee;
         }
     </style>
 </head>
 <body id="page-top" style="background-image: url('img/fondo-navigationasistance.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
 <h1>🧭 Participantes Carreras de Aventura</h1>
+<h2>Gestión de Participantes - Carrera de Aventuras</h2>
 <section class="section">
     <h1 class="title has-text-centered">Participantes - Carrera de Aventura</h1>
 
@@ -38,7 +48,8 @@
         </div>
 
         <div class="buttons">
-            <button class="button is-primary" onclick="asignarUsuarios()">➤</button>
+            <button onclick="asignarUsuario()">➤</button>
+            <button onclick="quitarUsuario()">⬅</button>
         </div>
 
         <div>
@@ -48,18 +59,18 @@
     </div>
 
     <div class="table-container">
-        <h2 class="subtitle has-text-centered">Grilla de Participantes</h2>
-        <table class="table is-striped is-fullwidth">
+        <h3>Listado de Participantes Registrados</h3>
+        <table id="tablaParticipantes">
             <thead>
             <tr>
                 <th>ID</th>
                 <th>Nombre</th>
                 <th>Apellido</th>
-                <th>Email</th>
+                <th>Mail</th>
                 <th>Teléfono</th>
             </tr>
             </thead>
-            <tbody id="tablaParticipantes"></tbody>
+            <tbody></tbody>
         </table>
     </div>
 </section>

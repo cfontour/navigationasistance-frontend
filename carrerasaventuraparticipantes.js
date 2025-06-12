@@ -45,8 +45,27 @@ function asignarUsuario() {
 
 function quitarUsuario() {
   const destino = document.getElementById("usuariosAsignados");
-  Array.from(destino.selectedOptions).forEach(opt => opt.remove());
+
+  Array.from(destino.selectedOptions).forEach(async opt => {
+    const id = parseInt(opt.value);
+
+    try {
+      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorrutas/eliminar/${id}`, {
+        method: "DELETE"
+      });
+
+      if (res.ok) {
+        opt.remove();
+        cargarParticipantes(); // Actualiza la tabla
+      } else {
+        console.warn(`❌ No se pudo eliminar el usuario con ID ${id}`);
+      }
+    } catch (err) {
+      console.error("Error al eliminar:", err);
+    }
+  });
 }
+
 
 async function cargarParticipantes() {
   const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");

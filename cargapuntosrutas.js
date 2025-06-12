@@ -24,6 +24,10 @@ async function procesarCarga() {
     if (!resRuta.ok) throw new Error("No se pudo crear la ruta.");
     const dataRuta = await resRuta.json();
     idRuta = dataRuta.id;
+
+    // 🟢 LOG #1: ID de la ruta creada
+    console.log(`🟢 Ruta creada con ID: ${idRuta}`);
+
   } catch (err) {
     resultado.innerText = "❌ Error al crear la ruta: " + err.message;
     return;
@@ -45,6 +49,10 @@ async function procesarCarga() {
       longitud: parseFloat(String(fila.longitud).replace(",", ".")),
       nombre: fila.nombre || `Punto ${index + 1}`
     }));
+
+    // 🟢 LOG #2: JSON completo que se enviará a /rutaspuntos/agregar-masivo
+    console.log("🟢 JSON enviado a /rutaspuntos/agregar-masivo:");
+    console.log(JSON.stringify(puntos, null, 2));
 
     // Paso 3: Enviar puntos al backend
     try {

@@ -7,7 +7,8 @@ async function obtenerRutaIdPorNombre(nombreRuta = "JACKSONVILLE") {
   const ruta = rutas.find(r => r.nombre === nombreRuta);
   if (ruta) {
     rutaIdGlobal = ruta.id;
-    console.log("🟢 rutaId obtenido:", rutaIdGlobal);
+    // 🟢 LOG #1: ID de la ruta encontrada
+    console.log(`🟢 Ruta encontrada: ${ruta.nombre}, ID: ${rutaIdGlobal}`);
   } else {
     console.warn("❌ No se encontró la ruta con nombre:", nombreRuta);
   }
@@ -41,6 +42,15 @@ function asignarUsuario() {
 
     // Enviar POST
     try {
+      const body = {
+        usuarioId: usuarioId,
+        rutaId: rutaIdGlobal
+      };
+
+      // 🟡 LOG #2: Body del POST
+      console.log("🟡 Preparando body para POST /nadadorrutas/agregar:");
+      console.log(JSON.stringify(body, null, 2));
+      
       const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/agregar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

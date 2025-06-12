@@ -55,7 +55,7 @@ async function procesarCarga() {
       secuencia: index + 1,
       latitud: parseFloat(String(fila.latitud).replace(",", ".")),
       longitud: parseFloat(String(fila.longitud).replace(",", ".")),
-      nombre: fila.nombre || `Punto ${index + 1}`
+      etiqueta: fila.nombre || `Punto ${index + 1}`
     }));
 
     // 🟢 LOG #2: JSON completo que se enviará a /rutaspuntos/agregar-masivo

@@ -113,7 +113,7 @@ async function cargarParticipantes() {
       console.warn(`⚠️ No se pudieron obtener datos para usuario ${usuarioId}`);
     }
 
-    const { nombre = "-", apellido = "-", mail = "-", telefono = "-" } = datosUsuario;
+    const { nombre = "-", apellido = "-", email = "-", telefono = "-" } = datosUsuario;
 
     // Guardamos para futuras eliminaciones
     asignaciones.push({ usuarioId, nadadorRutaId: p.id });
@@ -130,7 +130,7 @@ async function cargarParticipantes() {
       <td>${p.id}</td>
       <td>${nombre}</td>
       <td>${apellido}</td>
-      <td>${mail}</td>
+      <td>${email}</td>
       <td>${telefono}</td>
     `;
     tbody.appendChild(tr);

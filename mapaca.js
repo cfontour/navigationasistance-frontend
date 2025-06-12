@@ -7,9 +7,9 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
 }).addTo(map);
 
 // Íconos personalizados
-const iconoInicio = L.icon({ iconUrl: 'start_flag.png', iconSize: [32, 32] });
-const iconoIntermedio = L.icon({ iconUrl: 'white_flag.png', iconSize: [24, 24] });
-const iconoFinal = L.icon({ iconUrl: 'finish_flag.png', iconSize: [32, 32] });
+const iconoInicio = L.icon({ iconUrl: 'img/start_flag.png', iconSize: [32, 32] });
+const iconoIntermedio = L.icon({ iconUrl: 'img/white_flag.png', iconSize: [24, 24] });
+const iconoFinal = L.icon({ iconUrl: 'img/finish_flag.png', iconSize: [32, 32] });
 
 async function cargarRutas() {
   try {

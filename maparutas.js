@@ -19,7 +19,7 @@ map.on('click', function (e) {
     fillOpacity: 0.9
   }).addTo(map);
 
-  marker.bindTooltip("Punto " + secuencia).openTooltip();
+  marker.bindTooltip("Punto " + secuencia + "Coord " + e.latlng.lat + ", " + e.latlng.lng).openTooltip();
   setTimeout(() => marker.closeTooltip(), 1000);
 
   const punto = {

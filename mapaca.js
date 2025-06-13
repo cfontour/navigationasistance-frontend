@@ -84,13 +84,24 @@ async function cargarNavegantesVinculados() {
     marcadores.forEach(m => map.removeLayer(m));
     marcadores = [];
 
+    console.log("🔍 Respuesta de nadadores:", nadadores);
+
     nadadores.forEach(n => {
       const lat = parseFloat(n.nadadorlat);
       const lng = parseFloat(n.nadadorlng);
 
+      // Mostrar todo lo que trae el nadador
+      console.log("👤 Navegante activo:", n);
+
       if (isNaN(lat) || isNaN(lng)) {
         console.warn(`❌ Coordenadas inválidas para usuario ${n.usuarioid}:`, n);
         return;
+      }
+
+      // Mostrar si tiene el id necesario
+      if (!n.nadadorruta_id) {
+         console.warn(`❌ Navegante sin nadadorruta_id:`, n);
+         return;
       }
 
       const marcador = L.circleMarker([lat, lng], {

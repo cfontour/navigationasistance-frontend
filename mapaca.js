@@ -158,7 +158,15 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
         if (!res.ok) {
           console.error("❌ Error al registrar punto de control:", await res.text());
         } else {
-          actualizarPopup(usuarioid, "Carrera", "Aventura", punto.etiqueta, new Date().toISOString());
+          actualizarPopup({
+            usuarioid,
+            nombre: "Carrera",
+            apellido: "Aventura",
+            nuevaEtiqueta: punto.etiqueta,
+            fechaHora: new Date().toISOString(),
+            marcadoresMap: marcadores,
+            puntosPasadosMap: puntosPasados
+          });
           console.log(`✅ Punto de control "${punto.etiqueta}" registrado para usuario ${usuarioid}`);
         }
       }
@@ -168,25 +176,29 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
   }
 }
 
-// Solo las inicializamos si no están definidas
-if (typeof marcadores === "undefined") window.marcadores = new Map();
-if (typeof puntosPasados === "undefined") window.puntosPasados = new Map();
-
-function actualizarPopup(usuarioid, nombre, apellido, nuevaEtiqueta, fechaHora) {
-  // Obtener o inicializar el array de puntos
-  let historial = puntosPasados.get(usuarioid);
+function actualizarPopup({
+  usuarioid,
+  nombre,
+  apellido,
+  nuevaEtiqueta,
+  fechaHora,
+  marcadoresMap,
+  puntosPasadosMap
+}) {
+  // Obtener o inicializar el historial
+  let historial = puntosPasadosMap.get(usuarioid);
   if (!historial) {
     historial = [];
-    puntosPasados.set(usuarioid, historial);
+    puntosPasadosMap.set(usuarioid, historial);
   }
 
-  // Verificar si la etiqueta ya fue registrada (evita duplicados)
+  // Verificar si ya existe la etiqueta
   const yaExiste = historial.some(p => p.etiqueta === nuevaEtiqueta);
   if (!yaExiste) {
     historial.push({ etiqueta: nuevaEtiqueta, fechaHora });
   }
 
-  // Armar HTML del popup acumulado
+  // Generar HTML para el popup
   const listaHtml = historial.map(p =>
     `<li>${p.etiqueta} <small>${new Date(p.fechaHora).toLocaleTimeString()}</small></li>`
   ).join("");
@@ -197,8 +209,8 @@ function actualizarPopup(usuarioid, nombre, apellido, nuevaEtiqueta, fechaHora) 
     <ul>${listaHtml}</ul>
   `;
 
-  // Actualizar popup del marcador
-  const marcador = marcadores.get(usuarioid);
+  // Actualizar el marcador
+  const marcador = marcadoresMap.get(usuarioid);
   if (marcador) {
     marcador.bindPopup(popupHtml);
   }

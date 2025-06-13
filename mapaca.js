@@ -142,7 +142,7 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual, nadador
       if (distancia < 20) {
 
         const payload = {
-          nadadorruta: { id: nadadorrutaId }, // 👈 SE USA EL QUE TE PASÉ POR PARÁMETRO
+          nadadorruta: { id: usuarioid }, // 👈 SE USA EL QUE TE PASÉ POR PARÁMETRO
           puntoControl: punto.etiqueta,
           fechaHora: new Date().toISOString(),
         };

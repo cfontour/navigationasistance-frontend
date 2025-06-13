@@ -132,21 +132,15 @@ function distanciaMetros(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-async function verificarPuntosDeControl(usuarioid, latActual, lngActual, nadadorrutaId){
+async function verificarPuntosDeControl(usuarioid, latActual, lngActual, nadadorrutaId) {
   try {
-    puntosControl.forEach(async p => {
-      const distancia = distanciaMetros(latActual, lngActual, p.latitud, p.longitud);
+    puntosControl.forEach(async punto => {
+      const distancia = distanciaMetros(latActual, lngActual, punto.latitud, punto.longitud);
 
       if (distancia < 20) {
 
-        // Validación explícita
-        if (!p.nadadorruta_id) {
-          console.warn(`❌ Punto sin nadadorruta_id:`, p);
-          return; // Evitamos enviar un objeto inválido
-        }
-
         const payload = {
-          nadadorruta: { id: nadadorrutaId },
+          nadadorruta: { id: nadadorrutaId }, // 👈 SE USA EL QUE TE PASÉ POR PARÁMETRO
           puntoControl: punto.etiqueta,
           fechaHora: new Date().toISOString(),
         };
@@ -160,10 +154,9 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual, nadador
         });
 
         if (!res.ok) {
-          const errorText = await res.text();
-          console.error("❌ Error al registrar punto de control:", errorText);
+          console.error("❌ Error al registrar punto de control:", await res.text());
         } else {
-          console.log(`✅ Punto de control "${p.etiqueta}" registrado para usuario ${usuarioid}`);
+          console.log(`✅ Punto de control "${punto.etiqueta}" registrado para usuario ${usuarioid}`);
         }
       }
     });

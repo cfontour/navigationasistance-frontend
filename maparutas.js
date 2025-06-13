@@ -84,7 +84,7 @@ function confirmarRuta() {
 
     console.log("JSON final a enviar:", JSON.stringify(puntosParaEnviar)); // 👈 console.log agregado
 
-    return fetch('https://navigationasistance-backend-1.onrender.com/rutaspuntos/agregar-masivo', {
+    return fetch('https://mi-backend.com/rutaspuntos/agregar-masivo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(puntosParaEnviar)

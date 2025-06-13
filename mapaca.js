@@ -90,20 +90,15 @@ async function cargarNavegantesVinculados() {
       const lat = parseFloat(n.nadadorlat);
       const lng = parseFloat(n.nadadorlng);
 
-      // Mostrar todo lo que trae el nadador
       console.log("👤 Navegante activo:", n);
 
+      // ⚠️ Verificar coordenadas válidas
       if (isNaN(lat) || isNaN(lng)) {
         console.warn(`❌ Coordenadas inválidas para usuario ${n.usuarioid}:`, n);
         return;
       }
 
-      // Mostrar si tiene el id necesario
-      if (!n.nadadorruta_id) {
-         console.warn(`❌ Navegante sin nadadorruta_id:`, n);
-         return;
-      }
-
+      // 🎯 Mostrarlo en el mapa SIEMPRE
       const marcador = L.circleMarker([lat, lng], {
         radius: 8,
         fillColor: "magenta",
@@ -113,18 +108,14 @@ async function cargarNavegantesVinculados() {
         fillOpacity: 0.9
       }).addTo(map)
         .bindPopup(`🧍 Usuario: ${n.usuarioid}<br>🕓 ${n.fechaUltimaActualizacion}`);
-
       marcadores.push(marcador);
 
-      console.log("📡 Marcador agregado, verificando puntos de control para:", n.usuarioid);
-      console.log("📌 Total de puntos de control disponibles:", puntosControl.length);
-
-      if (puntosControl.length > 0) {
-        verificarPuntosDeControl(n.usuarioid, lat, lng, n.id); // n.id es el nadadorruta_id
+      // ✅ Si tiene nadadorruta_id, verificar punto de control
+      if (n.nadadorruta_id && puntosControl.length > 0) {
+        verificarPuntosDeControl(n.usuarioid, lat, lng, n.nadadorruta_id);
       } else {
-        console.warn("⚠️ No hay puntos de control disponibles para comparar.");
+        console.warn(`⚠️ No se puede verificar puntos de control para ${n.usuarioid}. Datos faltantes.`);
       }
-
     });
 
   } catch (error) {

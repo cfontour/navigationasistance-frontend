@@ -38,6 +38,8 @@ async function cargarRutas() {
         bounds.push(latlng);
 
         // Guardar este punto como punto de control completo
+        console.log("🧩 Punto recibido:", p);
+
         puntosControl.push({
           latitud: p.latitud,
           longitud: p.longitud,
@@ -107,7 +109,7 @@ async function cargarNavegantesVinculados() {
       console.log("📌 Total de puntos de control disponibles:", puntosControl.length);
 
       if (puntosControl.length > 0) {
-        verificarPuntosDeControl(n.usuarioid, lat, lng);
+        verificarPuntosDeControl(n.usuarioid, lat, lng, n.id); // n.id es el nadadorruta_id
       } else {
         console.warn("⚠️ No hay puntos de control disponibles para comparar.");
       }
@@ -130,15 +132,22 @@ function distanciaMetros(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
+async function verificarPuntosDeControl(usuarioid, latActual, lngActual, nadadorrutaId){
   try {
     puntosControl.forEach(async p => {
       const distancia = distanciaMetros(latActual, lngActual, p.latitud, p.longitud);
 
       if (distancia < 20) {
+
+        // Validación explícita
+        if (!p.nadadorruta_id) {
+          console.warn(`❌ Punto sin nadadorruta_id:`, p);
+          return; // Evitamos enviar un objeto inválido
+        }
+
         const payload = {
-          nadadorruta: { id: p.nadadorruta_id },
-          puntoControl: p.etiqueta,
+          nadadorruta: { id: nadadorrutaId },
+          puntoControl: punto.etiqueta,
           fechaHora: new Date().toISOString(),
         };
 
@@ -151,7 +160,8 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
         });
 
         if (!res.ok) {
-          console.error("❌ Error al registrar punto de control:", await res.text());
+          const errorText = await res.text();
+          console.error("❌ Error al registrar punto de control:", errorText);
         } else {
           console.log(`✅ Punto de control "${p.etiqueta}" registrado para usuario ${usuarioid}`);
         }

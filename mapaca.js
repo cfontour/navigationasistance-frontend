@@ -62,7 +62,7 @@ async function cargarRutas() {
 
         L.marker(latlng, { icon })
           .addTo(map)
-          .bindPopup(`<b>${p.etiqueta || `Punto ${i + 1}`}</b><br>Secuencia: ${p.secuencia}`);
+          .bindPopup(`Etiqueta: ${punto.etiqueta}<br>Lat: ${punto.latitud}<br>Lng: ${punto.longitud}`);
       });
 
       // ✅ AÑADIDO: revisar que los puntos tengan nadadorruta_id
@@ -142,7 +142,7 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
       if (distancia < 20) {
 
         const payload = {
-          nadadorruta: { id: usuarioid }, // 👈 SE USA EL QUE TE PASÉ POR PARÁMETRO
+          nadadorrutaId: usuarioid, // 👈 ahora como String plano
           puntoControl: punto.etiqueta,
           fechaHora: new Date().toISOString(),
         };

@@ -60,9 +60,9 @@ async function cargarRutas() {
         if (i === 0) icon = iconoInicio;
         else if (i === puntos.length - 1) icon = iconoFinal;
 
-        L.marker([punto.latitud, punto.longitud])
+        L.marker(latlng, { icon })
           .addTo(map)
-          .bindPopup(`Etiqueta: ${punto.etiqueta}<br>Lat: ${punto.latitud}<br>Lng: ${punto.longitud}`);
+          .bindPopup(`Etiqueta: ${p.etiqueta}<br>Lat: ${p.latitud}<br>Lng: ${p.longitud}`);
       });
 
       // ✅ AÑADIDO: revisar que los puntos tengan nadadorruta_id

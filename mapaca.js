@@ -111,8 +111,8 @@ async function cargarNavegantesVinculados() {
       marcadores.push(marcador);
 
       // ✅ Si tiene nadadorruta_id, verificar punto de control
-      if (n.nadadorruta_id && puntosControl.length > 0) {
-        verificarPuntosDeControl(n.usuarioid, lat, lng, n.nadadorruta_id);
+      if (n.usuarioid && puntosControl.length > 0) {
+        verificarPuntosDeControl(n.usuarioid, lat, lng);
       } else {
         console.warn(`⚠️ No se puede verificar puntos de control para ${n.usuarioid}. Datos faltantes.`);
       }
@@ -134,7 +134,7 @@ function distanciaMetros(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-async function verificarPuntosDeControl(usuarioid, latActual, lngActual, nadadorrutaId) {
+async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
   try {
     puntosControl.forEach(async punto => {
       const distancia = distanciaMetros(latActual, lngActual, punto.latitud, punto.longitud);

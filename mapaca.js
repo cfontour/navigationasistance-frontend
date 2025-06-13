@@ -158,7 +158,7 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
         if (!res.ok) {
           console.error("❌ Error al registrar punto de control:", await res.text());
         } else {
-          actualizarPopup(usuarioid, "Carrera", "Aventura", puntoControl, fechaHora);
+          actualizarPopup(usuarioid, "Carrera", "Aventura", punto.etiqueta, fechaHora);
           console.log(`✅ Punto de control "${punto.etiqueta}" registrado para usuario ${usuarioid}`);
         }
       }

@@ -168,8 +168,9 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
   }
 }
 
-const marcadores = new Map(); // usuarioid => Marker
-const puntosPasados = new Map(); // usuarioid => Set de etiquetas
+// Solo las inicializamos si no están definidas
+if (typeof marcadores === "undefined") window.marcadores = new Map();
+if (typeof puntosPasados === "undefined") window.puntosPasados = new Map();
 
 function actualizarPopup(usuarioid, nombre, apellido, nuevaEtiqueta, fechaHora) {
   // Obtener o inicializar el array de puntos

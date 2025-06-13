@@ -60,7 +60,7 @@ async function cargarRutas() {
         if (i === 0) icon = iconoInicio;
         else if (i === puntos.length - 1) icon = iconoFinal;
 
-        L.marker(latlng, { icon })
+        L.marker([punto.latitud, punto.longitud])
           .addTo(map)
           .bindPopup(`Etiqueta: ${punto.etiqueta}<br>Lat: ${punto.latitud}<br>Lng: ${punto.longitud}`);
       });

@@ -80,6 +80,7 @@ async function cargarNavegantesVinculados() {
   try {
     const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listarActivosEnCarrera");
     const nadadores = await response.json();
+    if (nadadores.length === 0) historialPuntos = new Map(); // ✅ limpia los popups si no hay nadie
 
     marcadores.forEach(m => map.removeLayer(m));
     marcadores = [];

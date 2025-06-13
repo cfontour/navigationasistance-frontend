@@ -108,6 +108,9 @@ async function cargarNavegantesVinculados() {
         fillOpacity: 0.9
       }).addTo(map)
         .bindPopup(`🧍 Usuario: ${n.usuarioid}<br>🕓 ${n.fechaUltimaActualizacion}`);
+
+      marcador.usuarioid = n.usuarioid; // ✅ Añadir este identificador
+
       marcadores.push(marcador);
 
       // ✅ Si tiene nadadorruta_id, verificar punto de control
@@ -153,10 +156,7 @@ function actualizarPopup(usuarioid, puntoControl, fechaHora) {
     `<li>${p.etiqueta} <small>${new Date(p.fechaHora).toLocaleTimeString()}</small></li>`
   ).join("");
 
-  const marcador = marcadores.find(m => {
-    const popup = m.getPopup();
-    return popup && popup.getContent().includes(usuarioid);
-  });
+  const marcador = marcadores.find(m => m.usuarioid === usuarioid);
 
   if (marcador) {
     marcador.bindPopup(`

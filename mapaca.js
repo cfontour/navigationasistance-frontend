@@ -111,6 +111,9 @@ async function cargarNavegantesVinculados() {
 
       marcador.usuarioid = n.usuarioid; // ✅ Añadir este identificador
 
+      // Crear popup inicial vacío (o solo con usuario)
+      marcador.bindPopup(generarContenidoPopup(n.usuarioid));
+
       marcadores.push(marcador);
 
       // ✅ Si tiene nadadorruta_id, verificar punto de control
@@ -124,6 +127,19 @@ async function cargarNavegantesVinculados() {
   } catch (error) {
     console.error("Error al cargar nadadores vinculados:", error);
   }
+}
+
+function generarContenidoPopup(usuarioid) {
+  const historial = historialPuntos.get(usuarioid) || [];
+  const listaHtml = historial.map(p =>
+    `<li>${p.etiqueta} <small>${new Date(p.fechaHora).toLocaleTimeString()}</small></li>`
+  ).join("");
+
+  return `
+    <strong>Usuario: ${usuarioid}</strong><br/>
+    Puntos de control:<br/>
+    <ul>${listaHtml}</ul>
+  `;
 }
 
 function distanciaMetros(lat1, lon1, lat2, lon2) {
@@ -146,24 +162,14 @@ function actualizarPopup(usuarioid, puntoControl, fechaHora) {
   }
 
   const historial = historialPuntos.get(usuarioid);
-
   const yaExiste = historial.some(p => p.etiqueta === puntoControl);
   if (!yaExiste) {
     historial.push({ etiqueta: puntoControl, fechaHora });
   }
 
-  const contenidoHtml = historial.map(p =>
-    `<li>${p.etiqueta} <small>${new Date(p.fechaHora).toLocaleTimeString()}</small></li>`
-  ).join("");
-
   const marcador = marcadores.find(m => m.usuarioid === usuarioid);
-
   if (marcador) {
-    marcador.bindPopup(`
-      <strong>Usuario: ${usuarioid}</strong><br>
-      Puntos de control:<br>
-      <ul>${contenidoHtml}</ul>
-    `);
+    marcador.bindPopup(generarContenidoPopup(usuarioid));
   }
 }
 

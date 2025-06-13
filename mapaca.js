@@ -134,6 +134,39 @@ function distanciaMetros(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+// Acumulador visual: usuarioid => array de { etiqueta, fechaHora }
+let historialPuntos = new Map();
+
+function actualizarPopup(usuarioid, puntoControl, fechaHora) {
+  if (!historialPuntos.has(usuarioid)) {
+    historialPuntos.set(usuarioid, []);
+  }
+
+  const historial = historialPuntos.get(usuarioid);
+
+  const yaExiste = historial.some(p => p.etiqueta === puntoControl);
+  if (!yaExiste) {
+    historial.push({ etiqueta: puntoControl, fechaHora });
+  }
+
+  const contenidoHtml = historial.map(p =>
+    `<li>${p.etiqueta} <small>${new Date(p.fechaHora).toLocaleTimeString()}</small></li>`
+  ).join("");
+
+  const marcador = marcadores.find(m => {
+    const popup = m.getPopup();
+    return popup && popup.getContent().includes(usuarioid);
+  });
+
+  if (marcador) {
+    marcador.bindPopup(`
+      <strong>Usuario: ${usuarioid}</strong><br>
+      Puntos de control:<br>
+      <ul>${contenidoHtml}</ul>
+    `);
+  }
+}
+
 async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
   try {
     puntosControl.forEach(async punto => {
@@ -158,61 +191,13 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
         if (!res.ok) {
           console.error("❌ Error al registrar punto de control:", await res.text());
         } else {
-          actualizarPopup({
-            usuarioid,
-            nombre: "Carrera",
-            apellido: "Aventura",
-            nuevaEtiqueta: punto.etiqueta,
-            fechaHora: new Date().toISOString(),
-            marcadoresMap: marcadores,
-            puntosPasadosMap: puntosPasados
-          });
           console.log(`✅ Punto de control "${punto.etiqueta}" registrado para usuario ${usuarioid}`);
+          actualizarPopup(usuarioid, punto.etiqueta, new Date().toISOString());
         }
       }
     });
   } catch (err) {
     console.error("❌ Falló conexión con el backend al registrar punto de control", err);
-  }
-}
-
-function actualizarPopup({
-  usuarioid,
-  nombre,
-  apellido,
-  nuevaEtiqueta,
-  fechaHora,
-  marcadoresMap,
-  puntosPasadosMap
-}) {
-  // Obtener o inicializar el historial
-  let historial = puntosPasadosMap.get(usuarioid);
-  if (!historial) {
-    historial = [];
-    puntosPasadosMap.set(usuarioid, historial);
-  }
-
-  // Verificar si ya existe la etiqueta
-  const yaExiste = historial.some(p => p.etiqueta === nuevaEtiqueta);
-  if (!yaExiste) {
-    historial.push({ etiqueta: nuevaEtiqueta, fechaHora });
-  }
-
-  // Generar HTML para el popup
-  const listaHtml = historial.map(p =>
-    `<li>${p.etiqueta} <small>${new Date(p.fechaHora).toLocaleTimeString()}</small></li>`
-  ).join("");
-
-  const popupHtml = `
-    <strong>${nombre} ${apellido}</strong><br/>
-    Puntos de control pasados:
-    <ul>${listaHtml}</ul>
-  `;
-
-  // Actualizar el marcador
-  const marcador = marcadoresMap.get(usuarioid);
-  if (marcador) {
-    marcador.bindPopup(popupHtml);
   }
 }
 

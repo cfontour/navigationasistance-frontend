@@ -158,12 +158,48 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
         if (!res.ok) {
           console.error("❌ Error al registrar punto de control:", await res.text());
         } else {
+          actualizarPopup(usuarioid, "Carrera", "Aventura", puntoControl, fechaHora);
           console.log(`✅ Punto de control "${punto.etiqueta}" registrado para usuario ${usuarioid}`);
         }
       }
     });
   } catch (err) {
     console.error("❌ Falló conexión con el backend al registrar punto de control", err);
+  }
+}
+
+const marcadores = new Map(); // usuarioid => Marker
+const puntosPasados = new Map(); // usuarioid => Set de etiquetas
+
+function actualizarPopup(usuarioid, nombre, apellido, nuevaEtiqueta, fechaHora) {
+  // Obtener o inicializar el array de puntos
+  let historial = puntosPasados.get(usuarioid);
+  if (!historial) {
+    historial = [];
+    puntosPasados.set(usuarioid, historial);
+  }
+
+  // Verificar si la etiqueta ya fue registrada (evita duplicados)
+  const yaExiste = historial.some(p => p.etiqueta === nuevaEtiqueta);
+  if (!yaExiste) {
+    historial.push({ etiqueta: nuevaEtiqueta, fechaHora });
+  }
+
+  // Armar HTML del popup acumulado
+  const listaHtml = historial.map(p =>
+    `<li>${p.etiqueta} <small>${new Date(p.fechaHora).toLocaleTimeString()}</small></li>`
+  ).join("");
+
+  const popupHtml = `
+    <strong>${nombre} ${apellido}</strong><br/>
+    Puntos de control pasados:
+    <ul>${listaHtml}</ul>
+  `;
+
+  // Actualizar popup del marcador
+  const marcador = marcadores.get(usuarioid);
+  if (marcador) {
+    marcador.bindPopup(popupHtml);
   }
 }
 

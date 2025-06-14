@@ -1,36 +1,46 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Menú Carreras de Aventura</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" />
     <style>
         body {
           margin: 0;
           font-family: 'Montserrat', sans-serif;
-          background-image: url('img/fondo_carrera.png'); /* Reemplazá por la imagen generada */
+          background-image: url('img/fondo_carreras.jpg'); /* Usa la imagen sin menú */
           background-size: cover;
           background-position: center;
           background-repeat: no-repeat;
           min-height: 100vh;
           display: flex;
+          flex-direction: column;
+          justify-content: space-between;
           align-items: center;
-          justify-content: center;
+        }
+
+        header {
+          width: 100%;
+          text-align: center;
+          padding: 20px 10px;
+          background: rgba(0, 0, 0, 0.5);
+          color: white;
+          font-size: 24px;
         }
 
         .accordion {
           width: 90%;
-          max-width: 600px;
+          max-width: 500px;
           background-color: rgba(0, 0, 0, 0.7);
           border-radius: 10px;
           overflow: hidden;
           color: white;
-          padding-bottom: 10px;
+          margin: 40px 0;
         }
 
         .accordion-item {
-          border-bottom: 1px solid #ddd;
+          border-bottom: 1px solid #444;
         }
 
         .accordion-header {
@@ -38,7 +48,6 @@
           cursor: pointer;
           background-color: #1a1a1a;
           font-size: 18px;
-          transition: background 0.3s;
         }
 
         .accordion-header:hover {
@@ -78,10 +87,37 @@
         .colapsar-btn:hover {
           background-color: #666;
         }
+
+        footer {
+          padding: 20px;
+        }
+
+        footer img {
+          max-width: 200px;
+          border-radius: 12px;
+        }
+
+        @media (max-width: 600px) {
+          header {
+            font-size: 18px;
+          }
+
+          .accordion-header {
+            font-size: 16px;
+          }
+
+          .accordion-content a {
+            font-size: 14px;
+          }
+        }
     </style>
 </head>
 <body>
-<h1>🧭 Carreras de Aventura - Menú Principal</h1>
+
+<header>
+    🧭 Carreras de Aventura - Menú Principal
+</header>
+
 <div class="accordion" id="menuca">
     <div class="accordion-item">
         <div class="accordion-header">🏃 Participantes</div>
@@ -114,11 +150,10 @@
     <button class="colapsar-btn" onclick="colapsarTodo()">🔽 Colapsar todo</button>
 </div>
 
-<script src="menuca.js"></script>
-
 <footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">
     <img src="img/logo-geotraser-marine.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
 </footer>
 
+<script src="menuca.js"></script>
 </body>
 </html>

@@ -202,7 +202,7 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
 
         console.log("📤 Intentando enviar:", payload);
 
-        const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/agregar", {
+        const res = fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/agregar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)

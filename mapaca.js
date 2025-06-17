@@ -324,7 +324,7 @@ async function trazarRutaUsuario() {
       dashArray: '10, 10' // 🟡 Línea punteada
     }).addTo(map);
 
-    map.fitBounds(polylineTraza.getBounds());
+    //map.fitBounds(polylineTraza.getBounds());
 
   } catch (err) {
     console.error("❌ Error al trazar ruta:", err);
@@ -366,7 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ⏱️ Actualizar traza automáticamente si hay usuario seleccionado
   setInterval(() => {
     if (!mostrarTraza) return; // 🛑 NO hacer nada si no está activo
-    
+
     const selector = document.getElementById("selector-usuario");
     const usuarioId = selector?.value;
     if (usuarioId && usuarioId !== "Seleccione un usuario") {

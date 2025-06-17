@@ -195,7 +195,7 @@ async function actualizarPopup(usuarioid) {
       <ul>${listaHtml}</ul>
     `;
 
-    const marcador = marcadores.find(m => String(m.usuarioid) === String(usuarioid));
+    const marcador = marcadores.get(String(usuarioid));
 
     if (marcador) {
       marcador.bindPopup(popupHtml);

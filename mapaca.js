@@ -329,6 +329,13 @@ async function trazarRutaUsuario() {
   }
 }
 
+function borrarTraza() {
+  if (polylineTraza) {
+    map.removeLayer(polylineTraza);
+    polylineTraza = null;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   cargarRutas();
   cargarNavegantesVinculados();
@@ -342,6 +349,13 @@ document.addEventListener("DOMContentLoaded", () => {
     boton.addEventListener("click", trazarRutaUsuario);
   } else {
     console.warn("⚠️ No se encontró el botón 'boton-traza'. ¿Está definido en el HTML?");
+  }
+
+  const botonBorrar = document.getElementById("boton-borrar-traza");
+  if (botonBorrar) {
+    botonBorrar.addEventListener("click", borrarTraza);
+  } else {
+    console.warn("⚠️ No se encontró el botón 'boton-borrar-traza'.");
   }
 
   // ⏱️ Actualizar traza automáticamente si hay usuario seleccionado

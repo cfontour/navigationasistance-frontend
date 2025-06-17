@@ -120,8 +120,9 @@ async function cargarNavegantesVinculados() {
 
       // Crear popup inicial vacío (o solo con usuario)
       marcador.bindPopup(generarContenidoPopup(n.usuarioid));
-
-      //marcadores.push(marcador);
+      
+      // 🔥 Cargar puntos históricos desde el backend
+      actualizarPopup(n.usuarioid);
 
       // ✅ Si tiene nadadorruta_id, verificar punto de control
       if (n.usuarioid && puntosControl.length > 0) {

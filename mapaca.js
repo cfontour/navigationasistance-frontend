@@ -163,29 +163,32 @@ let historialPuntos = new Map();
 
 async function actualizarPopup(usuarioid) {
   try {
-      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorNadadorrutaId/${usuarioid}`);
-      const historial = await res.json();
+    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorNadadorrutaId/${usuarioid}`);
+    const historial = await res.json();
 
-      if (!Array.isArray(historial)) return;
-
-      const listaHtml = historial.map(p =>
-        `<li>${p.punto_control} <small>${new Date(p.fecha_hora).toLocaleTimeString()}</small></li>`
-      ).join("");
-
-      const popupHtml = `
-        <strong>Usuario: ${usuarioid}</strong><br/>
-        Puntos de control:<br/>
-        <ul>${listaHtml}</ul>
-      `;
-
-      const marcador = marcadores.find(m => m.usuarioid === usuarioid);
-      if (marcador) {
-        marcador.bindPopup(popupHtml);
-      }
-    } catch (err) {
-      console.error("❌ Error al cargar historial desde backend para", usuarioid, err);
+    if (!Array.isArray(historial)) {
+      console.warn("No es un array el historial:", historial);
+      return;
     }
+
+    const listaHtml = historial.map(p =>
+      `<li>${p.punto_control} <small>${new Date(p.fecha_hora).toLocaleTimeString()}</small></li>`
+    ).join("");
+
+    const popupHtml = `
+      <strong>Usuario: ${usuarioid}</strong><br/>
+      Puntos de control:<br/>
+      <ul>${listaHtml}</ul>
+    `;
+
+    const marcador = marcadores.find(m => m.usuarioid === usuarioid);
+    if (marcador) {
+      marcador.bindPopup(popupHtml);
+    }
+  } catch (err) {
+    console.error("❌ Error al cargar historial desde backend para", usuarioid, err);
   }
+}
 
 async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
   try {

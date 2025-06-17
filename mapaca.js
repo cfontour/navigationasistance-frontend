@@ -79,7 +79,7 @@ async function cargarRutas() {
 function crearIconoCompetidor() {
   return L.icon({
     iconUrl: 'img/aventurero.png',
-    iconSize: [32, 48],             // tamaño controlado
+    iconSize: [34, 50],             // tamaño controlado
     iconAnchor: [16, 48],           // punta inferior del globo
     popupAnchor: [0, -48]           // para que el popup salga justo arriba
   });

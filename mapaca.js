@@ -77,18 +77,13 @@ async function cargarRutas() {
 }
 
 function crearIconoCompetidor(zoomLevel) {
-  const minWidth = 24;
-  const minHeight = 32;
-  const scaleFactor = 2.5;
-
-  const width = Math.max(minWidth, zoomLevel * scaleFactor);
-  const height = Math.max(minHeight, zoomLevel * scaleFactor * 1.5); // más alto que ancho
-
+  const minSize = 24;
+  const scaleFactor = 4;
+  const size = Math.max(minSize, zoomLevel * scaleFactor);
   return L.icon({
     iconUrl: 'img/aventurero.png',
-    iconSize: [width, height],
-    iconAnchor: [width / 2, height],    // punta inferior central
-    popupAnchor: [0, -height * 0.9]     // arriba del globo
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2]
   });
 }
 

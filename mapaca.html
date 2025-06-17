@@ -5,6 +5,22 @@
     <title>Navigation Assistance - Carrera de Aventuras - Puntos</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        #controles-superiores {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          z-index: 1000;
+          display: flex;
+          gap: 10px;
+          background: rgba(255, 255, 255, 0.9);
+          padding: 10px;
+          border-radius: 5px;
+          align-items: center;
+        }
         #map { height: 90vh; }
         h2 { font-size: 28px; color: #333; text-align: center; margin-top: 10px; }
         #boton-traza {
@@ -18,17 +34,16 @@
          border-radius: 5px;
          font-weight: bold;
         }
-        #boton-traza,
-         #boton-borrar-traza {
-         padding: 5px;
-         font-size: 14px;
-        }
         #selector-usuario {
          position: absolute;
          top: 10px;
          right: 120px;
          z-index: 1000;
          padding: 5px;
+        }
+        #boton-borrar-traza {
+          padding: 5px;
+          font-size: 14px;
         }
     </style>
 </head>

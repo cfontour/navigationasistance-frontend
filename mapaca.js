@@ -275,38 +275,55 @@ async function cargarUsuariosEnSelector() {
   }
 }
 
+let polylineTraza = null; // Asegurate que esté declarada globalmente
+
 async function trazarRutaUsuario() {
   const usuarioId = document.getElementById("selector-usuario").value;
   const hoy = new Date().toISOString().split("T")[0];
 
+  if (!usuarioId) {
+    alert("❗ Debe seleccionar un usuario.");
+    return;
+  }
+
   try {
-    const rutas = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/recorridos/${usuarioId}/${hoy}`);
-    const uuidList = await rutas.json();
+    const rutasRes = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/recorridos/${usuarioId}/${hoy}`);
+    const uuidList = await rutasRes.json();
+
     if (!uuidList || uuidList.length === 0) {
       alert("❌ No hay recorridos para este usuario hoy");
       return;
     }
 
     const ultimaRuta = uuidList[uuidList.length - 1];
+
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${ultimaRuta}`);
     const puntos = await res.json();
 
     const latlngs = puntos
-      .filter(p => p.secuencia >= 1)
+      .filter(p => p.secuencia >= 1 && p.latitud && p.longitud)
       .map(p => [p.latitud, p.longitud]);
 
-    if (polylineTraza) map.removeLayer(polylineTraza);
+    if (latlngs.length === 0) {
+      alert("❌ La ruta no contiene puntos válidos.");
+      return;
+    }
+
+    if (polylineTraza) {
+      map.removeLayer(polylineTraza);
+    }
 
     polylineTraza = L.polyline(latlngs, {
       color: 'yellow',
       weight: 3,
-      dashArray: '10, 10'  // 🟡 Línea punteada
+      dashArray: '10, 10' // 🟡 Línea punteada
     }).addTo(map);
 
     map.fitBounds(polylineTraza.getBounds());
 
   } catch (err) {
     console.error("❌ Error al trazar ruta:", err);
+    alert("⚠️ Error inesperado al intentar trazar la ruta.");
   }
 }
 

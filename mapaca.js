@@ -161,10 +161,10 @@ function distanciaMetros(lat1, lon1, lat2, lon2) {
 // Acumulador visual: usuarioid => array de { etiqueta, fechaHora }
 let historialPuntos = new Map();
 
-function actualizarPopup(usuarioid) {
+async function actualizarPopup(usuarioid) {
   try {
-      const res = fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorNadadorrutaId/${usuarioid}`);
-      const historial = res.json();
+      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorNadadorrutaId/${usuarioid}`);
+      const historial = await res.json();
 
       if (!Array.isArray(historial)) return;
 

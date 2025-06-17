@@ -167,13 +167,25 @@ async function actualizarPopup(usuarioid) {
     const historial = await res.json();
 
     if (!Array.isArray(historial)) {
-      console.warn("No es un array el historial:", historial);
+      console.warn(`⚠️ El historial no es un array para ${usuarioid}:`, historial);
       return;
     }
 
-    const listaHtml = historial.map(p =>
-      `<li>${p.punto_control} <small>${new Date(p.fecha_hora).toLocaleTimeString()}</small></li>`
-    ).join("");
+    const listaHtml = historial.map(p => {
+      const etiqueta = p.puntoControl || "❓(sin etiqueta)";
+      let hora = "⏱️ (sin hora)";
+
+      if (p.fechaHora) {
+        const fecha = new Date(p.fechaHora);
+        if (!isNaN(fecha)) {
+          hora = fecha.toLocaleTimeString(); // o .toLocaleString() si querés la fecha completa
+        } else {
+          console.warn(`⛔ Fecha inválida para ${usuarioid}:`, p.fechaHora);
+        }
+      }
+
+      return `<li>${etiqueta} <small>${hora}</small></li>`;
+    }).join("");
 
     const popupHtml = `
       <strong>Usuario: ${usuarioid}</strong><br/>
@@ -184,9 +196,12 @@ async function actualizarPopup(usuarioid) {
     const marcador = marcadores.find(m => m.usuarioid === usuarioid);
     if (marcador) {
       marcador.bindPopup(popupHtml);
+    } else {
+      console.warn(`⚠️ No se encontró marcador para usuario ${usuarioid}`);
     }
+
   } catch (err) {
-    console.error("❌ Error al cargar historial desde backend para", usuarioid, err);
+    console.error(`❌ Error crítico al actualizar popup para ${usuarioid}:`, err);
   }
 }
 

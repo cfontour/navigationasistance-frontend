@@ -14,6 +14,7 @@ const iconoFinal = L.icon({ iconUrl: 'img/finish_flag.png', iconSize: [32, 32] }
 let marcadores = new Map(); //let marcadores = []; // ⬅️ Para limpiar luego los círculos de competidores
 let puntosControl = []; // guardará todos los puntos
 let registrosHechos = new Set(); // para evitar múltiples registros del mismo punto
+let mostrarTraza = false;
 
 async function cargarRutas() {
   try {
@@ -276,6 +277,8 @@ async function cargarUsuariosEnSelector() {
 }
 
 async function trazarRutaUsuario() {
+  mostrarTraza = true; // ✅ activar la traza manualmente
+
   const usuarioId = document.getElementById("selector-usuario").value;
   const hoy = new Date().toISOString().split("T")[0];
 
@@ -330,6 +333,8 @@ async function trazarRutaUsuario() {
 }
 
 function borrarTraza() {
+  mostrarTraza = false; // ✅ desactiva el redibujo
+
   if (polylineTraza) {
     map.removeLayer(polylineTraza);
     polylineTraza = null;
@@ -360,6 +365,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ⏱️ Actualizar traza automáticamente si hay usuario seleccionado
   setInterval(() => {
+    if (!mostrarTraza) return; // 🛑 NO hacer nada si no está activo
+    
     const selector = document.getElementById("selector-usuario");
     const usuarioId = selector?.value;
     if (usuarioId && usuarioId !== "Seleccione un usuario") {
@@ -367,4 +374,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 5000);
 });
-

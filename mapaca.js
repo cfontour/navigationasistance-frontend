@@ -337,11 +337,20 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(cargarNavegantesVinculados, 5000);
 
   // ⏺️ Vincular botón de traza
-    const boton = document.getElementById("boton-traza");
-    if (boton) {
-      boton.addEventListener("click", trazarRutaUsuario);
-    } else {
-      console.warn("⚠️ No se encontró el botón 'boton-traza'. ¿Está definido en el HTML?");
+  const boton = document.getElementById("boton-traza");
+  if (boton) {
+    boton.addEventListener("click", trazarRutaUsuario);
+  } else {
+    console.warn("⚠️ No se encontró el botón 'boton-traza'. ¿Está definido en el HTML?");
+  }
+
+  // ⏱️ Actualizar traza automáticamente si hay usuario seleccionado
+  setInterval(() => {
+    const selector = document.getElementById("selector-usuario");
+    const usuarioId = selector?.value;
+    if (usuarioId && usuarioId !== "Seleccione un usuario") {
+      trazarRutaUsuario();
     }
+  }, 5000);
 });
 

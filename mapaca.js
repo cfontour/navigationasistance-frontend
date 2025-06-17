@@ -163,7 +163,7 @@ let historialPuntos = new Map();
 
 function actualizarPopup(usuarioid) {
   try {
-      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorNadadorrutaId/${usuarioid}`);
+      const res = fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorNadadorrutaId/${usuarioid}`);
       const historial = await res.json();
 
       if (!Array.isArray(historial)) return;
@@ -202,7 +202,7 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
 
         console.log("📤 Intentando enviar:", payload);
 
-        const res = fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/agregar", {
+        const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/agregar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)

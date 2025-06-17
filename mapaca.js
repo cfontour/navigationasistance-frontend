@@ -299,8 +299,12 @@ async function trazarRutaUsuario() {
     const puntos = await res.json();
 
     const latlngs = puntos
-      .filter(p => p.secuencia >= 1 && p.latitud && p.longitud)
-      .map(p => [parseFloat(p.nadadorlat), parseFloat(p.nadadorlng)]);
+      .filter(p =>
+        Number.isFinite(parseFloat(p.nadadorlat)) &&
+        Number.isFinite(parseFloat(p.nadadorlng)) &&
+        Number(p.secuencia) >= 1
+    )
+    .map(p => [parseFloat(p.nadadorlat), parseFloat(p.nadadorlng)]);
 
     if (latlngs.length === 0) {
       alert("❌ La ruta no contiene puntos válidos.");

@@ -334,6 +334,8 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarNavegantesVinculados();
   cargarUsuariosEnSelector();
 
+  setInterval(cargarNavegantesVinculados, 5000);
+
   // ⏺️ Vincular botón de traza
     const boton = document.getElementById("boton-traza");
     if (boton) {
@@ -341,8 +343,5 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       console.warn("⚠️ No se encontró el botón 'boton-traza'. ¿Está definido en el HTML?");
     }
-
-  setInterval(cargarNavegantesVinculados, 5000);
-    
 });
 

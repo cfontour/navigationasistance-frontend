@@ -76,6 +76,17 @@ async function cargarRutas() {
   }
 }
 
+function crearIconoCompetidor(zoomLevel) {
+  const minSize = 24;
+  const scaleFactor = 4;
+  const size = Math.max(minSize, zoomLevel * scaleFactor);
+  return L.icon({
+    iconUrl: 'img/aventurero.png',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2]
+  });
+}
+
 async function cargarNavegantesVinculados() {
   try {
     const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listarActivosEnCarrera");
@@ -100,13 +111,8 @@ async function cargarNavegantesVinculados() {
       }
 
       // 🎯 Mostrarlo en el mapa SIEMPRE
-      const marcador = L.circleMarker([lat, lng], {
-        radius: 8,
-        fillColor: "magenta",
-        color: "black",
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 0.9
+      const marcador = L.marker([lat, lng], {
+        icon: crearIconoCompetidor()
       }).addTo(map)
         .bindPopup(`🧍 Usuario: ${n.usuarioid}<br>🕓 ${n.fechaUltimaActualizacion}`);
 

@@ -120,7 +120,7 @@ async function cargarNavegantesVinculados() {
 
       // Crear popup inicial vacío (o solo con usuario)
       marcador.bindPopup(generarContenidoPopup(n.usuarioid));
-      
+
       // 🔥 Cargar puntos históricos desde el backend
       actualizarPopup(n.usuarioid);
 
@@ -166,6 +166,7 @@ let historialPuntos = new Map();
 
 async function actualizarPopup(usuarioid) {
   try {
+    // 1. Traer los puntos de control del usuario
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorNadadorrutaId/${usuarioid}`);
     const historial = await res.json();
 
@@ -174,6 +175,13 @@ async function actualizarPopup(usuarioid) {
       return;
     }
 
+    // 2. Traer nombre y apellido del usuario
+    const resUsuario = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${usuarioid}`);
+    const usuario = await resUsuario.json();
+
+    const nombreCompleto = `${usuario.nombre || "Nombre"} ${usuario.apellido || "Apellido"}`;
+
+    // 3. Generar lista de puntos
     const listaHtml = historial.map(p => {
       const etiqueta = p.puntoControl || "❓(sin etiqueta)";
       let hora = "⏱️ (sin hora)";
@@ -190,12 +198,14 @@ async function actualizarPopup(usuarioid) {
       return `<li>${etiqueta} <small>${hora}</small></li>`;
     }).join("");
 
+    // 4. Contenido del popup
     const popupHtml = `
-      <strong>Usuario: ${usuarioid}</strong><br/>
-      Puntos de control:<br/>
-      <ul>${listaHtml}</ul>
-    `;
+          <strong>${nombreCompleto}</strong><br/>
+          Puntos de control:<br/>
+          <ul>${listaHtml}</ul>
+        `;
 
+    // 5. Actualizar popup en el marcador correspondiente
     const marcador = marcadores.get(String(usuarioid));
 
     if (marcador) {

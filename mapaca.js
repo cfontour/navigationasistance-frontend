@@ -11,7 +11,7 @@ const iconoInicio = L.icon({ iconUrl: 'img/start_flag.png', iconSize: [32, 32] }
 const iconoIntermedio = L.icon({ iconUrl: 'img/white_flag.png', iconSize: [24, 24] });
 const iconoFinal = L.icon({ iconUrl: 'img/finish_flag.png', iconSize: [32, 32] });
 
-let marcadores = []; // ⬅️ Para limpiar luego los círculos de competidores
+let marcadores = new Map(); //let marcadores = []; // ⬅️ Para limpiar luego los círculos de competidores
 let puntosControl = []; // guardará todos los puntos
 let registrosHechos = new Set(); // para evitar múltiples registros del mismo punto
 
@@ -91,8 +91,10 @@ async function cargarNavegantesVinculados() {
     const nadadores = await response.json();
     if (nadadores.length === 0) historialPuntos = new Map(); // ✅ limpia los popups si no hay nadie
 
-    marcadores.forEach(m => map.removeLayer(m));
-    marcadores = [];
+    for (let m of marcadores.values()) {
+      map.removeLayer(m);
+    }
+    marcadores.clear();
 
     console.log("🔍 Respuesta de nadadores:", nadadores);
 
@@ -114,8 +116,7 @@ async function cargarNavegantesVinculados() {
       }).addTo(map)
         .bindPopup(`🧍 Usuario: ${n.usuarioid}<br>🕓 ${n.fechaUltimaActualizacion}`);
 
-      marcador.usuarioid = String(n.usuarioid); // 👈 Esto es clave
-      marcadores.push(marcador);
+      marcadores.set(String(n.usuarioid), marcador); // 👈 almacenamos por clave
 
       // Crear popup inicial vacío (o solo con usuario)
       marcador.bindPopup(generarContenidoPopup(n.usuarioid));

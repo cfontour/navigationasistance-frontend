@@ -253,12 +253,6 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  cargarRutas();
-  cargarNavegantesVinculados();
-  setInterval(cargarNavegantesVinculados, 5000);
-});
-
 let polylineTraza = null;
 
 async function cargarUsuariosEnSelector() {
@@ -309,6 +303,19 @@ async function trazarRutaUsuario() {
   }
 }
 
-// Eventos
-document.getElementById("boton-traza").addEventListener("click", trazarRutaUsuario);
-document.addEventListener("DOMContentLoaded", cargarUsuariosEnSelector);
+document.addEventListener("DOMContentLoaded", () => {
+  cargarRutas();
+  cargarNavegantesVinculados();
+  cargarUsuariosEnSelector(); 
+
+  setInterval(cargarNavegantesVinculados, 5000);
+
+  // ⏺️ Vincular botón de traza
+    const boton = document.getElementById("boton-traza");
+    if (boton) {
+      boton.addEventListener("click", trazarRutaUsuario);
+    } else {
+      console.warn("⚠️ No se encontró el botón 'boton-traza'. ¿Está definido en el HTML?");
+    }
+});
+

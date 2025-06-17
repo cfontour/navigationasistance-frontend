@@ -161,22 +161,31 @@ function distanciaMetros(lat1, lon1, lat2, lon2) {
 // Acumulador visual: usuarioid => array de { etiqueta, fechaHora }
 let historialPuntos = new Map();
 
-function actualizarPopup(usuarioid, puntoControl, fechaHora) {
-  if (!historialPuntos.has(usuarioid)) {
-    historialPuntos.set(usuarioid, []);
-  }
+function actualizarPopup(usuarioid) {
+  try {
+      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorNadadorrutaId/${usuarioid}`);
+      const historial = await res.json();
 
-  const historial = historialPuntos.get(usuarioid);
-  const yaExiste = historial.some(p => p.etiqueta === puntoControl);
-  if (!yaExiste) {
-    historial.push({ etiqueta: puntoControl, fechaHora });
-  }
+      if (!Array.isArray(historial)) return;
 
-  const marcador = marcadores.find(m => m.usuarioid === usuarioid);
-  if (marcador) {
-    marcador.bindPopup(generarContenidoPopup(usuarioid));
+      const listaHtml = historial.map(p =>
+        `<li>${p.punto_control} <small>${new Date(p.fecha_hora).toLocaleTimeString()}</small></li>`
+      ).join("");
+
+      const popupHtml = `
+        <strong>Usuario: ${usuarioid}</strong><br/>
+        Puntos de control:<br/>
+        <ul>${listaHtml}</ul>
+      `;
+
+      const marcador = marcadores.find(m => m.usuarioid === usuarioid);
+      if (marcador) {
+        marcador.bindPopup(popupHtml);
+      }
+    } catch (err) {
+      console.error("❌ Error al cargar historial desde backend para", usuarioid, err);
+    }
   }
-}
 
 async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
   try {
@@ -203,7 +212,7 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
           console.error("❌ Error al registrar punto de control:", await res.text());
         } else {
           console.log(`✅ Punto de control "${punto.etiqueta}" registrado para usuario ${usuarioid}`);
-          actualizarPopup(usuarioid, punto.etiqueta, new Date().toISOString());
+          actualizarPopup(usuarioid);
         }
       }
     });

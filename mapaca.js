@@ -275,8 +275,6 @@ async function cargarUsuariosEnSelector() {
   }
 }
 
-let polylineTraza = null; // Asegurate que esté declarada globalmente
-
 async function trazarRutaUsuario() {
   const usuarioId = document.getElementById("selector-usuario").value;
   const hoy = new Date().toISOString().split("T")[0];

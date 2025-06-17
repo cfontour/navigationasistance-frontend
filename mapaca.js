@@ -256,16 +256,23 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
 let polylineTraza = null;
 
 async function cargarUsuariosEnSelector() {
-  const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuarios/listar");
-  const usuarios = await res.json();
+  const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
+  const relaciones = await res.json();
   const selector = document.getElementById("selector-usuario");
 
-  usuarios.forEach(u => {
-    const option = document.createElement("option");
-    option.value = u.id;
-    option.textContent = `${u.nombre} ${u.apellido}`;
-    selector.appendChild(option);
-  });
+  for (const rel of relaciones) {
+    try {
+      const resUsuario = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${rel.usuarioId}`);
+      const usuario = await resUsuario.json();
+
+      const option = document.createElement("option");
+      option.value = rel.usuarioId; // 👈 Se guarda el usuarioId
+      option.textContent = `${rel.usuarioId} - ${usuario.nombre} ${usuario.apellido}`;
+      selector.appendChild(option);
+    } catch (err) {
+      console.warn(`❌ No se pudo obtener info para usuario ${rel.usuarioId}:`, err);
+    }
+  }
 }
 
 async function trazarRutaUsuario() {
@@ -306,7 +313,7 @@ async function trazarRutaUsuario() {
 document.addEventListener("DOMContentLoaded", () => {
   cargarRutas();
   cargarNavegantesVinculados();
-  cargarUsuariosEnSelector(); 
+  cargarUsuariosEnSelector();
 
   setInterval(cargarNavegantesVinculados, 5000);
 

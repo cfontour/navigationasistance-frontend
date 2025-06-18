@@ -16,7 +16,7 @@ async function cargarUsuarios() {
     const usuario = await userInfo.json();
 
     const option = document.createElement("option");
-    option.value = u.id; // usa el id de nadadorruta
+    option.value = u.usuarioId; // usamos usuarioId ahora
     option.textContent = `${u.usuarioId} - ${usuario.nombre} ${usuario.apellido}`;
     selector.appendChild(option);
   }
@@ -26,16 +26,22 @@ async function cargarPuntos() {
   const idSeleccionado = document.getElementById("selectorUsuario").value;
   let puntos = [];
 
-  if (idSeleccionado) {
-    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorNadadorrutaId/${idSeleccionado}`);
-    puntos = await res.json();
-  } else {
-    const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorruta/listar");
-    puntos = await res.json();
-  }
-
   const tbody = document.querySelector("#tablaReporte tbody");
   tbody.innerHTML = "";
+
+  if (idSeleccionado) {
+    const rutasRes = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorrutas/porusuario/${idSeleccionado}`);
+    const rutas = await rutasRes.json();
+
+    for (const r of rutas) {
+      const puntosRes = await fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorNadadorrutaId/${r.id}`);
+      const puntosRuta = await puntosRes.json();
+      puntos.push(...puntosRuta);
+    }
+  } else {
+    const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listar");
+    puntos = await res.json();
+  }
 
   for (const p of puntos) {
     const userInfo = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${p.usuario_id}`);

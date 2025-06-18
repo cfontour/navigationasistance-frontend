@@ -30,7 +30,7 @@ async function cargarPuntos() {
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorNadadorrutaId/${idSeleccionado}`);
     puntos = await res.json();
   } else {
-    const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listar");
+    const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorruta/listar");
     puntos = await res.json();
   }
 

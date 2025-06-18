@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dual-listbox@3.0.4/dist/dual-listbox.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/dual-listbox@3.0.4/dist/dual-listbox.min.js"></script>
     <style>
         .dual-list {
           display: flex;
@@ -49,6 +51,21 @@
         }
     </style>
 </head>
+
+<script src="https://cdn.jsdelivr.net/npm/dual-listbox@3.0.4/dist/dual-listbox.min.js"></script>
+<script>
+    // Envolvés tu <select multiple> con DualListbox
+    const dualListbox = new DualListbox('#usuariosDisponibles', {
+      availableTitle: 'USUARIOS',
+      selectedTitle: 'COMPETIDORES CARRERA DE AVENTURAS',
+      addButtonText: 'Agregar',
+      removeButtonText: 'Quitar',
+      addAllButtonText: 'Agregar todos',
+      removeAllButtonText: 'Quitar todos',
+      searchable: true
+    });
+</script>
+
 <body id="page-top" style="background-image: url('img/fondo-navigationasistance.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
 
 <!-- 🧭 TÍTULOS FUERA DE LA SECCIÓN -->

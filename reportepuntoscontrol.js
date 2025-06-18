@@ -16,8 +16,9 @@ async function cargarUsuarios() {
     const usuario = await userInfo.json();
 
     const option = document.createElement("option");
-    option.value = u.id;
+    option.value = u.usuarioId;  // ✅ Esto es lo que espera listarPorNadadorrutaId
     option.textContent = `${u.usuarioId} - ${usuario.nombre} ${usuario.apellido}`;
+
     selector.appendChild(option);
   }
 }

@@ -33,8 +33,6 @@ async function generarReporte() {
     } else {
       const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listar");
       puntos = await res.json();
-
-      // 🔃 Ordenar por nadadorruta_id
       puntos.sort((a, b) => a.nadadorrutaId.localeCompare(b.nadadorrutaId));
     }
 
@@ -68,6 +66,13 @@ async function generarReporte() {
 function exportarPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  const table = document.querySelector("#tablaReporte");
+
+  if (!table || table.rows.length <= 1) {
+    alert("⚠️ No hay datos en la tabla para exportar.");
+    return;
+  }
+
   doc.autoTable({
     html: "#tablaReporte",
     theme: "grid",

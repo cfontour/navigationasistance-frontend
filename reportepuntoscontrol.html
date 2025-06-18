@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Navigation Assistance - Reporte de Puntos por Competidor</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .section-box {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+            margin: 1rem auto;
+            max-width: 1200px;
+        }
+        section.section {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+        .table-container {
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body id="page-top" style="background-image: url('img/fondo-navigationasistance.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+
+<section class="section has-text-centered">
+    <h1 class="title is-2 has-text-white">🧭 Reporte por Competidor</h1>
+    <h2 class="subtitle is-3 has-text-white">Visualización de puntos de control alcanzados</h2>
+</section>
+
+<section class="section">
+    <div class="section-box">
+        <div class="field is-grouped is-justify-content-space-between">
+            <div class="control">
+                <div class="select">
+                    <select id="selectorUsuario">
+                        <option value="">Todos los participantes</option>
+                    </select>
+                </div>
+            </div>
+            <div class="control">
+                <button id="btnExportarPDF" class="button is-info" onclick="exportarPDF()">Exportar PDF</button>
+                <button class="button is-primary" onclick="generarReporte()">Generar Reporte</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table is-fullwidth is-striped" id="tablaReporte">
+                <thead>
+                    <tr>
+                        <th>ID Usuario</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Etiqueta Punto</th>
+                        <th>Fecha y Hora</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script src="reporteporcompetidor.js"></script>
+
+<section class="section">
+    <div class="section-box has-text-centered">
+        <img src="img/logo-geotraser-marine.png" alt="GEOTRASER" style="max-width: 300px;">
+    </div>
+</section>
+
+</body>
+</html>

@@ -74,11 +74,20 @@ function exportarPDF() {
     return;
   }
 
+  // Obtener el valor seleccionado del combo
+  const idSeleccionado = document.getElementById("selectorUsuario").value;
+
+  // Determinar el nombre del archivo
+  const nombreArchivo = idSeleccionado
+    ? `reporte_competidor_${idSeleccionado}.pdf`
+    : `reporte_competidores_todos.pdf`;
+
   doc.autoTable({
     html: "#tablaReporte",
     theme: "grid",
     headStyles: { fillColor: [41, 128, 185] },
     margin: { top: 20 }
   });
-  doc.save("reporte_competidores.pdf");
+
+  doc.save(nombreArchivo);
 }

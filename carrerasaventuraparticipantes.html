@@ -12,42 +12,98 @@
         .dual-list {
           display: flex;
           justify-content: space-around;
+          flex-wrap: wrap;
           margin: 20px;
+          gap: 1rem;
         }
-        select {
+
+        .dual-list select {
           width: 300px;
           height: 300px;
         }
+
         .buttons {
           display: flex;
           flex-direction: column;
           justify-content: center;
           gap: 10px;
         }
+
         table {
           width: 100%;
           border-collapse: collapse;
           margin-top: 30px;
         }
+
         th, td {
           padding: 8px;
           border: 1px solid #ccc;
           text-align: left;
         }
+
         th {
           background-color: #eee;
         }
+
         .section-box {
           background-color: rgba(255, 255, 255, 0.95);
           padding: 2rem;
           border-radius: 10px;
           box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-          margin: 1rem auto;        /* antes: 2rem auto */
+          margin: 1rem auto;
           max-width: 1200px;
         }
+
         section.section {
           padding-top: 1rem !important;
           padding-bottom: 1rem !important;
+        }
+
+        /* 🎯 Corrección visual específica para dual-listbox (desktop + móvil) */
+        .dual-listbox {
+          display: flex !important;
+          flex-direction: row !important;
+          justify-content: space-between;
+          flex-wrap: nowrap;
+          gap: 1rem;
+          margin: 1rem auto;
+          width: 100%;
+          max-width: 1000px;
+        }
+
+        .dual-listbox .dual-listbox__container {
+          width: 45% !important;
+          min-width: 160px;
+        }
+
+        .dual-listbox .dual-listbox__buttons {
+          flex-direction: column;
+          justify-content: center;
+          gap: 8px;
+        }
+
+        .dual-listbox__title {
+          text-align: center;
+          font-weight: bold;
+          margin-bottom: 6px;
+          color: #333;
+        }
+
+        @media (max-width: 768px) {
+          .dual-listbox {
+            flex-direction: column !important;
+            align-items: center;
+          }
+
+          .dual-listbox .dual-listbox__container {
+            width: 100% !important;
+          }
+
+          .dual-listbox .dual-listbox__buttons {
+            flex-direction: row;
+            justify-content: center;
+            margin: 1rem 0;
+          }
         }
     </style>
 </head>

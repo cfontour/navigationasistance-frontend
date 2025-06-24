@@ -288,16 +288,18 @@ async function trazarRutaUsuario() {
   }
 
   try {
-    const rutasRes = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/recorridos/${usuarioId}/${hoy}`);
-    const uuidList = await rutasRes.json();
+    // 🔹 Obtener último recorrido UUID
+    const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${hoy}`);
+    const uuidList = await resUuid.json();
 
     if (!uuidList || uuidList.length === 0) {
-      alert("❌ No hay recorridos para este usuario hoy");
+      alert("❌ No hay recorridos registrados hoy para este usuario.");
       return;
     }
 
-    const ultimaRuta = uuidList[uuidList.length - 1];
+    const ultimaRuta = uuidList[0]; // solo uno, ya viene ordenado y limitado en el backend
 
+    // 🔹 Obtener puntos del recorrido
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${ultimaRuta}`);
     const puntos = await res.json();
 
@@ -306,22 +308,24 @@ async function trazarRutaUsuario() {
         Number.isFinite(parseFloat(p.nadadorlat)) &&
         Number.isFinite(parseFloat(p.nadadorlng)) &&
         Number(p.secuencia) >= 1
-    )
-    .map(p => [parseFloat(p.nadadorlat), parseFloat(p.nadadorlng)]);
+      )
+      .map(p => [parseFloat(p.nadadorlat), parseFloat(p.nadadorlng)]);
 
     if (latlngs.length === 0) {
       alert("❌ La ruta no contiene puntos válidos.");
       return;
     }
 
+    // 🔹 Eliminar traza anterior si existe
     if (polylineTraza) {
       map.removeLayer(polylineTraza);
     }
 
+    // 🔹 Dibujar nueva traza
     polylineTraza = L.polyline(latlngs, {
       color: 'yellow',
       weight: 3,
-      dashArray: '10, 10' // 🟡 Línea punteada
+      dashArray: '10, 10'
     }).addTo(map);
 
     //map.fitBounds(polylineTraza.getBounds());

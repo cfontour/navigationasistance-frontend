@@ -292,28 +292,35 @@ function dibujarCorredorVirtual() {
   const lastIndex = puntosRuta.length - 1;
   L.marker(puntosRuta[lastIndex], { icon: iconoFin }).addTo(mapaFinal);
 
-    // 🚧 Dibujar líneas punteadas de puntos de control
-    const distanciaControl = parseFloat(document.getElementById('puntosControl').value); // en metros
-    let distanciaAcumulada = 0;
+  // 🚧 Dibujar líneas punteadas de puntos de control (cubrimos toda la ruta)
+  const distanciaControl = parseFloat(document.getElementById('puntosControl').value); // en metros
+  const segmentos = [];
+  let distanciaTotal = 0;
 
-    for (let i = 1; i < puntosRuta.length; i++) {
-      const [lat1, lon1] = puntosRuta[i - 1];
-      const [lat2, lon2] = puntosRuta[i];
+  // 1. Calcular todos los segmentos y distancia total
+  for (let i = 1; i < puntosRuta.length; i++) {
+    const [lat1, lon1] = puntosRuta[i - 1];
+    const [lat2, lon2] = puntosRuta[i];
+    const d = getDistanciaMetros(lat1, lon1, lat2, lon2);
+    segmentos.push({ lat1, lon1, lat2, lon2, distancia: d });
+    distanciaTotal += d;
+  }
 
-      const dx = lat2 - lat1;
-      const dy = lon2 - lon1;
-      const segmentoMetros = getDistanciaMetros(lat1, lon1, lat2, lon2);
+  // 2. Insertar líneas cada "distanciaControl" metros, incluso si el último tramo es más corto
+  let distanciaActual = 0;
+  while (distanciaActual <= distanciaTotal) {
+    let acumulado = 0;
 
-      let pasos = Math.floor((distanciaAcumulada + segmentoMetros) / distanciaControl);
-      let offsetPrevio = distanciaControl - (distanciaAcumulada % distanciaControl);
+    for (let i = 0; i < segmentos.length; i++) {
+      const seg = segmentos[i];
+      if (acumulado + seg.distancia >= distanciaActual) {
+        const f = (distanciaActual - acumulado) / seg.distancia;
 
-      for (let p = 0; p < pasos; p++) {
-        const f = (offsetPrevio + p * distanciaControl) / segmentoMetros;
+        const lat = seg.lat1 + (seg.lat2 - seg.lat1) * f;
+        const lon = seg.lon1 + (seg.lon2 - seg.lon1) * f;
 
-        const lat = lat1 + dx * f;
-        const lon = lon1 + dy * f;
-
-        // Calcular desplazamiento perpendicular
+        const dx = seg.lat2 - seg.lat1;
+        const dy = seg.lon2 - seg.lon1;
         const length = Math.sqrt(dx * dx + dy * dy);
         const ux = -dy / length * offset * 0.00001;
         const uy = dx / length * offset * 0.00001;
@@ -326,11 +333,25 @@ function dibujarCorredorVirtual() {
           dashArray: '4, 4',
           weight: 2
         }).addTo(mapaFinal);
+
+        break;
       }
 
-      distanciaAcumulada += segmentoMetros;
+      acumulado += seg.distancia;
     }
 
+    distanciaActual += distanciaControl;
+  }
+}
+
+function getDistanciaMetros(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // radio Tierra en metros
+  const toRad = deg => deg * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
 function getDistanciaMetros(lat1, lon1, lat2, lon2) {

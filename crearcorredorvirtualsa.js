@@ -209,32 +209,50 @@ function dibujarCorredorVirtual() {
   const ancho = parseFloat(document.getElementById('anchoCorredor').value);
   const offset = ancho / 2;
 
-    const izq = [], der = [];
+  const izq = [], der = [];
+  const normales = [];
 
-    for (let i = 0; i < puntosRuta.length - 1; i++) {
-      const [lat1, lon1] = puntosRuta[i];
-      const [lat2, lon2] = puntosRuta[i + 1];
+  // Paso 1: calcular normales por segmento
+  for (let i = 0; i < puntosRuta.length - 1; i++) {
+    const [lat1, lon1] = puntosRuta[i];
+    const [lat2, lon2] = puntosRuta[i + 1];
 
-      const dx = lat2 - lat1;
-      const dy = lon2 - lon1;
-      const len = Math.sqrt(dx * dx + dy * dy);
+    const dx = lat2 - lat1;
+    const dy = lon2 - lon1;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const nx = -dy / len;
+    const ny = dx / len;
 
-      const nx = -dy / len;
-      const ny = dx / len;
+    normales.push([nx, ny]);
+  }
 
-      // desplazamiento perpendicular constante para ambos extremos del segmento
-      const offsetLat = nx * offset * 0.00001;
-      const offsetLon = ny * offset * 0.00001;
+  // Paso 2: aplicar normales promediadas en cada punto
+  for (let i = 0; i < puntosRuta.length; i++) {
+    let nx = 0, ny = 0;
 
-      izq.push([lat1 + offsetLat, lon1 + offsetLon]);
-      der.push([lat1 - offsetLat, lon1 - offsetLon]);
-
-      // en el último paso, agregamos el punto final también
-      if (i === puntosRuta.length - 2) {
-        izq.push([lat2 + offsetLat, lon2 + offsetLon]);
-        der.push([lat2 - offsetLat, lon2 - offsetLon]);
-      }
+    if (i > 0) {
+      nx += normales[i - 1][0];
+      ny += normales[i - 1][1];
     }
+
+    if (i < normales.length) {
+      nx += normales[i][0];
+      ny += normales[i][1];
+    }
+
+    // normalizar
+    const len = Math.sqrt(nx * nx + ny * ny);
+    if (len !== 0) {
+      nx /= len;
+      ny /= len;
+    }
+
+    const offsetLat = nx * offset * 0.00001;
+    const offsetLon = ny * offset * 0.00001;
+
+    izq.push([puntosRuta[i][0] + offsetLat, puntosRuta[i][1] + offsetLon]);
+    der.push([puntosRuta[i][0] - offsetLat, puntosRuta[i][1] - offsetLon]);
+  }
 
   const lineaCentral = L.polyline(puntosRuta, { color: 'red' }).addTo(mapaFinal);
   L.polyline(izq, { color: 'blue', dashArray: '5, 5' }).addTo(mapaFinal);

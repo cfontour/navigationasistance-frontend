@@ -33,8 +33,8 @@ function irASolapa(index) {
 
   if (index === 3) {
     setTimeout(() => {
-      dibujarCorredorVirtual();
       mapaFinal.invalidateSize();
+      dibujarCorredorVirtual(); // ← este debe ir DESPUÉS del invalidateSize
 
       const ancho = document.getElementById('anchoCorredor').value;
       const distancia = document.getElementById('puntosControl').value;

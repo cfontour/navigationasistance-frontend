@@ -44,7 +44,7 @@ function habilitarSiguienteZona() {
 }
 
 function cargarZonas() {
-  fetch('/zonas/listar')
+  fetch('https://navigationasistance-backend-1.onrender.com//zonas/listar')
     .then(res => res.json())
     .then(zonas => {
       const select = document.getElementById('zonaSelect');
@@ -106,7 +106,7 @@ function finalizarRuta() {
 }
 
 function centrarMapaEnZona(zona) {
-  fetch(`/zonas/listarZona${zona}`)
+  fetch(`https://navigationasistance-backend-1.onrender.com/zonas/listarZona${zona}`)
     .then(res => res.json())
     .then(z => {
       const lat = parseFloat(z.lato);

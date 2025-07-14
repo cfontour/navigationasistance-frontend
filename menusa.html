@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Menú Swimmer Assistance</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" />
+    <style>
+        body {
+          margin: 0;
+          font-family: 'Montserrat', sans-serif;
+          background-image: url('img/fondo_sa.png'); /* Usa la imagen sin menú */
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        header {
+          width: 100%;
+          text-align: center;
+          padding: 20px 10px;
+          background: rgba(0, 0, 0, 0.5);
+          color: white;
+          font-size: 24px;
+        }
+
+        .accordion {
+          width: 90%;
+          max-width: 500px;
+          background-color: rgba(0, 0, 0, 0.7);
+          border-radius: 10px;
+          overflow: hidden;
+          color: white;
+          margin: 40px 0;
+        }
+
+        .accordion-item {
+          border-bottom: 1px solid #444;
+        }
+
+        .accordion-header {
+          padding: 16px;
+          cursor: pointer;
+          background-color: #1a1a1a;
+          font-size: 18px;
+        }
+
+        .accordion-header:hover {
+          background-color: #333;
+        }
+
+        .accordion-content {
+          padding: 0 16px;
+          max-height: 0;
+          overflow: hidden;
+          background-color: #2a2a2a;
+          transition: max-height 0.3s ease;
+        }
+
+        .accordion-content a {
+          display: block;
+          padding: 12px 0;
+          color: #00d9ff;
+          text-decoration: none;
+        }
+
+        .accordion-content a:hover {
+          text-decoration: underline;
+        }
+
+        .colapsar-btn {
+          background-color: #444;
+          color: white;
+          padding: 10px 20px;
+          border: none;
+          width: 100%;
+          cursor: pointer;
+          font-size: 16px;
+          border-top: 1px solid #888;
+        }
+
+        .colapsar-btn:hover {
+          background-color: #666;
+        }
+
+        footer {
+          padding: 20px;
+        }
+
+        footer img {
+          max-width: 200px;
+          border-radius: 12px;
+        }
+
+        @media (max-width: 600px) {
+          header {
+            font-size: 18px;
+          }
+
+          .accordion-header {
+            font-size: 16px;
+          }
+
+          .accordion-content a {
+            font-size: 14px;
+          }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🧭 Carreras de Aventura - Menú Principal</h1>
+</header>
+
+<div class="accordion" id="menuca">
+    <div class="accordion-item">
+        <div class="accordion-header">🏃 Participantes</div>
+        <div class="accordion-content">
+            <a href="carrerasaventuraparticipantes.html">Ver Competidores</a>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <div class="accordion-header">📂 Cargar Rutas</div>
+        <div class="accordion-content">
+            <a href="cargapuntosrutas.html">Importar Rutas desde Archivo</a>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <div class="accordion-header">🗺️ Crear Rutas</div>
+        <div class="accordion-content">
+            <a href="maparutas.html">Diseñar Rutas</a>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <div class="accordion-header">📍 Mapa en vivo</div>
+        <div class="accordion-content">
+            <a href="mapaca.html">Visualizar Entrenamiento</a>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <div class="accordion-header">📊 Histórico</div>
+        <div class="accordion-content">
+            <a href="mapahistoricoca.html">Ver Recorridos</a>
+        </div>
+    </div>
+
+    <!-- NUEVO ITEM -->
+    <div class="accordion-item">
+        <div class="accordion-header">📄 Reporte de Participantes</div>
+        <div class="accordion-content">
+            <a href="reportepuntoscontrol.html">Visualizar Reportes</a>
+        </div>
+    </div>
+
+    <button class="colapsar-btn" onclick="colapsarTodo()">🔽 Colapsar todo</button>
+</div>
+
+<footer>
+    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
+</footer>
+
+<script src="menuca.js"></script>
+</body>
+</html>

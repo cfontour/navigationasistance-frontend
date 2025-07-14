@@ -33,7 +33,7 @@ function irASolapa(index) {
     }, 300); // pequeño retardo para asegurar que esté visible
   }
 
-  if (index === 4) {
+  if (index === 3) {
     dibujarCorredorVirtual();
     setTimeout(() => {
       mapaFinal.invalidateSize();

@@ -266,6 +266,56 @@ function dibujarCorredorVirtual() {
   // Punto final
   const lastIndex = puntosRuta.length - 1;
   L.marker(puntosRuta[lastIndex], { icon: iconoFin }).addTo(mapaFinal);
+
+    // 🚧 Dibujar líneas punteadas de puntos de control
+    const distanciaControl = parseFloat(document.getElementById('puntosControl').value); // en metros
+    let distanciaAcumulada = 0;
+
+    for (let i = 1; i < puntosRuta.length; i++) {
+      const [lat1, lon1] = puntosRuta[i - 1];
+      const [lat2, lon2] = puntosRuta[i];
+
+      const dx = lat2 - lat1;
+      const dy = lon2 - lon1;
+      const segmentoMetros = getDistanciaMetros(lat1, lon1, lat2, lon2);
+
+      let pasos = Math.floor((distanciaAcumulada + segmentoMetros) / distanciaControl);
+      let offsetPrevio = distanciaControl - (distanciaAcumulada % distanciaControl);
+
+      for (let p = 0; p < pasos; p++) {
+        const f = (offsetPrevio + p * distanciaControl) / segmentoMetros;
+
+        const lat = lat1 + dx * f;
+        const lon = lon1 + dy * f;
+
+        // Calcular desplazamiento perpendicular
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const ux = -dy / length * offset * 0.00001;
+        const uy = dx / length * offset * 0.00001;
+
+        const puntoIzq = [lat + ux, lon + uy];
+        const puntoDer = [lat - ux, lon - uy];
+
+        L.polyline([puntoIzq, puntoDer], {
+          color: 'green',
+          dashArray: '4, 4',
+          weight: 2
+        }).addTo(mapaFinal);
+      }
+
+      distanciaAcumulada += segmentoMetros;
+    }
+
+}
+
+function getDistanciaMetros(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // radio Tierra en metros
+  const toRad = deg => deg * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
 function confirmarConfiguracion() {

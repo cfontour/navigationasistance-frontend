@@ -32,9 +32,10 @@ function irASolapa(index) {
   }
 
   if (index === 3) {
+    centrarMapaFinalEnZona(zonaSeleccionada); // <- esta es la clave
     setTimeout(() => {
       mapaFinal.invalidateSize();
-      dibujarCorredorVirtual(); // ← este debe ir DESPUÉS del invalidateSize
+      dibujarCorredorVirtual();
 
       const ancho = document.getElementById('anchoCorredor').value;
       const distancia = document.getElementById('puntosControl').value;
@@ -57,6 +58,28 @@ function habilitarSiguienteZona() {
   const select = document.getElementById("zonaSelect");
   zonaSeleccionada = (select.value || "").trim();
   document.getElementById("btnSiguiente1").disabled = !zonaSeleccionada;
+}
+
+function centrarMapaFinalEnZona(zonaRaw) {
+  const zona = zonaRaw.trim();
+
+  fetch(`/zonas/listarZona/${encodeURIComponent(zona)}`)
+    .then(res => res.json())
+    .then(data => {
+      const z = Array.isArray(data) ? data[0] : data;
+      const lat = parseFloat(z.lato.trim());
+      const lng = parseFloat(z.lngo.trim());
+
+      if (!isNaN(lat) && !isNaN(lng)) {
+        mapaFinal.setView([lat, lng], 16);
+        setTimeout(() => mapaFinal.invalidateSize(), 300);
+      } else {
+        console.error("❌ Coordenadas inválidas:", z.lato, z.lngo);
+      }
+    })
+    .catch(err => {
+      console.error("❌ Error al centrar mapa final:", err);
+    });
 }
 
 function cargarZonas() {

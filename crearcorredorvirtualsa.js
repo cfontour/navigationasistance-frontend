@@ -31,8 +31,8 @@ function irASolapa(index) {
     setTimeout(() => mapaRuta.invalidateSize(), 300);
   }
 
-  if (index === 4) {
-    centrarMapaEnZona(zonaSeleccionada);
+  if (index === 3) {
+    centrarMapaFinalEnZona(zonaSeleccionada);
     setTimeout(() => {
       mapaFinal.invalidateSize();
       dibujarCorredorVirtual();
@@ -58,28 +58,6 @@ function habilitarSiguienteZona() {
   const select = document.getElementById("zonaSelect");
   zonaSeleccionada = (select.value || "").trim();
   document.getElementById("btnSiguiente1").disabled = !zonaSeleccionada;
-}
-
-function centrarMapaFinalEnZona(zonaRaw) {
-  const zona = zonaRaw.trim();
-
-  fetch(`/zonas/listarZona/${encodeURIComponent(zona)}`)
-    .then(res => res.json())
-    .then(data => {
-      const z = Array.isArray(data) ? data[0] : data;
-      const lat = parseFloat(z.lato.trim());
-      const lng = parseFloat(z.lngo.trim());
-
-      if (!isNaN(lat) && !isNaN(lng)) {
-        mapaFinal.setView([lat, lng], 16);
-        setTimeout(() => mapaFinal.invalidateSize(), 300);
-      } else {
-        console.error("❌ Coordenadas inválidas:", z.lato, z.lngo);
-      }
-    })
-    .catch(err => {
-      console.error("❌ Error al centrar mapa final:", err);
-    });
 }
 
 function cargarZonas() {
@@ -183,6 +161,31 @@ function centrarMapaEnZona(zonaRaw) {
     })
     .catch(err => {
       console.error("❌ Error al obtener zona:", err);
+    });
+}
+
+function centrarMapaFinalEnZona(zonaRaw) {
+  const zona = zonaRaw.trim();
+
+  fetch(`https://navigationasistance-backend-1.onrender.com/zonas/listarZona/${encodeURIComponent(zona)}`)
+    .then(res => res.json())
+    .then(data => {
+      const z = Array.isArray(data) ? data[0] : data;
+      const lat = parseFloat(z.lato.trim());
+      const lng = parseFloat(z.lngo.trim());
+
+      if (!isNaN(lat) && !isNaN(lng)) {
+        // AHORA SÍ: centramos y redimensionamos correctamente
+        setTimeout(() => {
+          mapaFinal.setView([lat, lng], 16);
+          mapaFinal.invalidateSize();
+        }, 300);
+      } else {
+        console.error("❌ Coordenadas inválidas:", z.lato, z.lngo);
+      }
+    })
+    .catch(err => {
+      console.error("❌ Error al centrar mapa final:", err);
     });
 }
 

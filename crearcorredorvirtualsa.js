@@ -31,7 +31,7 @@ function irASolapa(index) {
     setTimeout(() => mapaRuta.invalidateSize(), 300);
   }
 
-  if (index === 3) {
+  if (index === 4) {
     centrarMapaEnZona(zonaSeleccionada);
     setTimeout(() => {
       mapaFinal.invalidateSize();

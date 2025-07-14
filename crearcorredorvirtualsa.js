@@ -26,7 +26,7 @@ function showTab(index) {
 function irASolapa(index) {
   showTab(index);
 
-  if (index === 1 && zonaSeleccionada) {
+  if ((index === 1 || index === 3) && zonaSeleccionada) {
     centrarMapaEnZona(zonaSeleccionada);
     setTimeout(() => {
       mapaRuta.invalidateSize();

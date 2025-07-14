@@ -25,13 +25,22 @@ function showTab(index) {
 
 function irASolapa(index) {
   showTab(index);
+
   if (index === 1 && zonaSeleccionada) {
     centrarMapaEnZona(zonaSeleccionada);
+    setTimeout(() => {
+      mapaRuta.invalidateSize();
+    }, 300); // pequeño retardo para asegurar que esté visible
   }
-  if (index === 3) {
+
+  if (index === 4) {
     dibujarCorredorVirtual();
+    setTimeout(() => {
+      mapaFinal.invalidateSize();
+    }, 300);
   }
 }
+
 
 function actualizarLabel(id, valor) {
   document.getElementById(id).textContent = valor;

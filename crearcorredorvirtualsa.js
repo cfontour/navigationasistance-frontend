@@ -44,7 +44,7 @@ function habilitarSiguienteZona() {
 }
 
 function cargarZonas() {
-  fetch('https://navigationasistance-backend-1.onrender.com//zonas/listar')
+  fetch('https://navigationasistance-backend-1.onrender.com/zonas/listar')
     .then(res => res.json())
     .then(zonas => {
       const select = document.getElementById('zonaSelect');

@@ -48,7 +48,7 @@ function actualizarLabel(id, valor) {
 
 function habilitarSiguienteZona() {
   const select = document.getElementById("zonaSelect");
-  zonaSeleccionada = select.value || null;
+  zonaSeleccionada = (select.value || "").trim();
   document.getElementById("btnSiguiente1").disabled = !zonaSeleccionada;
 }
 
@@ -114,13 +114,24 @@ function finalizarRuta() {
   alert("✅ Ruta definida. Puede continuar.");
 }
 
-function centrarMapaEnZona(zona) {
+function centrarMapaEnZona(zonaRaw) {
+  const zona = zonaRaw.trim(); // limpia espacios
+
   fetch(`https://navigationasistance-backend-1.onrender.com/zonas/listarZona${zona}`)
     .then(res => res.json())
     .then(z => {
-      const lat = parseFloat(z.lato);
-      const lng = parseFloat(z.lngo);
-      mapaRuta.setView([lat, lng], 15);
+      const lat = parseFloat(z.lato.trim());
+      const lng = parseFloat(z.lngo.trim());
+
+      if (!isNaN(lat) && !isNaN(lng)) {
+        mapaRuta.setView([lat, lng], 16);
+        setTimeout(() => mapaRuta.invalidateSize(), 300);
+      } else {
+        console.error("❌ Coordenadas inválidas:", z.lato, z.lngo);
+      }
+    })
+    .catch(err => {
+      console.error("❌ Error al obtener zona:", err);
     });
 }
 

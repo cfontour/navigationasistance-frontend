@@ -197,15 +197,17 @@ function initMapaFinal() {
 }
 
 function dibujarCorredorVirtual() {
-  mapaFinal.eachLayer(l => l instanceof L.Polyline && mapaFinal.removeLayer(l));
+  if (!mapaFinal || puntosRuta.length < 2) {
+    console.warn("⚠️ No hay suficientes puntos para generar el corredor virtual.");
+    return;
+  }
+
+  mapaFinal.eachLayer(l => {
+    if (l instanceof L.Polyline || l instanceof L.Marker) mapaFinal.removeLayer(l);
+  });
 
   const ancho = parseFloat(document.getElementById('anchoCorredor').value);
   const offset = ancho / 2;
-
-  if (puntosRuta.length < 2) {
-    alert("❗ Necesitás al menos 2 puntos para calcular el corredor.");
-    return;
-  }
 
   const izq = [], der = [];
 
@@ -220,15 +222,50 @@ function dibujarCorredorVirtual() {
 
     izq.push([lat1 + ux, lon1 + uy]);
     der.push([lat1 - ux, lon1 - uy]);
+
     if (i === puntosRuta.length - 1) {
       izq.push([lat2 + ux, lon2 + uy]);
       der.push([lat2 - ux, lon2 - uy]);
     }
   }
 
-  L.polyline(puntosRuta, { color: 'red' }).addTo(mapaFinal);
-  L.polyline(izq, { color: 'blue' }).addTo(mapaFinal);
-  L.polyline(der, { color: 'blue' }).addTo(mapaFinal);
+  const lineaCentral = L.polyline(puntosRuta, { color: 'red' }).addTo(mapaFinal);
+  L.polyline(izq, { color: 'blue', dashArray: '5, 5' }).addTo(mapaFinal);
+  L.polyline(der, { color: 'blue', dashArray: '5, 5' }).addTo(mapaFinal);
+
+  // 📌 Centramos la vista
+  mapaFinal.setView(puntosRuta[0], 16);
+
+  // 🏁 Agregar marcadores con íconos
+  const iconoInicio = L.icon({
+    iconUrl: 'img/start_flag.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32]
+  });
+
+  const iconoIntermedio = L.icon({
+    iconUrl: 'img/white_flag.png',
+    iconSize: [28, 28],
+    iconAnchor: [14, 28]
+  });
+
+  const iconoFin = L.icon({
+    iconUrl: 'img/finish_flag.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32]
+  });
+
+  // Punto de inicio
+  L.marker(puntosRuta[0], { icon: iconoInicio }).addTo(mapaFinal);
+
+  // Puntos intermedios
+  for (let i = 1; i < puntosRuta.length - 1; i++) {
+    L.marker(puntosRuta[i], { icon: iconoIntermedio }).addTo(mapaFinal);
+  }
+
+  // Punto final
+  const lastIndex = puntosRuta.length - 1;
+  L.marker(puntosRuta[lastIndex], { icon: iconoFin }).addTo(mapaFinal);
 }
 
 function confirmarConfiguracion() {

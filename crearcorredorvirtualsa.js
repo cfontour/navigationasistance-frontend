@@ -1,0 +1,162 @@
+// crearcorredorvirtualsa.js
+
+let zonaSeleccionada = null;
+let mapaRuta = null;
+let mapaFinal = null;
+let puntosRuta = [];
+let marcadoresRuta = [];
+let polyline = null;
+
+// Inicialización
+window.onload = () => {
+  cargarZonas();
+  initMapaRuta();
+  initMapaFinal();
+};
+
+function showTab(index) {
+  document.querySelectorAll('.tab-button').forEach((btn, i) => {
+    btn.classList.toggle('active', i === index);
+  });
+  document.querySelectorAll('.tab-content').forEach((tab, i) => {
+    tab.classList.toggle('active', i === index);
+  });
+}
+
+function irASolapa(index) {
+  showTab(index);
+  if (index === 1 && zonaSeleccionada) {
+    centrarMapaEnZona(zonaSeleccionada);
+  }
+  if (index === 3) {
+    dibujarCorredorVirtual();
+  }
+}
+
+function actualizarLabel(id, valor) {
+  document.getElementById(id).textContent = valor;
+}
+
+function habilitarSiguienteZona() {
+  const select = document.getElementById("zonaSelect");
+  zonaSeleccionada = select.value || null;
+  document.getElementById("btnSiguiente1").disabled = !zonaSeleccionada;
+}
+
+function cargarZonas() {
+  fetch('/zonas/listar')
+    .then(res => res.json())
+    .then(zonas => {
+      const select = document.getElementById('zonaSelect');
+      select.innerHTML = '<option value="">-- Seleccionar --</option>';
+      zonas.forEach(z => {
+        const option = document.createElement('option');
+        option.value = z.zona;
+        option.textContent = `${z.zona} - ${z.nomo} a ${z.nomd}`;
+        select.appendChild(option);
+      });
+    });
+}
+
+function agregarZona() {
+  alert("🔧 Funcionalidad Agregar Zona en construcción.");
+}
+function modificarZona() {
+  alert("🔧 Funcionalidad Modificar Zona en construcción.");
+}
+function eliminarZona() {
+  alert("🔧 Funcionalidad Eliminar Zona en construcción.");
+}
+
+function initMapaRuta() {
+  mapaRuta = L.map('map1').setView([-34.9, -56.2], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+  }).addTo(mapaRuta);
+
+  let timeout = null;
+  mapaRuta.on('click', function (e) {
+    const { lat, lng } = e.latlng;
+    const marcador = L.marker([lat, lng]).addTo(mapaRuta);
+    marcadoresRuta.push(marcador);
+    puntosRuta.push([lat, lng]);
+
+    marcador.bindPopup("¿Este es el punto final? <br><button onclick=\"finalizarRuta()\">Sí</button>", { closeOnClick: true }).openPopup();
+
+    marcador.on('mousedown', () => {
+      timeout = setTimeout(() => {
+        mapaRuta.removeLayer(marcador);
+        puntosRuta = puntosRuta.filter(p => !(p[0] === lat && p[1] === lng));
+        marcadoresRuta = marcadoresRuta.filter(m => m !== marcador);
+        if (polyline) mapaRuta.removeLayer(polyline);
+        polyline = L.polyline(puntosRuta, { color: 'red' }).addTo(mapaRuta);
+      }, 2000);
+    });
+
+    marcador.on('mouseup', () => clearTimeout(timeout));
+
+    if (polyline) mapaRuta.removeLayer(polyline);
+    polyline = L.polyline(puntosRuta, { color: 'red' }).addTo(mapaRuta);
+  });
+}
+
+function finalizarRuta() {
+  document.getElementById('btnSiguiente2').disabled = false;
+  alert("✅ Ruta definida. Puede continuar.");
+}
+
+function centrarMapaEnZona(zona) {
+  fetch(`/zonas/listarZona${zona}`)
+    .then(res => res.json())
+    .then(z => {
+      const lat = parseFloat(z.lato);
+      const lng = parseFloat(z.lngo);
+      mapaRuta.setView([lat, lng], 15);
+    });
+}
+
+function initMapaFinal() {
+  mapaFinal = L.map('map2').setView([-34.9, -56.2], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+  }).addTo(mapaFinal);
+}
+
+function dibujarCorredorVirtual() {
+  mapaFinal.eachLayer(l => l instanceof L.Polyline && mapaFinal.removeLayer(l));
+
+  const ancho = parseFloat(document.getElementById('anchoCorredor').value);
+  const offset = ancho / 2;
+
+  if (puntosRuta.length < 2) {
+    alert("❗ Necesitás al menos 2 puntos para calcular el corredor.");
+    return;
+  }
+
+  const izq = [], der = [];
+
+  for (let i = 1; i < puntosRuta.length; i++) {
+    const [lat1, lon1] = puntosRuta[i - 1];
+    const [lat2, lon2] = puntosRuta[i];
+    const dx = lat2 - lat1;
+    const dy = lon2 - lon1;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const ux = -dy / length * offset * 0.00001;
+    const uy = dx / length * offset * 0.00001;
+
+    izq.push([lat1 + ux, lon1 + uy]);
+    der.push([lat1 - ux, lon1 - uy]);
+    if (i === puntosRuta.length - 1) {
+      izq.push([lat2 + ux, lon2 + uy]);
+      der.push([lat2 - ux, lon2 - uy]);
+    }
+  }
+
+  L.polyline(puntosRuta, { color: 'red' }).addTo(mapaFinal);
+  L.polyline(izq, { color: 'blue' }).addTo(mapaFinal);
+  L.polyline(der, { color: 'blue' }).addTo(mapaFinal);
+}
+
+function confirmarConfiguracion() {
+  alert("📡 Llamada al backend en construcción.");
+}

@@ -115,19 +115,24 @@ function finalizarRuta() {
 }
 
 function centrarMapaEnZona(zonaRaw) {
-  const zona = zonaRaw.trim(); // limpia espacios
+  const zona = zonaRaw.trim();
 
-  fetch(`https://navigationasistance-backend-1.onrender.com/zonas/listarZona${zona}`)
+  fetch(`https://navigationasistance-backend-1.onrender.com/zonas/listarZona/${encodeURIComponent(zona)}`)
     .then(res => res.json())
-    .then(z => {
-      const lat = parseFloat(z.lato.trim());
-      const lng = parseFloat(z.lngo.trim());
+    .then(data => {
+      const z = Array.isArray(data) ? data[0] : data;
+
+      const latRaw = z?.lato ?? '';
+      const lngRaw = z?.lngo ?? '';
+
+      const lat = parseFloat(latRaw.trim());
+      const lng = parseFloat(lngRaw.trim());
 
       if (!isNaN(lat) && !isNaN(lng)) {
         mapaRuta.setView([lat, lng], 16);
         setTimeout(() => mapaRuta.invalidateSize(), 300);
       } else {
-        console.error("❌ Coordenadas inválidas:", z.lato, z.lngo);
+        console.error("❌ Coordenadas inválidas:", latRaw, lngRaw);
       }
     })
     .catch(err => {

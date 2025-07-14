@@ -26,21 +26,28 @@ function showTab(index) {
 function irASolapa(index) {
   showTab(index);
 
-  if ((index === 1 || index === 3) && zonaSeleccionada) {
+  if (index === 1 && zonaSeleccionada) {
     centrarMapaEnZona(zonaSeleccionada);
-    setTimeout(() => {
-      mapaRuta.invalidateSize();
-    }, 300); // pequeño retardo para asegurar que esté visible
+    setTimeout(() => mapaRuta.invalidateSize(), 300);
   }
 
   if (index === 3) {
-    dibujarCorredorVirtual();
     setTimeout(() => {
+      dibujarCorredorVirtual();
       mapaFinal.invalidateSize();
+
+      const ancho = document.getElementById('anchoCorredor').value;
+      const distancia = document.getElementById('puntosControl').value;
+      const zona = zonaSeleccionada || "Desconocida";
+
+      document.getElementById('infoSeteos').innerHTML = `
+        🧭 Zona seleccionada: <strong>${zona}</strong><br/>
+        📏 Ancho del corredor: <strong>${ancho} m</strong><br/>
+        📍 Distancia entre puntos de control: <strong>${distancia} m</strong>
+      `;
     }, 300);
   }
 }
-
 
 function actualizarLabel(id, valor) {
   document.getElementById(id).textContent = valor;

@@ -209,29 +209,32 @@ function dibujarCorredorVirtual() {
   const ancho = parseFloat(document.getElementById('anchoCorredor').value);
   const offset = ancho / 2;
 
-  const izq = [], der = [];
+    const izq = [], der = [];
 
-  for (let i = 0; i < puntosRuta.length; i++) {
-    let lat, lon, angle;
+    for (let i = 0; i < puntosRuta.length - 1; i++) {
+      const [lat1, lon1] = puntosRuta[i];
+      const [lat2, lon2] = puntosRuta[i + 1];
 
-    if (i === puntosRuta.length - 1) {
-      // último punto → usar anterior para dirección
-      lat = puntosRuta[i][0] - puntosRuta[i - 1][0];
-      lon = puntosRuta[i][1] - puntosRuta[i - 1][1];
-    } else {
-      // normal → usar siguiente punto
-      lat = puntosRuta[i + 1][0] - puntosRuta[i][0];
-      lon = puntosRuta[i + 1][1] - puntosRuta[i][1];
+      const dx = lat2 - lat1;
+      const dy = lon2 - lon1;
+      const len = Math.sqrt(dx * dx + dy * dy);
+
+      const nx = -dy / len;
+      const ny = dx / len;
+
+      // desplazamiento perpendicular constante para ambos extremos del segmento
+      const offsetLat = nx * offset * 0.00001;
+      const offsetLon = ny * offset * 0.00001;
+
+      izq.push([lat1 + offsetLat, lon1 + offsetLon]);
+      der.push([lat1 - offsetLat, lon1 - offsetLon]);
+
+      // en el último paso, agregamos el punto final también
+      if (i === puntosRuta.length - 2) {
+        izq.push([lat2 + offsetLat, lon2 + offsetLon]);
+        der.push([lat2 - offsetLat, lon2 - offsetLon]);
+      }
     }
-
-    // calcular longitud del vector
-    const len = Math.sqrt(lat * lat + lon * lon);
-    const ux = -lon / len * offset * 0.00001;
-    const uy = lat / len * offset * 0.00001;
-
-    izq.push([puntosRuta[i][0] + uy, puntosRuta[i][1] + ux]);
-    der.push([puntosRuta[i][0] - uy, puntosRuta[i][1] - ux]);
-  }
 
   const lineaCentral = L.polyline(puntosRuta, { color: 'red' }).addTo(mapaFinal);
   L.polyline(izq, { color: 'blue', dashArray: '5, 5' }).addTo(mapaFinal);

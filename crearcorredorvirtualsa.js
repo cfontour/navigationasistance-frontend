@@ -90,7 +90,13 @@ function initMapaRuta() {
     marcadoresRuta.push(marcador);
     puntosRuta.push([lat, lng]);
 
-    marcador.bindPopup("¿Este es el punto final? <br><button onclick=\"finalizarRuta()\">Sí</button>", { closeOnClick: true }).openPopup();
+    marcador.bindPopup(`
+      <div>
+        ¿Este es el punto final?<br/>
+        <button onclick="confirmarPuntoFinal()">Sí</button>
+        <button onclick="cerrarPopup()">No</button>
+      </div>
+    `, { closeOnClick: false }).openPopup();
 
     marcador.on('mousedown', () => {
       timeout = setTimeout(() => {
@@ -107,6 +113,16 @@ function initMapaRuta() {
     if (polyline) mapaRuta.removeLayer(polyline);
     polyline = L.polyline(puntosRuta, { color: 'red' }).addTo(mapaRuta);
   });
+}
+
+function confirmarPuntoFinal() {
+  document.getElementById('btnSiguiente2').disabled = false;
+  alert("✅ Ruta definida. Puede continuar.");
+  mapaRuta.closePopup(); // cerrar cualquier popup abierto
+}
+
+function cerrarPopup() {
+  mapaRuta.closePopup(); // simplemente cierra el popup y permite seguir
 }
 
 function finalizarRuta() {

@@ -211,22 +211,26 @@ function dibujarCorredorVirtual() {
 
   const izq = [], der = [];
 
-  for (let i = 1; i < puntosRuta.length; i++) {
-    const [lat1, lon1] = puntosRuta[i - 1];
-    const [lat2, lon2] = puntosRuta[i];
-    const dx = lat2 - lat1;
-    const dy = lon2 - lon1;
-    const length = Math.sqrt(dx * dx + dy * dy);
-    const ux = -dy / length * offset * 0.00001;
-    const uy = dx / length * offset * 0.00001;
-
-    izq.push([lat1 + ux, lon1 + uy]);
-    der.push([lat1 - ux, lon1 - uy]);
+  for (let i = 0; i < puntosRuta.length; i++) {
+    let lat, lon, angle;
 
     if (i === puntosRuta.length - 1) {
-      izq.push([lat2 + ux, lon2 + uy]);
-      der.push([lat2 - ux, lon2 - uy]);
+      // último punto → usar anterior para dirección
+      lat = puntosRuta[i][0] - puntosRuta[i - 1][0];
+      lon = puntosRuta[i][1] - puntosRuta[i - 1][1];
+    } else {
+      // normal → usar siguiente punto
+      lat = puntosRuta[i + 1][0] - puntosRuta[i][0];
+      lon = puntosRuta[i + 1][1] - puntosRuta[i][1];
     }
+
+    // calcular longitud del vector
+    const len = Math.sqrt(lat * lat + lon * lon);
+    const ux = -lon / len * offset * 0.00001;
+    const uy = lat / len * offset * 0.00001;
+
+    izq.push([puntosRuta[i][0] + uy, puntosRuta[i][1] + ux]);
+    der.push([puntosRuta[i][0] - uy, puntosRuta[i][1] - ux]);
   }
 
   const lineaCentral = L.polyline(puntosRuta, { color: 'red' }).addTo(mapaFinal);

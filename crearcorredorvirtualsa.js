@@ -32,7 +32,7 @@ function irASolapa(index) {
   }
 
   if (index === 3) {
-    centrarMapaFinalEnZona(zonaSeleccionada); // <- esta es la clave
+    centrarMapaEnZona(zonaSeleccionada);
     setTimeout(() => {
       mapaFinal.invalidateSize();
       dibujarCorredorVirtual();

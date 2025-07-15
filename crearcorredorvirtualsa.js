@@ -396,6 +396,14 @@ async function confirmarConfiguracion() {
         const pasos = Math.floor((distanciaAcumulada + segmentoMetros) / distanciaControl);
         const offsetPrevio = distanciaControl - (distanciaAcumulada % distanciaControl);
 
+        if (i === 1) {
+          tipo = "O"; // Origen
+        } else if (i === puntosRuta.length - 1) {
+          tipo = "F"; // Final
+        } else {
+          tipo = "I"; // Intermedio
+        }
+
         for (let p = 0; p < pasos; p++) {
           const f = (offsetPrevio + p * distanciaControl) / segmentoMetros;
 
@@ -433,7 +441,7 @@ async function confirmarConfiguracion() {
         }
 
         distanciaAcumulada += segmentoMetros;
-        
+
     }
 
     alert("✅ Corredor virtual confirmado correctamente.");

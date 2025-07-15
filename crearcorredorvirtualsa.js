@@ -396,13 +396,18 @@ async function confirmarConfiguracion() {
         const pasos = Math.floor((distanciaAcumulada + segmentoMetros) / distanciaControl);
         const offsetPrevio = distanciaControl - (distanciaAcumulada % distanciaControl);
 
+        tipo = "I"; // Intermedio
+        
         if (i === 1) {
           tipo = "O"; // Origen
-        } else if (i === puntosRuta.length - 1) {
-          tipo = "F"; // Final
-        } else {
-          tipo = "I"; // Intermedio
         }
+
+        if (i === puntosRuta.length - 1) {
+          tipo = "F"; // Final
+        }
+
+        tipo = "I"; // Intermedio
+
 
         for (let p = 0; p < pasos; p++) {
           const f = (offsetPrevio + p * distanciaControl) / segmentoMetros;

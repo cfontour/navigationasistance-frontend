@@ -396,19 +396,6 @@ async function confirmarConfiguracion() {
         const pasos = Math.floor((distanciaAcumulada + segmentoMetros) / distanciaControl);
         const offsetPrevio = distanciaControl - (distanciaAcumulada % distanciaControl);
 
-        tipo = "I"; // Intermedio
-        
-        if (i === 1) {
-          tipo = "O"; // Origen
-        }
-
-        if (i === puntosRuta.length - 1) {
-          tipo = "F"; // Final
-        }
-
-        tipo = "I"; // Intermedio
-
-
         for (let p = 0; p < pasos; p++) {
           const f = (offsetPrevio + p * distanciaControl) / segmentoMetros;
 
@@ -423,6 +410,16 @@ async function confirmarConfiguracion() {
           const lngl = lon + uy;
           const latr = lat - ux;
           const lngr = lon - uy;
+
+          tipo = "I"; // Intermedio
+
+          if (i === 1) {
+            tipo = "O"; // Origen
+          }
+
+          if (i === puntosRuta.length - 1) {
+            tipo = "F"; // Final
+          }
 
           const payload = {
             ruta_id: parseInt(rutaId),

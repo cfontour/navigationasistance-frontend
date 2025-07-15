@@ -354,6 +354,91 @@ function getDistanciaMetros(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-function confirmarConfiguracion() {
-  alert("📡 Llamada al backend en construcción.");
+async function confirmarConfiguracion() {
+  const zona = zonaSeleccionada;
+  const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0]; // formato "YYYY-MM-DD HH:mm:ss"
+  const distanciaControl = parseFloat(document.getElementById('puntosControl').value);
+  const ancho = parseFloat(document.getElementById('anchoCorredor').value);
+  const offset = ancho / 2;
+
+  try {
+    // Paso 1: Crear la ruta
+    const rutaResponse = await fetch("https://navigationasistance-backend-1.onrender.com/rutasa/agregar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nombre: zona,
+        color: timestamp
+      })
+    });
+
+    if (!rutaResponse.ok) throw new Error("Error al agregar ruta");
+
+    const rutaId = await rutaResponse.text(); // asumimos que el backend retorna el ID como texto plano
+
+    // Paso 2: calcular puntos de control
+    const segmentos = [];
+    let distanciaTotal = 0;
+
+    for (let i = 1; i < puntosRuta.length; i++) {
+      const [lat1, lon1] = puntosRuta[i - 1];
+      const [lat2, lon2] = puntosRuta[i];
+      const dist = getDistanciaMetros(lat1, lon1, lat2, lon2);
+      segmentos.push({ lat1, lon1, lat2, lon2, dist });
+      distanciaTotal += dist;
+    }
+
+    let distanciaActual = 0;
+
+    while (distanciaActual <= distanciaTotal) {
+      let acumulado = 0;
+
+      for (let i = 0; i < segmentos.length; i++) {
+        const seg = segmentos[i];
+
+        if (acumulado + seg.dist >= distanciaActual) {
+          const f = (distanciaActual - acumulado) / seg.dist;
+
+          const lat = seg.lat1 + (seg.lat2 - seg.lat1) * f;
+          const lon = seg.lon1 + (seg.lon2 - seg.lon1) * f;
+
+          const dx = seg.lat2 - seg.lat1;
+          const dy = seg.lon2 - seg.lon1;
+          const length = Math.sqrt(dx * dx + dy * dy);
+          const ux = -dy / length * offset * 0.00001;
+          const uy = dx / length * offset * 0.00001;
+
+          const puntoIzq = { lat: lat + ux, lon: lon + uy };
+          const puntoDer = { lat: lat - ux, lon: lon - uy };
+
+          // Enviar señal
+          await fetch("https://navigationasistance-backend-1.onrender.com/seniales/agregar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ruta_id: rutaId,
+              mts: Math.round(distanciaActual),
+              latizq: puntoIzq.lat,
+              lngizq: puntoIzq.lon,
+              latder: puntoDer.lat,
+              lngder: puntoDer.lon
+            })
+          });
+
+          break;
+        }
+
+        acumulado += seg.dist;
+      }
+
+      distanciaActual += distanciaControl;
+    }
+
+    alert("✅ Corredor virtual confirmado correctamente.");
+
+  } catch (error) {
+    console.error("❌ Error al confirmar:", error);
+    alert("❌ Error al confirmar el corredor. Ver consola.");
+  }
 }
+

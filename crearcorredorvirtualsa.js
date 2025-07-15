@@ -413,14 +413,12 @@ async function confirmarConfiguracion() {
 
           tipo = "I"; // Intermedio
 
-          if (i === 1) {
-            tipo = "O"; // Origen
+          if (i === 1 && p === 0) {
+            tipo = "O"; // primer punto
+          } else if (i === puntosRuta.length - 1 && p === pasos - 1) {
+            tipo = "F"; // último punto
           }
-
-          if (i === puntosRuta.length - 1) {
-            tipo = "F"; // Final
-          }
-
+          
           const payload = {
             ruta_id: parseInt(rutaId),
             mts: Math.round(distanciaAcumulada + f * segmentoMetros),

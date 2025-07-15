@@ -428,7 +428,7 @@ async function confirmarConfiguracion() {
             lngr: lngr,
             latc: lat,
             lngc: lon,
-            tipo: "L"
+            tipo: tipo
           };
 
           console.log("📦 Enviando señal:", payload);

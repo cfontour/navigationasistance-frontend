@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     rutas.forEach((ruta) => {
       const opt = document.createElement("option");
       opt.value = ruta.id;
-      opt.textContent = `Ruta ${ruta.id} - ${ruta.nombre || ruta.color}`;
+      opt.textContent = `Ruta ${ruta.id} - ${ruta.nombre} [${ruta.color}]`;
       selector.appendChild(opt);
     });
   } catch (e) {

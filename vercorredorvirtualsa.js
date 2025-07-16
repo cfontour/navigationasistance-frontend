@@ -1,5 +1,6 @@
 let map = L.map("map").setView([-34.9, -56.2], 13); // Ajustá coordenadas por defecto si querés
-let senialesLayer = L.layerGroup().addTo(map);
+let senialesLayer = L.featureGroup().addTo(map);
+
 let rutaSeleccionada = null;
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {

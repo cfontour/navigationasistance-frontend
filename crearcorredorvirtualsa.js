@@ -354,101 +354,94 @@ function getDistanciaMetros(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+function getDistanciaMetros(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // radio Tierra en metros
+  const toRad = deg => deg * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 async function confirmarConfiguracion() {
   const zona = zonaSeleccionada;
-  const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0]; // formato "YYYY-MM-DD HH:mm:ss"
+  const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
   const distanciaControl = parseFloat(document.getElementById('puntosControl').value);
   const ancho = parseFloat(document.getElementById('anchoCorredor').value);
   const offset = ancho / 2;
 
   try {
-    // Paso 1: Crear la ruta
+    // Paso 1: crear la ruta
     const rutaResponse = await fetch("https://navigationasistance-backend-1.onrender.com/rutasa/agregar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nombre: zona,
-        color: timestamp
-      })
+      body: JSON.stringify({ nombre: zona, color: timestamp })
     });
 
     if (!rutaResponse.ok) throw new Error("Error al agregar ruta");
-
-    const rutaId = await rutaResponse.text(); // asumimos que el backend retorna el ID como texto plano
-
-    console.log("✅ Ruta creada con ID:", rutaId);
-
-    // Paso 2️⃣: Enviar las señales de control
-    const distanciaControl = parseFloat(document.getElementById('puntosControl').value); // en metros
-    const ancho = parseFloat(document.getElementById('anchoCorredor').value);
-    const offset = ancho / 2;
+    const rutaId = await rutaResponse.text();
 
     let distanciaAcumulada = 0;
 
     for (let i = 1; i < puntosRuta.length; i++) {
-        const [lat1, lon1] = puntosRuta[i - 1];
-        const [lat2, lon2] = puntosRuta[i];
+      const [lat1, lon1] = puntosRuta[i - 1];
+      const [lat2, lon2] = puntosRuta[i];
 
-        const dx = lat2 - lat1;
-        const dy = lon2 - lon1;
-        const segmentoMetros = getDistanciaMetros(lat1, lon1, lat2, lon2);
+      const dx = lat2 - lat1;
+      const dy = lon2 - lon1;
+      const segmentoMetros = getDistanciaMetros(lat1, lon1, lat2, lon2);
 
-        const pasos = Math.floor((distanciaAcumulada + segmentoMetros) / distanciaControl);
-        const offsetPrevio = distanciaControl - (distanciaAcumulada % distanciaControl);
+      const pasos = Math.floor((distanciaAcumulada + segmentoMetros) / distanciaControl);
+      const offsetPrevio = distanciaControl - (distanciaAcumulada % distanciaControl);
 
-        for (let p = 0; p < pasos; p++) {
-          const f = (offsetPrevio + p * distanciaControl) / segmentoMetros;
+      for (let p = 0; p < pasos; p++) {
+        const f = (offsetPrevio + p * distanciaControl) / segmentoMetros;
+        const lat = lat1 + dx * f;
+        const lon = lon1 + dy * f;
 
-          const lat = lat1 + dx * f;
-          const lon = lon1 + dy * f;
+        const theta = Math.atan2(dy, dx); // dirección del segmento
+        const dLat = (offset / 6371000) * (180 / Math.PI); // conversión de metros a grados latitud
+        const dLon = dLat / Math.cos(lat * Math.PI / 180); // conversión de metros a grados longitud
 
-          const len = Math.sqrt(dx * dx + dy * dy);
-          const ux = -dy / len * offset * 0.00001;
-          const uy = dx / len * offset * 0.00001;
+        const latl = lat + dLat * Math.cos(theta + Math.PI / 2);
+        const lngl = lon + dLon * Math.sin(theta + Math.PI / 2);
+        const latr = lat + dLat * Math.cos(theta - Math.PI / 2);
+        const lngr = lon + dLon * Math.sin(theta - Math.PI / 2);
 
-          const latl = lat + ux;
-          const lngl = lon + uy;
-          const latr = lat - ux;
-          const lngr = lon - uy;
+        let tipo = "I";
+        if (i === 1 && p === 0) tipo = "O";
+        if (i === puntosRuta.length - 1 && p === pasos - 1) tipo = "F";
 
-          tipo = "I"; // Intermedio
+        const payload = {
+          ruta_id: parseInt(rutaId),
+          mts: Math.round(distanciaAcumulada + f * segmentoMetros),
+          latl: latl,
+          lngl: lngl,
+          latr: latr,
+          lngr: lngr,
+          latc: lat,
+          lngc: lon,
+          tipo: tipo
+        };
 
-          if (i === 1 && p === 0) {
-            tipo = "O"; // primer punto
-          } else if (i === puntosRuta.length - 1 && p === pasos - 1) {
-            tipo = "F"; // último punto
-          }
+        console.log("📦 Enviando señal:", payload);
 
-          const payload = {
-            ruta_id: parseInt(rutaId),
-            mts: Math.round(distanciaAcumulada + f * segmentoMetros),
-            latl: latl,
-            lngl: lngl,
-            latr: latr,
-            lngr: lngr,
-            latc: lat,
-            lngc: lon,
-            tipo: tipo
-          };
+        await fetch("https://navigationasistance-backend-1.onrender.com/seniales/agregar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      }
 
-          console.log("📦 Enviando señal:", payload);
-
-          await fetch("https://navigationasistance-backend-1.onrender.com/seniales/agregar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          });
-        }
-
-        distanciaAcumulada += segmentoMetros;
-
+      distanciaAcumulada += segmentoMetros;
     }
 
     alert("✅ Corredor virtual confirmado correctamente.");
-
   } catch (error) {
     console.error("❌ Error al confirmar:", error);
     alert("❌ Error al confirmar el corredor. Ver consola.");
   }
 }
+
 

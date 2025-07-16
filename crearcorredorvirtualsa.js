@@ -362,6 +362,7 @@ async function confirmarConfiguracion() {
   const offset = ancho / 2;
 
   try {
+    // Crear la ruta
     const rutaResponse = await fetch("https://navigationasistance-backend-1.onrender.com/rutasa/agregar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -373,25 +374,23 @@ async function confirmarConfiguracion() {
     const rutaId = await rutaResponse.text();
     console.log("✅ Ruta creada con ID:", rutaId);
 
-    let distanciaAcumulada = 0;
+    let mtsAcumulados = 0;
 
     for (let i = 1; i < puntosRuta.length; i++) {
       const [lat1, lon1] = puntosRuta[i - 1];
       const [lat2, lon2] = puntosRuta[i];
-
       const dx = lat2 - lat1;
       const dy = lon2 - lon1;
+      const len = Math.sqrt(dx * dx + dy * dy);
       const segmentoMetros = getDistanciaMetros(lat1, lon1, lat2, lon2);
 
-      const pasos = Math.floor((distanciaAcumulada + segmentoMetros) / distanciaControl);
-      const offsetPrevio = distanciaControl - (distanciaAcumulada % distanciaControl);
+      const pasos = Math.floor(segmentoMetros / distanciaControl);
 
-      for (let p = 0; p < pasos; p++) {
-        const f = (offsetPrevio + p * distanciaControl) / segmentoMetros;
+      for (let j = 0; j < pasos; j++) {
+        const f = (j * distanciaControl) / segmentoMetros;
         const lat = lat1 + dx * f;
         const lon = lon1 + dy * f;
 
-        const len = Math.sqrt(dx * dx + dy * dy);
         const ux = -dy / len * offset * 0.00001;
         const uy = dx / len * offset * 0.00001;
 
@@ -401,12 +400,12 @@ async function confirmarConfiguracion() {
         const lngr = lon - uy;
 
         let tipo = "I";
-        if (i === 1 && p === 0) tipo = "O";
-        if (i === puntosRuta.length - 1 && p === pasos - 1) tipo = "F";
+        if (i === 1 && j === 0) tipo = "O";
+        if (i === puntosRuta.length - 1 && j === pasos - 1) tipo = "F";
 
         const payload = {
           ruta_id: parseInt(rutaId),
-          mts: Math.round(distanciaAcumulada + f * segmentoMetros),
+          mts: mtsAcumulados,
           latl: latl,
           lngl: lngl,
           latr: latr,
@@ -423,9 +422,9 @@ async function confirmarConfiguracion() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
-      }
 
-      distanciaAcumulada += segmentoMetros;
+        mtsAcumulados += distanciaControl;
+      }
     }
 
     alert("✅ Corredor virtual confirmado correctamente.");

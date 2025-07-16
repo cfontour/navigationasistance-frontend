@@ -86,5 +86,5 @@ async function cargarSeniales() {
 function finalizar() {
   senialesLayer.clearLayers();
   document.getElementById("ruta-id-confirmada").textContent = "";
-  document.getElementById("color").value = "";
+  document.getElementById("selectRuta").value = "";
 }

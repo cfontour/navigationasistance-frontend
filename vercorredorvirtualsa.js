@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutasa/listar");
     const rutas = await res.json();
 
+    // Ordenar por fecha/hora descendente (más reciente primero)
+    rutas.sort((a, b) => new Date(b.color) - new Date(a.color));
+
     rutas.forEach((ruta) => {
       const opt = document.createElement("option");
       opt.value = ruta.id;
@@ -23,6 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error(e);
   }
 });
+
 
 async function cargarSeniales() {
   const rutaId = document.getElementById("selectRuta").value;

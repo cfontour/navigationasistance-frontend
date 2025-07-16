@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function cargarSeniales() {
-  const rutaId = document.getElementById("color").value;
+  const rutaId = document.getElementById("selectRuta").value;
 
   if (!rutaId) {
     alert("❗ Debe seleccionar una ruta.");

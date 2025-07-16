@@ -402,14 +402,12 @@ async function confirmarConfiguracion() {
           const lat = lat1 + dx * f;
           const lon = lon1 + dy * f;
 
-          const len = Math.sqrt(dx * dx + dy * dy);
-          const ux = -dy / len * offset * 0.00001;
-          const uy = dx / len * offset * 0.00001;
+          const rumboRad = Math.atan2(dy, dx);  // rumbo del segmento
+          const perpendicularIzquierda = toDeg(rumboRad - Math.PI / 2);  // rumbo - 90°
+          const perpendicularDerecha = toDeg(rumboRad + Math.PI / 2);    // rumbo + 90°
 
-          const latl = lat + ux;
-          const lngl = lon + uy;
-          const latr = lat - ux;
-          const lngr = lon - uy;
+          const [latl, lngl] = desplazar(lat, lon, offset, perpendicularIzquierda);
+          const [latr, lngr] = desplazar(lat, lon, offset, perpendicularDerecha);
 
           tipo = "I"; // Intermedio
 
@@ -418,7 +416,7 @@ async function confirmarConfiguracion() {
           } else if (i === puntosRuta.length - 1 && p === pasos - 1) {
             tipo = "F"; // último punto
           }
-          
+
           const payload = {
             ruta_id: parseInt(rutaId),
             mts: Math.round(distanciaAcumulada + f * segmentoMetros),
@@ -450,5 +448,32 @@ async function confirmarConfiguracion() {
     console.error("❌ Error al confirmar:", error);
     alert("❌ Error al confirmar el corredor. Ver consola.");
   }
+}
+
+// Conversión de grados a radianes
+function toRad(value) {
+  return value * Math.PI / 180;
+}
+
+// Conversión de radianes a grados
+function toDeg(value) {
+  return value * 180 / Math.PI;
+}
+
+// Desplazamiento en metros hacia un rumbo específico
+function desplazar(lat, lon, distancia, anguloGrados) {
+  const R = 6378137; // radio de la Tierra en metros
+  const anguloRad = toRad(anguloGrados);
+
+  const lat1 = toRad(lat);
+  const lon1 = toRad(lon);
+
+  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(distancia / R) +
+                Math.cos(lat1) * Math.sin(distancia / R) * Math.cos(anguloRad));
+
+  const lon2 = lon1 + Math.atan2(Math.sin(anguloRad) * Math.sin(distancia / R) * Math.cos(lat1),
+                                 Math.cos(distancia / R) - Math.sin(lat1) * Math.sin(lat2));
+
+  return [toDeg(lat2), toDeg(lon2)];
 }
 

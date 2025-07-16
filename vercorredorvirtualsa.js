@@ -45,53 +45,63 @@ async function cargarSeniales() {
       return;
     }
 
-    seniales.forEach((s, index) => {
-      // Línea central azul punteada
-      L.polyline(
-        [[s.latl, s.lngl], [s.latc, s.lngc], [s.latr, s.lngr]],
-        { color: "blue", weight: 2, dashArray: "4" }
-      ).addTo(senialesLayer);
+    const bounds = [];
 
-      // Borde izquierdo rojo
-      L.polyline([[s.latl, s.lngl], [s.latr, s.lngr]], {
-        color: "red",
-        weight: 1,
+    seniales.forEach((s, index) => {
+      const izq = [s.latl, s.lngl];
+      const der = [s.latr, s.lngr];
+      const cen = [s.latc, s.lngc];
+
+      // Línea central punteada
+      L.polyline([izq, cen, der], {
+        color: "blue",
+        weight: 2,
+        dashArray: "4"
       }).addTo(senialesLayer);
 
-      // Flecha direccional
-      const latMiddle = (s.latl + s.latr) / 2;
-      const lngMiddle = (s.lngl + s.lngr) / 2;
-      L.marker([latMiddle, lngMiddle], {
+      // Borde lateral izquierdo (rojo)
+      L.polyline([izq, der], {
+        color: "red",
+        weight: 1
+      }).addTo(senialesLayer);
+
+      // Flecha
+      const midLat = (s.latl + s.latr) / 2;
+      const midLng = (s.lngl + s.lngr) / 2;
+      L.marker([midLat, midLng], {
         icon: L.divIcon({
           className: "arrow-icon",
           html: "➡️",
           iconSize: [24, 24],
-          iconAnchor: [12, 12],
-        }),
+          iconAnchor: [12, 12]
+        })
       }).addTo(senialesLayer);
 
-      // Marcador de inicio
-      if (index === 0) {
-        L.marker([s.latc, s.lngc], {
+      // Inicio
+      if (s.tipo === "O") {
+        L.marker(cen, {
           icon: L.divIcon({
-            className: "custom-div-icon",
-            html: '<div style="font-size: 24px;">🏁</div>',
-          }),
+            html: "🚩",
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+          })
         }).addTo(senialesLayer);
       }
 
-      // Marcador de fin
-      if (index === seniales.length - 1) {
-        L.marker([s.latc, s.lngc], {
+      // Fin
+      if (s.tipo === "F") {
+        L.marker(cen, {
           icon: L.divIcon({
-            className: "custom-div-icon",
-            html: '<div style="font-size: 24px;">🚩</div>',
-          }),
+            html: "🏁",
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+          })
         }).addTo(senialesLayer);
       }
+
+      bounds.push(cen);
     });
 
-    const bounds = seniales.map((s) => [s.latc, s.lngc]);
     map.fitBounds(bounds);
   } catch (e) {
     alert("❌ Error al obtener las señales.");

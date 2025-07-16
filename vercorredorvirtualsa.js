@@ -45,64 +45,26 @@ async function cargarSeniales() {
       return;
     }
 
-    const bounds = [];
+    // Dibujar línea izquierda (andarivel izquierdo)
+    const puntosIzquierdos = seniales.map(s => [s.latl, s.lngl]);
+    L.polyline(puntosIzquierdos, {
+      color: "red",
+      weight: 3,
+      opacity: 0.8
+    }).addTo(senialesLayer);
 
-    seniales.forEach((s, index) => {
-      const izq = [s.latl, s.lngl];
-      const der = [s.latr, s.lngr];
-      const cen = [s.latc, s.lngc];
+    // Dibujar línea derecha (andarivel derecho)
+    const puntosDerechos = seniales.map(s => [s.latr, s.lngr]);
+    L.polyline(puntosDerechos, {
+      color: "green",
+      weight: 3,
+      opacity: 0.8
+    }).addTo(senialesLayer);
 
-      // Línea central punteada
-      L.polyline([izq, cen, der], {
-        color: "blue",
-        weight: 2,
-        dashArray: "4"
-      }).addTo(senialesLayer);
-
-      // Borde lateral izquierdo (rojo)
-      L.polyline([izq, der], {
-        color: "red",
-        weight: 1
-      }).addTo(senialesLayer);
-
-      // Flecha
-      const midLat = (s.latl + s.latr) / 2;
-      const midLng = (s.lngl + s.lngr) / 2;
-      L.marker([midLat, midLng], {
-        icon: L.divIcon({
-          className: "arrow-icon",
-          html: "➡️",
-          iconSize: [24, 24],
-          iconAnchor: [12, 12]
-        })
-      }).addTo(senialesLayer);
-
-      // Inicio
-      if (s.tipo === "O") {
-        L.marker(cen, {
-          icon: L.divIcon({
-            html: "🚩",
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
-          })
-        }).addTo(senialesLayer);
-      }
-
-      // Fin
-      if (s.tipo === "F") {
-        L.marker(cen, {
-          icon: L.divIcon({
-            html: "🏁",
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
-          })
-        }).addTo(senialesLayer);
-      }
-
-      bounds.push(cen);
-    });
-
+    // Ajustar el mapa al área de las señales
+    const bounds = puntosIzquierdos.concat(puntosDerechos);
     map.fitBounds(bounds);
+
   } catch (e) {
     alert("❌ Error al obtener las señales.");
     console.error(e);

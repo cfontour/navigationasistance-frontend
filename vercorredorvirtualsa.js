@@ -5,7 +5,6 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 18,
 }).addTo(map);
 
-// Al cargar la página, llenar el selector de rutas
 document.addEventListener("DOMContentLoaded", async () => {
   const selector = document.getElementById("selectRuta");
 
@@ -45,31 +44,49 @@ async function cargarSeniales() {
       return;
     }
 
-    // Separar por tipo
     const origen = seniales.find(s => s.tipo === "O");
     const fin = seniales.find(s => s.tipo === "F");
     const intermedios = seniales.filter(s => s.tipo === "I");
-
-    // Ordenar los puntos por secuencia lógica: O → intermedios → F
     const recorrido = [origen, ...intermedios, fin];
 
-    // Dibujar andarivel izquierdo
     const puntosIzquierdos = recorrido.map(s => [s.latl, s.lngl]);
+    const puntosDerechos = recorrido.map(s => [s.latr, s.lngr]);
+    const puntosCentrales = recorrido.map(s => [s.latc, s.lngc]);
+
+    // Andariveles
     L.polyline(puntosIzquierdos, {
       color: "red",
       weight: 3,
       opacity: 0.8
     }).addTo(senialesLayer);
 
-    // Dibujar andarivel derecho
-    const puntosDerechos = recorrido.map(s => [s.latr, s.lngr]);
     L.polyline(puntosDerechos, {
       color: "green",
       weight: 3,
       opacity: 0.8
     }).addTo(senialesLayer);
 
-    // Ajustar el mapa al área de las señales
+    // Línea punteada central
+    L.polyline(puntosCentrales, {
+      color: "green",
+      weight: 2,
+      dashArray: "4,6"
+    }).addTo(senialesLayer);
+
+    // Marcadores
+    recorrido.forEach(s => {
+      let icon;
+      if (s.tipo === "O") {
+        icon = L.divIcon({ html: "🟩", className: "custom-icon", iconSize: [24, 24] });
+      } else if (s.tipo === "I") {
+        icon = L.divIcon({ html: "⚪", className: "custom-icon", iconSize: [24, 24] });
+      } else if (s.tipo === "F") {
+        icon = L.divIcon({ html: "🏁", className: "custom-icon", iconSize: [24, 24] });
+      }
+      L.marker([s.latc, s.lngc], { icon }).addTo(senialesLayer);
+    });
+
+    // Zoom automático
     const bounds = puntosIzquierdos.concat(puntosDerechos);
     map.fitBounds(bounds);
 

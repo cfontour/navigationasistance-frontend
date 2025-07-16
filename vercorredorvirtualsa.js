@@ -7,7 +7,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 }).addTo(map);
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const selector = document.getElementById("color");
+  const selector = document.getElementById("selectRuta");
 
   try {
     const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutasa/listar");

@@ -45,16 +45,24 @@ async function cargarSeniales() {
       return;
     }
 
-    // Dibujar línea izquierda (andarivel izquierdo)
-    const puntosIzquierdos = seniales.map(s => [s.latl, s.lngl]);
+    // Separar por tipo
+    const origen = seniales.find(s => s.tipo === "O");
+    const fin = seniales.find(s => s.tipo === "F");
+    const intermedios = seniales.filter(s => s.tipo === "I");
+
+    // Ordenar los puntos por secuencia lógica: O → intermedios → F
+    const recorrido = [origen, ...intermedios, fin];
+
+    // Dibujar andarivel izquierdo
+    const puntosIzquierdos = recorrido.map(s => [s.latl, s.lngl]);
     L.polyline(puntosIzquierdos, {
       color: "red",
       weight: 3,
       opacity: 0.8
     }).addTo(senialesLayer);
 
-    // Dibujar línea derecha (andarivel derecho)
-    const puntosDerechos = seniales.map(s => [s.latr, s.lngr]);
+    // Dibujar andarivel derecho
+    const puntosDerechos = recorrido.map(s => [s.latr, s.lngr]);
     L.polyline(puntosDerechos, {
       color: "green",
       weight: 3,

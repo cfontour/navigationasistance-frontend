@@ -1,12 +1,11 @@
-let map = L.map("map").setView([-34.9, -56.2], 13); // Ajustá coordenadas por defecto si querés
-let senialesLayer = L.featureGroup().addTo(map);
-
-let rutaSeleccionada = null;
+let map = L.map("map").setView([-34.95, -54.95], 14);
+let senialesLayer = L.layerGroup().addTo(map);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "© OpenStreetMap",
+  maxZoom: 18,
 }).addTo(map);
 
+// Al cargar la página, llenar el selector de rutas
 document.addEventListener("DOMContentLoaded", async () => {
   const selector = document.getElementById("selectRuta");
 
@@ -46,46 +45,56 @@ async function cargarSeniales() {
       return;
     }
 
-    seniales.forEach((s) => {
-      const izquierda = L.circleMarker([s.latl, s.lngl], {
-        radius: 4,
-        color: "red",
-      }).bindPopup("Izquierda").addTo(senialesLayer);
-
-      const derecha = L.circleMarker([s.latr, s.lngr], {
-        radius: 4,
-        color: "blue",
-      }).bindPopup("Derecha").addTo(senialesLayer);
-
-      const centro = L.circleMarker([s.latc, s.lngc], {
-        radius: 3,
-        color: "green",
-        fillColor: "green",
-        fillOpacity: 0.7,
-      }).bindPopup(`Centro (${s.tipo})`).addTo(senialesLayer);
-
+    seniales.forEach((s, index) => {
+      // Línea central azul punteada
       L.polyline(
-        [
-          [s.latl, s.lngl],
-          [s.latr, s.lngr]
-        ],
-        { color: "gray", weight: 1 }
+        [[s.latl, s.lngl], [s.latc, s.lngc], [s.latr, s.lngr]],
+        { color: "blue", weight: 2, dashArray: "4" }
       ).addTo(senialesLayer);
+
+      // Borde izquierdo rojo
+      L.polyline([[s.latl, s.lngl], [s.latr, s.lngr]], {
+        color: "red",
+        weight: 1,
+      }).addTo(senialesLayer);
+
+      // Flecha direccional
+      const latMiddle = (s.latl + s.latr) / 2;
+      const lngMiddle = (s.lngl + s.lngr) / 2;
+      L.marker([latMiddle, lngMiddle], {
+        icon: L.divIcon({
+          className: "arrow-icon",
+          html: "➡️",
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+        }),
+      }).addTo(senialesLayer);
+
+      // Marcador de inicio
+      if (index === 0) {
+        L.marker([s.latc, s.lngc], {
+          icon: L.divIcon({
+            className: "custom-div-icon",
+            html: '<div style="font-size: 24px;">🏁</div>',
+          }),
+        }).addTo(senialesLayer);
+      }
+
+      // Marcador de fin
+      if (index === seniales.length - 1) {
+        L.marker([s.latc, s.lngc], {
+          icon: L.divIcon({
+            className: "custom-div-icon",
+            html: '<div style="font-size: 24px;">🚩</div>',
+          }),
+        }).addTo(senialesLayer);
+      }
     });
 
-    const bounds = senialesLayer.getBounds();
-    if (bounds.isValid()) {
-      map.fitBounds(bounds);
-    }
-
+    const bounds = seniales.map((s) => [s.latc, s.lngc]);
+    map.fitBounds(bounds);
   } catch (e) {
     alert("❌ Error al obtener las señales.");
     console.error(e);
   }
-}
-
-function finalizar() {
-  senialesLayer.clearLayers();
-  document.getElementById("ruta-id-confirmada").textContent = "";
-  document.getElementById("selectRuta").value = "";
 }

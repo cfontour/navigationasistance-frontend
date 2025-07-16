@@ -345,35 +345,15 @@ function dibujarCorredorVirtual() {
 }
 
 function getDistanciaMetros(lat1, lon1, lat2, lon2) {
-  const R = 6371000; // radio de la Tierra en metros
+  const R = 6371000; // radio Tierra en metros
   const toRad = deg => deg * Math.PI / 180;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
 
-// 🔄 Desplaza un punto (lat, lon) cierta distancia (en metros) en la dirección indicada (rumbo en grados)
-function moverPunto(lat, lon, distancia, rumboGrados) {
-  const R = 6371000; // radio Tierra
-  const toRad = deg => deg * Math.PI / 180;
-  const toDeg = rad => rad * 180 / Math.PI;
-
-  const rumboRad = toRad(rumboGrados);
-  const latRad = toRad(lat);
-  const lonRad = toRad(lon);
-
-  const nuevaLat = Math.asin(Math.sin(latRad) * Math.cos(distancia / R) +
-                             Math.cos(latRad) * Math.sin(distancia / R) * Math.cos(rumboRad));
-
-  const nuevaLon = lonRad + Math.atan2(Math.sin(rumboRad) * Math.sin(distancia / R) * Math.cos(latRad),
-                                       Math.cos(distancia / R) - Math.sin(latRad) * Math.sin(nuevaLat));
-
-  return [toDeg(nuevaLat), toDeg(nuevaLon)];
-}
-
-// 🧠 Usa navegación real para crear el corredor
 async function confirmarConfiguracion() {
   const zona = zonaSeleccionada;
   const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
@@ -399,32 +379,30 @@ async function confirmarConfiguracion() {
       const [lat1, lon1] = puntosRuta[i - 1];
       const [lat2, lon2] = puntosRuta[i];
 
+      const dx = lat2 - lat1;
+      const dy = lon2 - lon1;
       const segmentoMetros = getDistanciaMetros(lat1, lon1, lat2, lon2);
+
       const pasos = Math.floor((distanciaAcumulada + segmentoMetros) / distanciaControl);
       const offsetPrevio = distanciaControl - (distanciaAcumulada % distanciaControl);
 
-      const rumbo = Math.atan2(
-        Math.sin((lon2 - lon1) * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180),
-        Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
-        Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.cos((lon2 - lon1) * Math.PI / 180)
-      ) * 180 / Math.PI;
-
-      const rumboRectificado = (rumbo + 360) % 360;
-
       for (let p = 0; p < pasos; p++) {
         const f = (offsetPrevio + p * distanciaControl) / segmentoMetros;
+        const lat = lat1 + dx * f;
+        const lon = lon1 + dy * f;
 
-        const latc = lat1 + (lat2 - lat1) * f;
-        const lngc = lon1 + (lon2 - lon1) * f;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        const ux = -dy / len * offset * 0.00001;
+        const uy = dx / len * offset * 0.00001;
 
-        // 🚨 Corredor perpendicular: rumbo ± 90 grados
-        const [latl, lngl] = moverPunto(latc, lngc, offset, (rumboRectificado + 270) % 360);
-        const [latr, lngr] = moverPunto(latc, lngc, offset, (rumboRectificado + 90) % 360);
+        const latl = lat + ux;
+        const lngl = lon + uy;
+        const latr = lat - ux;
+        const lngr = lon - uy;
 
         let tipo = "I";
         if (i === 1 && p === 0) tipo = "O";
-        else if (i === puntosRuta.length - 1 && p === pasos - 1) tipo = "F";
+        if (i === puntosRuta.length - 1 && p === pasos - 1) tipo = "F";
 
         const payload = {
           ruta_id: parseInt(rutaId),
@@ -433,8 +411,8 @@ async function confirmarConfiguracion() {
           lngl: lngl,
           latr: latr,
           lngr: lngr,
-          latc: latc,
-          lngc: lngc,
+          latc: lat,
+          lngc: lon,
           tipo: tipo
         };
 
@@ -451,11 +429,8 @@ async function confirmarConfiguracion() {
     }
 
     alert("✅ Corredor virtual confirmado correctamente.");
-
   } catch (error) {
     console.error("❌ Error al confirmar:", error);
     alert("❌ Error al confirmar el corredor. Ver consola.");
   }
 }
-
-

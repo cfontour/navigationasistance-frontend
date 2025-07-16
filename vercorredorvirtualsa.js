@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-async function confirmarRuta() {
+async function cargarSeniales() {
   const rutaId = document.getElementById("color").value;
 
   if (!rutaId) {

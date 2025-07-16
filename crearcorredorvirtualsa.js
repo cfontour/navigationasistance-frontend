@@ -385,8 +385,10 @@ async function confirmarConfiguracion() {
       const segmentoMetros = getDistanciaMetros(lat1, lon1, lat2, lon2);
 
       const pasos = Math.floor(segmentoMetros / distanciaControl);
+      const hayResiduo = segmentoMetros % distanciaControl > 5;
+      const totalPasos = pasos + (hayResiduo ? 1 : 0);
 
-      for (let j = 0; j < pasos; j++) {
+      for (let j = 0; j < totalPasos; j++) {
         const f = (j * distanciaControl) / segmentoMetros;
         const lat = lat1 + dx * f;
         const lon = lon1 + dy * f;

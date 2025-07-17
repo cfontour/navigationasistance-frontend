@@ -259,8 +259,11 @@ function dibujarCorredorVirtual() {
     izq.push([puntosRuta[i][0] + offsetLat, puntosRuta[i][1] + offsetLon]);
     der.push([puntosRuta[i][0] - offsetLat, puntosRuta[i][1] - offsetLon]);
 
-    const rutaIdElem = document.getElementById("ruta-id");
-    if (rutaIdElem) {
+    //const rutaIdElem = document.getElementById("ruta-id");
+
+    //console.warn("🔍 rutaIdElem:", rutaIdElem);
+
+    //if (rutaIdElem) {
       senialesAGuardar.push({
         ruta_id: parseInt(rutaIdElem.value),
         latc: puntosRuta[i][0],
@@ -275,7 +278,7 @@ function dibujarCorredorVirtual() {
 
       console.log("🟦 Señal registrada:", JSON.stringify(senialesAGuardar[senialesAGuardar.length - 1]));
 
-    }
+    //}
 
   }
 
@@ -385,29 +388,67 @@ function getDistanciaMetros(lat1, lng1, lat2, lng2) {
 }
 
 async function confirmarConfiguracion() {
-  console.log("🧪 Verificando contenido de senialesAGuardar...");
-  console.log("➡️ Tipo:", typeof senialesAGuardar);
-  console.log("📦 Contenido:", senialesAGuardar);
-  console.log("📏 Cantidad de señales a guardar:", senialesAGuardar?.length);
+  const zona = zonaSeleccionada;
+  const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
+  const distanciaControl = parseFloat(document.getElementById('puntosControl').value);
+  const ancho = parseFloat(document.getElementById('anchoCorredor').value);
+  const offset = ancho / 2;
 
-  if (!senialesAGuardar || senialesAGuardar.length === 0) {
-    console.warn("⚠️ No hay señales para guardar. Abortando envío.");
-    alert("❌ No hay datos para guardar. ¿Olvidaste dibujar el corredor virtual?");
-    return;
-  }
+  try {
+    const rutaResponse = await fetch("https://navigationasistance-backend-1.onrender.com/rutasa/agregar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre: zona, color: timestamp })
+    });
 
-  for (const senial of senialesAGuardar) {
-    console.log("📤 Enviando señal:", JSON.stringify(senial));  // 🪵 Log JSON
-    try {
-      await fetch(`https://navigationasistance-backend-1.onrender.com/seniales/agregar`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(senial)
+    if (!rutaResponse.ok) throw new Error("Error al agregar ruta");
+
+    const rutaId = parseInt(await rutaResponse.text());
+    console.log("✅ Ruta creada con ID:", rutaId);
+
+    const senialesAGuardar = [];
+
+    for (let i = 0; i < puntosRuta.length; i++) {
+      const offsetLat = offset * 0.0000089;
+      const offsetLon = offset * 0.0000089 / Math.cos(puntosRuta[i][0] * Math.PI / 180);
+
+      senialesAGuardar.push({
+        ruta_id: rutaId,
+        latc: puntosRuta[i][0],
+        lngc: puntosRuta[i][1],
+        latl: puntosRuta[i][0] + offsetLat,
+        lngl: puntosRuta[i][1] + offsetLon,
+        latr: puntosRuta[i][0] - offsetLat,
+        lngr: puntosRuta[i][1] - offsetLon,
+        tipo: i === 0 ? "O" : (i === puntosRuta.length - 1 ? "F" : "I"),
+        mts: Math.round(getDistanciaMetros(puntosRuta[0][0], puntosRuta[0][1], puntosRuta[i][0], puntosRuta[i][1]))
       });
-    } catch (err) {
-      console.error("❌ Error al guardar señal:", senial, err);
-    }
-  }
 
-  alert("✅ Corredor virtual guardado con éxito.");
+      console.log("🟦 Señal registrada:", JSON.stringify(senialesAGuardar[senialesAGuardar.length - 1]));
+    }
+
+    if (senialesAGuardar.length === 0) {
+      console.warn("⚠️ No hay señales para guardar. Abortando envío.");
+      return;
+    }
+
+    for (const senial of senialesAGuardar) {
+      console.log("📤 Enviando señal:", JSON.stringify(senial));
+      try {
+        await fetch(`https://navigationasistance-backend-1.onrender.com/seniales/agregar`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(senial)
+        });
+      } catch (err) {
+        console.error("❌ Error al guardar señal:", senial, err);
+      }
+    }
+
+    alert("✅ Corredor virtual guardado con éxito.");
+
+  } catch (err) {
+    console.error("❌ Error en confirmarConfiguracion:", err);
+    alert("❌ No se pudo confirmar la configuración.");
+  }
 }

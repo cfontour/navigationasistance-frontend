@@ -19,7 +19,7 @@ let mostrarTraza = false;
 async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
   try {
     // Se inserta el idRuta en la URL del endpoint
-    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/46`);
+    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/${idRuta}`);
     const rutas = await res.json();
 
     rutas.forEach(ruta => {
@@ -347,7 +347,7 @@ function borrarTraza() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  cargarRutas();
+  cargarRutas("46");
   cargarNavegantesVinculados();
   cargarUsuariosEnSelector();
 

@@ -27,6 +27,18 @@ function showTab(index) {
 function irASolapa(index) {
   showTab(index);
 
+  // Controla el estado de los botones "Anterior"
+  const btnAnterior1 = document.getElementById('btnAnterior1'); // Suponiendo IDs para cada botón Anterior
+  const btnAnterior2 = document.getElementById('btnAnterior2');
+  const btnAnterior3 = document.getElementById('btnAnterior3');
+  const btnAnterior4 = document.getElementById('btnAnterior4'); // Si existe
+
+  // Deshabilita "Anterior" en la primera solapa, habilita en las demás
+  if (btnAnterior1) btnAnterior1.disabled = (index === 0);
+  if (btnAnterior2) btnAnterior2.disabled = (index === 0);
+  if (btnAnterior3) btnAnterior3.disabled = (index === 0);
+  if (btnAnterior4) btnAnterior4.disabled = (index === 0);
+
   if (index === 1 && zonaSeleccionada) {
     centrarMapaEnZona(zonaSeleccionada);
     setTimeout(() => mapaRuta.invalidateSize(), 300);

@@ -120,12 +120,14 @@
       <button onclick="modificarZona()">Modificar</button>
       <button onclick="eliminarZona()">Eliminar</button>
     </div>
+    <button id="btnAnterior1"  onclick="irASolapa(0)" disabled>Anterior ➡️</button>
     <button id="btnSiguiente1" onclick="irASolapa(1)" disabled>Siguiente ➡️</button>
   </div>
 
   <!-- SOLAPA 2 -->
   <div class="tab-content">
     <div id="map1"></div>
+    <button id="btnAnterior2"  onclick="irASolapa(1)">Anterior ➡️</button>
     <button id="btnSiguiente2" onclick="irASolapa(2)" disabled>Siguiente ➡️</button>
   </div>
 
@@ -137,6 +139,7 @@
     <label>Cada cuántos metros hay un Punto de Control: <span id="puntoLabel">50</span></label>
     <input type="range" id="puntosControl" min="50" max="200" value="50" oninput="actualizarLabel('puntoLabel', this.value)" />
 
+    <button onclick="irASolapa(2)">Anterior ➡️</button>
     <button onclick="irASolapa(3)">Siguiente ➡️</button>
   </div>
 
@@ -144,6 +147,8 @@
   <div class="tab-content">
     <div id="infoSeteos" style="margin-top: 1rem; font-weight: bold;"></div>
     <div id="map2"></div>
+
+    <button onclick="irASolapa(3)">Anterior ➡️</button>
     <button onclick="confirmarConfiguracion()">✅ Confirmar</button>
   </div>
 </div>

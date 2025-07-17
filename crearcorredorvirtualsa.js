@@ -378,7 +378,16 @@ function getDistanciaMetros(lat1, lng1, lat2, lng2) {
 }
 
 async function confirmarConfiguracion() {
-  // ... otras validaciones previas
+  console.log("🧪 Verificando contenido de senialesAGuardar...");
+  console.log("➡️ Tipo:", typeof senialesAGuardar);
+  console.log("📦 Contenido:", senialesAGuardar);
+  console.log("📏 Cantidad de señales a guardar:", senialesAGuardar?.length);
+
+  if (!senialesAGuardar || senialesAGuardar.length === 0) {
+    console.warn("⚠️ No hay señales para guardar. Abortando envío.");
+    alert("❌ No hay datos para guardar. ¿Olvidaste dibujar el corredor virtual?");
+    return;
+  }
 
   for (const senial of senialesAGuardar) {
     console.log("📤 Enviando señal:", JSON.stringify(senial));  // 🪵 Log JSON

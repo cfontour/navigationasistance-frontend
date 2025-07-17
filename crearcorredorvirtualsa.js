@@ -271,8 +271,10 @@ function dibujarCorredorVirtual() {
         lngr: puntosRuta[i][1] - offsetLon,
         tipo: i === 0 ? "O" : (i === puntosRuta.length - 1 ? "F" : "I"),
         mts: Math.round(getDistanciaMetros(puntosRuta[0][0], puntosRuta[0][1], puntosRuta[i][0], puntosRuta[i][1]))
-        //console.log("🟦 Señal registrada:", JSON.stringify(senialesAGuardar[senialesAGuardar.length - 1]));
       });
+
+      console.log("🟦 Señal registrada:", JSON.stringify(senialesAGuardar[senialesAGuardar.length - 1]));
+
     }
 
   }

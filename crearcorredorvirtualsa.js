@@ -265,7 +265,7 @@ function dibujarCorredorVirtual() {
 
     //if (rutaIdElem) {
       senialesAGuardar.push({
-        ruta_id: parseInt(rutaIdElem.value),
+        ruta_id: 0,
         latc: puntosRuta[i][0],
         lngc: puntosRuta[i][1],
         latl: puntosRuta[i][0] + offsetLat,

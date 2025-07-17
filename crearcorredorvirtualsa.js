@@ -396,6 +396,20 @@ function dibujarCorredorVirtual() {
     }
     senialesCorredorParaEnviar = tempSenialesGeneradas;
   }
+
+  // **NUEVA ADICIÓN:** Actualizar el contenido del cuadro de información
+  const infoDiv = document.querySelector('.info-corredor');
+  if (infoDiv) {
+    infoDiv.innerHTML = `
+      <h4>Info Corredor</h4>
+      <ul>
+        <li>📏 Distancia total del trayecto: <strong>${Math.round(distanciaTotal)} m</strong></li>
+        <li>📍 Distancia puntos de control: <strong>${distanciaControl} m</strong></li>
+        <li>↔️ Ancho corredor: <strong>${ancho} m</strong></li>
+      </ul>
+    `;
+  }
+
 }
 
 function getDistanciaMetros(lat1, lon1, lat2, lon2) {

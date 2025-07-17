@@ -18,7 +18,7 @@ let mostrarTraza = false;
 
 async function cargarRutas() {
   try {
-    const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar");
+    const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listarId/46");
     const rutas = await res.json();
 
     rutas.forEach(ruta => {

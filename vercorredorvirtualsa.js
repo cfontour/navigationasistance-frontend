@@ -51,7 +51,14 @@ async function cargarSeniales() {
     const origen = seniales.find(s => s.tipo === "O");
     const fin = seniales.find(s => s.tipo === "F");
     const intermedios = seniales.filter(s => s.tipo === "I");
-    const recorrido = [origen, ...intermedios, fin];
+
+    const recorrido = [];
+    if (origen) recorrido.push(origen);
+    recorrido.push(...intermedios);
+    if (fin) recorrido.push(fin);
+
+    if (!origen) console.warn("⚠️ No se encontró señal de origen (tipo O)");
+    if (!fin) console.warn("⚠️ No se encontró señal de fin (tipo F)");
 
     const puntosIzquierdos = recorrido.map(s => [s.latl, s.lngl]);
     const puntosDerechos = recorrido.map(s => [s.latr, s.lngr]);

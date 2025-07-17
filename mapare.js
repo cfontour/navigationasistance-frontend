@@ -1,10 +1,18 @@
 const map = L.map("map").setView([-34.9, -56.1], 13);
 
-// Capa satelital
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '&copy; OpenStreetMap',
+// Capa de mapa callejero (OpenStreetMap estándar)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   maxZoom: 19
 }).addTo(map);
+
+/*
+// Tu capa satelital anterior (comentada o eliminada si ya no la necesitas)
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '&copy; Esri',
+  maxZoom: 19
+}).addTo(map);
+*/
 
 // Íconos personalizados
 const iconoInicio = L.icon({ iconUrl: 'img/start_flag.png', iconSize: [32, 32] });

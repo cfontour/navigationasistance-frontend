@@ -311,6 +311,12 @@ function dibujarCorredorVirtual() {
   // Punto de inicio
   L.marker(puntosRuta[0], { icon: iconoInicio }).addTo(mapaFinal);
 
+  // 🧭 Ordenar puntosRuta si no está secuenciada
+  puntosRuta.sort((a, b) => {
+    return getDistanciaMetros(puntosRuta[0][0], puntosRuta[0][1], a[0], a[1]) -
+         getDistanciaMetros(puntosRuta[0][0], puntosRuta[0][1], b[0], b[1]);
+  });
+
   // Puntos intermedios
   for (let i = 1; i < puntosRuta.length - 1; i++) {
     L.marker(puntosRuta[i], { icon: iconoIntermedio }).addTo(mapaFinal);

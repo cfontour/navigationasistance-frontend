@@ -16,9 +16,10 @@ let puntosControl = []; // guardará todos los puntos
 let registrosHechos = new Set(); // para evitar múltiples registros del mismo punto
 let mostrarTraza = false;
 
-async function cargarRutas() {
+async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
   try {
-    const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar");
+    // Se inserta el idRuta en la URL del endpoint
+    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/46`);
     const rutas = await res.json();
 
     rutas.forEach(ruta => {

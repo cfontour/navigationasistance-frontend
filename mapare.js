@@ -2,7 +2,7 @@ const map = L.map("map").setView([-34.9, -56.1], 13);
 
 // Capa satelital
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '&copy; Esri',
+  attribution: '&copy; OpenStreetMap',
   maxZoom: 19
 }).addTo(map);
 

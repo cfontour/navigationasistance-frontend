@@ -6,6 +6,7 @@ let mapaFinal = null;
 let puntosRuta = [];
 let marcadoresRuta = [];
 let polyline = null;
+let senialesCorredorParaEnviar = []; // ¡Nueva variable global para almacenar las señales!
 
 // Inicialización
 window.onload = () => {
@@ -221,8 +222,9 @@ function dibujarCorredorVirtual() {
     const dx = lat2 - lat1;
     const dy = lon2 - lon1;
     const len = Math.sqrt(dx * dx + dy * dy);
-    const nx = -dy / len;
-    const ny = dx / len;
+    // Evitar división por cero si los puntos son idénticos
+    const nx = len !== 0 ? -dy / len : 0;
+    const ny = len !== 0 ? dx / len : 0;
 
     normales.push([nx, ny]);
   }
@@ -248,8 +250,13 @@ function dibujarCorredorVirtual() {
       ny /= len;
     }
 
-    const offsetLat = nx * offset * 0.00001;
-    const offsetLon = ny * offset * 0.00001;
+    // Convertir offset de metros a grados aproximados (esto es una aproximación)
+    // 0.00001 grados Lat/Lon es aproximadamente 1.11 metros en el ecuador
+    // La conversión precisa dependería de la latitud, pero para este caso se usa una constante.
+    const factorConversion = 0.00001 / 1.11; // Factor para convertir metros a una aproximación en grados
+    const offsetLat = nx * offset * factorConversion;
+    const offsetLon = ny * offset * factorConversion;
+
 
     izq.push([puntosRuta[i][0] + offsetLat, puntosRuta[i][1] + offsetLon]);
     der.push([puntosRuta[i][0] - offsetLat, puntosRuta[i][1] - offsetLon]);
@@ -294,6 +301,8 @@ function dibujarCorredorVirtual() {
   L.marker(puntosRuta[lastIndex], { icon: iconoFin }).addTo(mapaFinal);
 
   // 🚧 Dibujar líneas punteadas de puntos de control (cubrimos toda la ruta)
+  // Y almacenar estas señales para enviar al backend
+  senialesCorredorParaEnviar = []; // Limpiar antes de generar nuevas señales
   const distanciaControl = parseFloat(document.getElementById('puntosControl').value); // en metros
   const segmentos = [];
   let distanciaTotal = 0;
@@ -308,14 +317,16 @@ function dibujarCorredorVirtual() {
   }
 
   // 2. Insertar líneas cada "distanciaControl" metros, incluso si el último tramo es más corto
-  let distanciaActual = 0;
-  while (distanciaActual <= distanciaTotal) {
-    let acumulado = 0;
+  let distanciaActualRecorrida = 0;
+  const tempSenialesGeneradas = []; // Almacenará las señales antes de tipificarlas
+
+  while (distanciaActualRecorrida <= distanciaTotal) {
+    let acumuladoEnSegmento = 0;
 
     for (let i = 0; i < segmentos.length; i++) {
       const seg = segmentos[i];
-      if (acumulado + seg.distancia >= distanciaActual) {
-        const f = (distanciaActual - acumulado) / seg.distancia;
+      if (acumuladoEnSegmento + seg.distancia >= distanciaActualRecorrida) {
+        const f = (distanciaActualRecorrida - acumuladoEnSegmento) / seg.distancia;
 
         const lat = seg.lat1 + (seg.lat2 - seg.lat1) * f;
         const lon = seg.lon1 + (seg.lon2 - seg.lon1) * f;
@@ -323,8 +334,9 @@ function dibujarCorredorVirtual() {
         const dx = seg.lat2 - seg.lat1;
         const dy = seg.lon2 - seg.lon1;
         const length = Math.sqrt(dx * dx + dy * dy);
-        const ux = -dy / length * offset * 0.00001;
-        const uy = dx / length * offset * 0.00001;
+        // Evitar división por cero
+        const ux = length !== 0 ? -dy / length * offset * factorConversion : 0;
+        const uy = length !== 0 ? dx / length * offset * factorConversion : 0;
 
         const puntoIzq = [lat + ux, lon + uy];
         const puntoDer = [lat - ux, lon - uy];
@@ -335,13 +347,33 @@ function dibujarCorredorVirtual() {
           weight: 2
         }).addTo(mapaFinal);
 
+        tempSenialesGeneradas.push({
+          mts: Math.round(distanciaActualRecorrida),
+          latl: puntoIzq[0],
+          lngl: puntoIzq[1],
+          latr: puntoDer[0],
+          lngr: puntoDer[1],
+          latc: lat,
+          lngc: lon,
+          tipo: "I" // Temporalmente "I", se ajustará después
+        });
+
         break;
       }
-
-      acumulado += seg.distancia;
+      acumuladoEnSegmento += seg.distancia;
     }
+    distanciaActualRecorrida += distanciaControl;
+  }
 
-    distanciaActual += distanciaControl;
+  // Asignar los tipos 'O', 'I', 'F' a las señales generadas
+  if (tempSenialesGeneradas.length > 0) {
+    tempSenialesGeneradas[0].tipo = "O";
+    if (tempSenialesGeneradas.length > 1) {
+      tempSenialesGeneradas[tempSenialesGeneradas.length - 1].tipo = "F";
+    } else {
+      tempSenialesGeneradas[0].tipo = "OF"; // Si solo hay un punto, es Origen y Final
+    }
+    senialesCorredorParaEnviar = tempSenialesGeneradas;
   }
 }
 
@@ -358,9 +390,6 @@ function getDistanciaMetros(lat1, lon1, lat2, lon2) {
 async function confirmarConfiguracion() {
   const zona = zonaSeleccionada;
   const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0]; // formato "YYYY-MM-DD HH:mm:ss"
-  const distanciaControl = parseFloat(document.getElementById('puntosControl').value);
-  const ancho = parseFloat(document.getElementById('anchoCorredor').value);
-  const offset = ancho / 2;
 
   try {
     // Paso 1: Crear la ruta
@@ -379,70 +408,33 @@ async function confirmarConfiguracion() {
 
     console.log("✅ Ruta creada con ID:", rutaId);
 
-    // Paso 2️⃣: Enviar las señales de control
-    const distanciaControl = parseFloat(document.getElementById('puntosControl').value); // en metros
-    const ancho = parseFloat(document.getElementById('anchoCorredor').value);
-    const offset = ancho / 2;
+    // Paso 2️⃣: Enviar las señales de control almacenadas durante la visualización
+    if (senialesCorredorParaEnviar.length === 0) {
+      console.warn("No hay señales de control para enviar.");
+      alert("⚠️ No se generaron puntos de control para enviar. Verifique la ruta y parámetros.");
+      return; // Salir si no hay señales para enviar
+    }
 
-    let distanciaAcumulada = 0;
+    for (const senial of senialesCorredorParaEnviar) {
+      const payload = {
+        ruta_id: parseInt(rutaId),
+        mts: senial.mts,
+        latl: senial.latl,
+        lngl: senial.lngl,
+        latr: senial.latr,
+        lngr: senial.lngr,
+        latc: senial.latc,
+        lngc: senial.lngc,
+        tipo: senial.tipo
+      };
 
-    for (let i = 1; i < puntosRuta.length; i++) {
-        const [lat1, lon1] = puntosRuta[i - 1];
-        const [lat2, lon2] = puntosRuta[i];
+      console.log("📦 Enviando señal:", payload);
 
-        const dx = lat2 - lat1;
-        const dy = lon2 - lon1;
-        const segmentoMetros = getDistanciaMetros(lat1, lon1, lat2, lon2);
-
-        const pasos = Math.floor((distanciaAcumulada + segmentoMetros) / distanciaControl);
-        const offsetPrevio = distanciaControl - (distanciaAcumulada % distanciaControl);
-
-        for (let p = 0; p < pasos; p++) {
-          const f = (offsetPrevio + p * distanciaControl) / segmentoMetros;
-
-          const lat = lat1 + dx * f;
-          const lon = lon1 + dy * f;
-
-          const len = Math.sqrt(dx * dx + dy * dy);
-          const ux = -dy / len * offset * 0.00001;
-          const uy = dx / len * offset * 0.00001;
-
-          const latl = lat + ux;
-          const lngl = lon + uy;
-          const latr = lat - ux;
-          const lngr = lon - uy;
-
-          tipo = "I"; // Intermedio
-
-          if (i === 1 && p === 0) {
-            tipo = "O"; // primer punto
-          } else if (i === puntosRuta.length - 1 && p === pasos - 1) {
-            tipo = "F"; // último punto
-          }
-
-          const payload = {
-            ruta_id: parseInt(rutaId),
-            mts: Math.round(distanciaAcumulada + f * segmentoMetros),
-            latl: latl,
-            lngl: lngl,
-            latr: latr,
-            lngr: lngr,
-            latc: lat,
-            lngc: lon,
-            tipo: tipo
-          };
-
-          console.log("📦 Enviando señal:", payload);
-
-          await fetch("https://navigationasistance-backend-1.onrender.com/seniales/agregar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          });
-        }
-
-        distanciaAcumulada += segmentoMetros;
-
+      await fetch("https://navigationasistance-backend-1.onrender.com/seniales/agregar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
     }
 
     alert("✅ Corredor virtual confirmado correctamente.");
@@ -452,4 +444,3 @@ async function confirmarConfiguracion() {
     alert("❌ Error al confirmar el corredor. Ver consola.");
   }
 }
-

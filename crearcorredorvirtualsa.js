@@ -198,6 +198,7 @@ function initMapaFinal() {
 }
 
 // ✅ Versión corregida e integral de dibujarCorredorVirtual()
+// ✅ Versión corregida e integral de dibujarCorredorVirtual()
 function dibujarCorredorVirtual() {
   if (!mapaFinal || puntosRuta.length < 2) {
     console.warn("⚠️ No hay suficientes puntos para generar el corredor virtual.");
@@ -210,6 +211,11 @@ function dibujarCorredorVirtual() {
 
   const ancho = parseFloat(document.getElementById('anchoCorredor').value);
   const offset = ancho / 2;
+
+  // Define factorConversion here, within the scope of dibujarCorredorVirtual
+  // 0.00001 grados Lat/Lon es aproximadamente 1.11 metros en el ecuador.
+  // Este factor convierte metros a una aproximación en grados lat/lon.
+  const factorConversion = 0.00001 / 1.11;
 
   const izq = [], der = [];
   const normales = [];
@@ -250,13 +256,9 @@ function dibujarCorredorVirtual() {
       ny /= len;
     }
 
-    // Convertir offset de metros a grados aproximados (esto es una aproximación)
-    // 0.00001 grados Lat/Lon es aproximadamente 1.11 metros en el ecuador
-    // La conversión precisa dependería de la latitud, pero para este caso se usa una constante.
-    const factorConversion = 0.00001 / 1.11; // Factor para convertir metros a una aproximación en grados
+    // Usar factorConversion para el offset de las líneas de corredor (izq/der)
     const offsetLat = nx * offset * factorConversion;
     const offsetLon = ny * offset * factorConversion;
-
 
     izq.push([puntosRuta[i][0] + offsetLat, puntosRuta[i][1] + offsetLon]);
     der.push([puntosRuta[i][0] - offsetLat, puntosRuta[i][1] - offsetLon]);
@@ -335,6 +337,7 @@ function dibujarCorredorVirtual() {
         const dy = seg.lon2 - seg.lon1;
         const length = Math.sqrt(dx * dx + dy * dy);
         // Evitar división por cero
+        // Usar factorConversion también aquí para el offset de las líneas de control
         const ux = length !== 0 ? -dy / length * offset * factorConversion : 0;
         const uy = length !== 0 ? dx / length * offset * factorConversion : 0;
 

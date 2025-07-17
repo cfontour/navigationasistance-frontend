@@ -7,6 +7,8 @@ let puntosRuta = [];
 let marcadoresRuta = [];
 let polyline = null;
 
+let senialesAGuardar = [];
+
 // Inicialización
 window.onload = () => {
   cargarZonas();

@@ -6,6 +6,7 @@ let mapaFinal = null;
 let puntosRuta = [];
 let marcadoresRuta = [];
 let polyline = null;
+let senialesAGuardar = [];
 
 // Inicialización
 window.onload = () => {
@@ -196,8 +197,6 @@ function initMapaFinal() {
   }).addTo(mapaFinal);
 }
 
-const senialesAGuardar = [];
-
 function dibujarCorredorVirtual() {
   if (!mapaFinal || puntosRuta.length < 2) {
     console.warn("⚠️ No hay suficientes puntos para generar el corredor virtual.");
@@ -227,6 +226,10 @@ function dibujarCorredorVirtual() {
 
     normales.push([nx, ny]);
   }
+
+
+  // limpiar antes de llenar
+  senialesAGuardar = [];
 
   // Paso 2: aplicar normales promediadas en cada punto
   for (let i = 0; i < puntosRuta.length; i++) {
@@ -267,6 +270,7 @@ function dibujarCorredorVirtual() {
         lngr: puntosRuta[i][1] - offsetLon,
         tipo: i === 0 ? "O" : (i === puntosRuta.length - 1 ? "F" : "I"),
         mts: Math.round(getDistanciaMetros(puntosRuta[0][0], puntosRuta[0][1], puntosRuta[i][0], puntosRuta[i][1]))
+        console.log("🟦 Señal registrada:", JSON.stringify(senialesAGuardar[senialesAGuardar.length - 1]));
       });
     }
 

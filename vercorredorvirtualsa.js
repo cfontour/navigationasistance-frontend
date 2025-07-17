@@ -6,21 +6,32 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 }).addTo(map);
 
 // **NUEVA ADICIÓN:** Crear un control personalizado para la información del corredor
-    const infoControl = L.control({ position: 'topright' });
+const infoControl = L.control({ position: 'topright' });
 
-    infoControl.onAdd = function (map) {
-      this._div = L.DomUtil.create('div', 'info-corredor'); // Crear un div con una clase
-      this._div.innerHTML = '<h4>Info Corredor</h4>'; // Título inicial
-      this._div.style.backgroundColor = 'white'; // Fondo blanco
-      this._div.style.padding = '10px';
-      this._div.style.borderRadius = '5px';
-      this._div.style.boxShadow = '0 0 15px rgba(0,0,0,0.2)';
-      this._div.style.lineHeight = '1.6';
-      this._div.style.fontFamily = 'Arial, sans-serif';
-      this._div.style.fontSize = '14px';
-      return this._div;
-    };
-    infoControl.addTo(map);
+infoControl.onAdd = function (map) {
+  this._div = L.DomUtil.create('div', 'info-corredor'); // Crear un div con una clase
+  this._div.innerHTML = '<h4>Info Corredor</h4>'; // Título inicial
+  this._div.style.backgroundColor = 'white'; // Fondo blanco
+  this._div.style.padding = '10px';
+  this._div.style.borderRadius = '5px';
+  this._div.style.boxShadow = '0 0 15px rgba(0,0,0,0.2)';
+  this._div.style.lineHeight = '1.6';
+  this._div.style.fontFamily = 'Arial, sans-serif';
+  this._div.style.fontSize = '14px';
+  return this._div;
+};
+infoControl.addTo(map);
+
+// **MOVIDO:** La función getDistanciaMetros debe estar definida antes de ser usada.
+function getDistanciaMetros(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // radio Tierra en metros
+  const toRad = deg => deg * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   const selector = document.getElementById("selectRuta");
@@ -162,7 +173,7 @@ async function cargarSeniales() {
     const infoDiv = document.querySelector('.info-corredor');
     if (infoDiv) {
       infoDiv.innerHTML = `
-        <h4>Info Corredor</h4>
+        <h4>Info Corredor Virtual</h4>
         <ul>
           <li>📏 Distancia total del trayecto: <strong>${Math.round(distanciaTotalCalculada)} m</strong></li>
           <li>📍 Distancia puntos de control: <strong>${Math.round(distanciaPuntosControlCalculada)} m</strong></li>
@@ -180,16 +191,4 @@ async function cargarSeniales() {
       infoDiv.innerHTML = '<h4>Info Corredor</h4><p>Error al cargar datos.</p>';
     }
   }
-}
-
-// Asegúrate de tener la función getDistanciaMetros también en este archivo
-// Si no la tienes, cópiala del otro JS
-function getDistanciaMetros(lat1, lon1, lat2, lon2) {
-  const R = 6371000; // radio Tierra en metros
-  const toRad = deg => deg * Math.PI / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
 }

@@ -197,8 +197,7 @@ function initMapaFinal() {
   }).addTo(mapaFinal);
 }
 
-// ✅ Versión corregida e integral de dibujarCorredorVirtual()
-// ✅ Versión corregida e integral de dibujarCorredorVirtual()
+// ✅ Versión corregida e integral de dibujarCorredorVirtual() al 17/07/2025 hora 12:00
 function dibujarCorredorVirtual() {
   if (!mapaFinal || puntosRuta.length < 2) {
     console.warn("⚠️ No hay suficientes puntos para generar el corredor virtual.");
@@ -322,7 +321,9 @@ function dibujarCorredorVirtual() {
   let distanciaActualRecorrida = 0;
   const tempSenialesGeneradas = []; // Almacenará las señales antes de tipificarlas
 
-  while (distanciaActualRecorrida <= distanciaTotal) {
+  const epsilon = 0.001;
+
+  while (distanciaActualRecorrida <= distanciaTotal + epsilon) {
     let acumuladoEnSegmento = 0;
 
     for (let i = 0; i < segmentos.length; i++) {

@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutasa/listar");
     const rutas = await res.json();
 
+    // Ordenar por fecha/hora descendente (más reciente primero)
     rutas.sort((a, b) => new Date(b.color) - new Date(a.color));
 
     rutas.forEach((ruta) => {
@@ -25,6 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error(e);
   }
 });
+
 
 async function cargarSeniales() {
   const rutaId = document.getElementById("selectRuta").value;
@@ -46,21 +48,44 @@ async function cargarSeniales() {
       return;
     }
 
-    // ✅ Ordenar por distancia acumulada
-    seniales.sort((a, b) => a.mts - b.mts);
+    const origen = seniales.find(s => s.tipo === "O");
+    const fin = seniales.find(s => s.tipo === "F");
+    const intermedios = seniales.filter(s => s.tipo === "I");
 
-    // ✅ Extraer coordenadas por tipo de andarivel
-    const puntosIzquierdos = seniales.map(s => [s.latl, s.lngl]);
-    const puntosDerechos = seniales.map(s => [s.latr, s.lngr]);
-    const puntosCentrales = seniales.map(s => [s.latc, s.lngc]);
+    const recorrido = [];
+    if (origen) recorrido.push(origen);
+    recorrido.push(...intermedios);
+    if (fin) recorrido.push(fin);
 
-    // ✅ Dibujar andariveles
-    L.polyline(puntosIzquierdos, { color: "red", weight: 3, opacity: 0.8 }).addTo(senialesLayer);
-    L.polyline(puntosDerechos, { color: "green", weight: 3, opacity: 0.8 }).addTo(senialesLayer);
-    L.polyline(puntosCentrales, { color: "green", weight: 2, dashArray: "4,6" }).addTo(senialesLayer);
+    if (!origen) console.warn("⚠️ No se encontró señal de origen (tipo O)");
+    if (!fin) console.warn("⚠️ No se encontró señal de fin (tipo F)");
 
-    // ✅ Iconos de señalización
-    seniales.forEach(s => {
+    const puntosIzquierdos = recorrido.map(s => [s.latl, s.lngl]);
+    const puntosDerechos = recorrido.map(s => [s.latr, s.lngr]);
+    const puntosCentrales = recorrido.map(s => [s.latc, s.lngc]);
+
+    // Andariveles
+    L.polyline(puntosIzquierdos, {
+      color: "red",
+      weight: 3,
+      opacity: 0.8
+    }).addTo(senialesLayer);
+
+    L.polyline(puntosDerechos, {
+      color: "green",
+      weight: 3,
+      opacity: 0.8
+    }).addTo(senialesLayer);
+
+    // Línea punteada central
+    L.polyline(puntosCentrales, {
+      color: "green",
+      weight: 2,
+      dashArray: "4,6"
+    }).addTo(senialesLayer);
+
+    // Marcadores
+    recorrido.forEach(s => {
       let icon;
       if (s.tipo === "O") {
         icon = L.divIcon({ html: "🟩", className: "custom-icon", iconSize: [24, 24] });
@@ -72,7 +97,7 @@ async function cargarSeniales() {
       L.marker([s.latc, s.lngc], { icon }).addTo(senialesLayer);
     });
 
-    // ✅ Zoom automático a toda la ruta
+    // Zoom automático
     const bounds = puntosIzquierdos.concat(puntosDerechos);
     map.fitBounds(bounds);
 

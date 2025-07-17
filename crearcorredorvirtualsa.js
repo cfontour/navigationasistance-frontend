@@ -344,6 +344,21 @@ function dibujarCorredorVirtual() {
   }
 }
 
+function getDistanciaMetros(lat1, lng1, lat2, lng2) {
+  const R = 6371000; // radio de la Tierra en metros
+  const toRad = (x) => x * Math.PI / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLng / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}
+
 async function confirmarConfiguracion() {
   if (puntosControl.length < 2) {
     alert("❗ Debe haber al menos dos puntos de control.");
@@ -353,7 +368,13 @@ async function confirmarConfiguracion() {
   const inputOffset = document.getElementById("offset");
   const offset = inputOffset ? parseFloat(inputOffset.value) || 0.00001 : 0.00001;
 
-  const rutaId = parseInt(document.getElementById("ruta-id").textContent);
+  const rutaIdElem = document.getElementById("ruta-id");
+  if (!rutaIdElem) {
+    alert("❌ No se encontró el ID de la ruta.");
+    return;
+  }
+
+  const rutaId = parseInt(rutaIdElem.textContent);
 
   const inputDistancia = document.getElementById("distancia");
   const distanciaEntrePuntos = inputDistancia ? parseInt(inputDistancia.value) || 50 : 50;

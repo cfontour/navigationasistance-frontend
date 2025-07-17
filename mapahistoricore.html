@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>GEOTRASER MARINE - Regatas - Rutas Históricas</title>
+
+    <!-- Custom fonts -->
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,700,900" rel="stylesheet">
+
+    <!-- Custom styles -->
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        #map {
+          height: 500px;
+          width: 100%;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+        }
+
+        .controls {
+          margin-bottom: 1rem;
+        }
+
+        .controls label,
+        .controls select,
+        .controls input,
+        .controls button {
+          margin-right: 1rem;
+          font-size: 1rem;
+        }
+    </style>
+</head>
+
+<body id="page-top" style="background-image: url('img/fondo_regata.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+<h1>🧭 GEOTRASER - MARINE - Histórico de Regatas</h1>
+<div id="wrapper">
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+        <!-- Main Content -->
+        <div id="content">
+
+            <!-- Topbar -->
+            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <form class="form-inline">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                </form>
+
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="txt-email-usuario">...</span>
+                            <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                             aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="#"><i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>Perfil</a>
+                            <a class="dropdown-item" href="#"><i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>Configuración</a>
+                            <a class="dropdown-item" href="#"><i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>Actividad</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>Cerrar sesión
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Page Content -->
+            <div class="container-fluid">
+                <h1>🧭 Visualización de las Competencias de Aventura</h1>
+                <!-- <h1 class="h3 mb-2 text-gray-800">Rutas Históricas de Navegantes</h1> -->
+
+                <div class="controls">
+                    <label for="select-usuario">Seleccionar Competidor:</label>
+                    <select id="select-usuario">
+                        <option value="">-- Seleccionar --</option>
+                    </select>
+
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" />
+
+                    <label for="select-recorrido">Recorrido:</label>
+                    <select id="select-recorrido">
+                        <option value="">-- Seleccionar recorrido --</option>
+                    </select>
+
+                    <button id="btn-cargar" class="btn btn-primary btn-sm">Cargar Ruta</button>
+                    <button id="btn-exportar" class="btn btn-success btn-sm">Exportar CSV</button>
+                </div>
+
+                <!-- Mapa -->
+                <div id="map"></div>
+
+                <!-- Gráfico -->
+                <canvas id="graficoRitmo" width="400" height="150" style="margin-top: 20px;"></canvas>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="sticky-footer bg-white">
+            <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="height: 250px; opacity: 0.85; margin-left: 1px">
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top"><i class="fas fa-angle-up"></i></a>
+
+<!-- Logout Modal-->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">¿Cerrar sesión?</h5>
+                <button class="close" type="button" data-dismiss="modal"><span aria-hidden="true">×</span></button>
+            </div>
+            <div class="modal-body">Seleccioná "Cerrar sesión" si querés finalizar la sesión actual.</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                <a class="btn btn-primary" href="login.html">Cerrar sesión</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts comunes -->
+<script src="vendor/jquery/jquery.min.js"></script>
+<script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+<script src="js/sb-admin-2.min.js"></script>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Script personalizado -->
+<script src="mapahistorico.js"></script>
+
+</body>
+</html>

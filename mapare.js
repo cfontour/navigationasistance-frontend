@@ -277,63 +277,62 @@ async function cargarUsuariosEnSelector() {
   }
 }
 
-async function trazarRutaUsuario() {
-  mostrarTraza = true; // ✅ activar la traza manualmente
-
-  const usuarioId = document.getElementById("selector-usuario").value;
-  const hoy = new Date().toISOString().split("T")[0];
-
-  if (!usuarioId) {
-    alert("❗ Debe seleccionar un usuario.");
-    return;
-  }
-
+async function cargarRutas(idRuta) {
   try {
-    // 🔹 Obtener último recorrido UUID
-    const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${hoy}`);
-    const uuidList = await resUuid.json();
+    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/${idRuta}`);
+    const ruta = await res.json(); // 'ruta' ya es el objeto de la ruta
 
-    if (!uuidList || uuidList.length === 0) {
-      alert("❌ No hay recorridos registrados hoy para este usuario.");
-      return;
-    }
+    // No hay forEach aquí, procesamos 'ruta' directamente
+    const titulo = document.createElement("h2");
+    titulo.innerText = ruta.nombre;
+    titulo.style.color = "white";
+    titulo.style.fontSize = "1.5em";
+    titulo.style.textShadow = "1px 1px 3px black";
+    document.body.insertBefore(titulo, document.getElementById("map"));
 
-    const ultimaRuta = uuidList[0]; // solo uno, ya viene ordenado y limitado en el backend
+    const puntos = ruta.puntos;
+    if (!puntos || puntos.length === 0) return;
 
-    // 🔹 Obtener puntos del recorrido
-    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${ultimaRuta}`);
-    const puntos = await res.json();
+    const bounds = [];
 
-    const latlngs = puntos
-      .filter(p =>
-        Number.isFinite(parseFloat(p.nadadorlat)) &&
-        Number.isFinite(parseFloat(p.nadadorlng)) &&
-        Number(p.secuencia) >= 1
-      )
-      .map(p => [parseFloat(p.nadadorlat), parseFloat(p.nadadorlng)]);
+    puntos.forEach((p, i) => { // Este forEach es para los 'puntos' dentro de la 'ruta'
+      const latlng = [p.latitud, p.longitud];
+      bounds.push(latlng);
 
-    if (latlngs.length === 0) {
-      alert("❌ La ruta no contiene puntos válidos.");
-      return;
-    }
+      console.log("🧩 Punto recibido:", p);
 
-    // 🔹 Eliminar traza anterior si existe
-    if (polylineTraza) {
-      map.removeLayer(polylineTraza);
-    }
+      if (typeof puntosControl === 'undefined') {
+          console.warn("puntosControl no está definido. Asegúrate de declararlo.");
+      }
 
-    // 🔹 Dibujar nueva traza
-    polylineTraza = L.polyline(latlngs, {
-      color: 'yellow',
-      weight: 3,
-      dashArray: '10, 10'
-    }).addTo(map);
+      puntosControl.push({
+        latitud: p.latitud,
+        longitud: p.longitud,
+        etiqueta: p.etiqueta || `Punto ${i + 1}`,
+        nadadorruta_id: p.nadadorruta_id
+      });
 
-    //map.fitBounds(polylineTraza.getBounds());
+      L.circle(latlng, {
+        radius: 5,
+        color: ruta.color,
+        fillColor: ruta.color,
+        fillOpacity: 1
+      }).addTo(map);
+
+      let icon = iconoIntermedio;
+      if (i === 0) icon = iconoInicio;
+      else if (i === puntos.length - 1) icon = iconoFinal;
+
+      L.marker(latlng, { icon })
+        .addTo(map)
+        .bindPopup(`Etiqueta: ${p.etiqueta}<br>Lat: ${p.latitud}<br>Lng: ${p.longitud}`);
+    });
+
+    console.log("🧭 puntosControl cargados:", puntosControl);
+    map.fitBounds(bounds);
 
   } catch (err) {
-    console.error("❌ Error al trazar ruta:", err);
-    alert("⚠️ Error inesperado al intentar trazar la ruta.");
+    console.error("Error al cargar rutas:", err);
   }
 }
 

@@ -350,12 +350,16 @@ async function confirmarConfiguracion() {
     return;
   }
 
-  const offset = parseFloat(document.getElementById("offset").value) || 0.00001;
-  const rutaId = parseInt(document.getElementById("ruta-id").textContent);
-  const seniales = [];
-  const distanciaEntrePuntos = parseInt(document.getElementById("distancia").value) || 50;
+  const inputOffset = document.getElementById("offset");
+  const offset = inputOffset ? parseFloat(inputOffset.value) || 0.00001 : 0.00001;
 
-  let acumulado = 0;
+  const rutaId = parseInt(document.getElementById("ruta-id").textContent);
+
+  const inputDistancia = document.getElementById("distancia");
+  const distanciaEntrePuntos = inputDistancia ? parseInt(inputDistancia.value) || 50 : 50;
+
+  const seniales = [];
+  let mts = 0;
 
   for (let i = 0; i < puntosControl.length - 1; i++) {
     const p1 = puntosControl[i];
@@ -364,6 +368,7 @@ async function confirmarConfiguracion() {
     const dx = p2.lng - p1.lng;
     const dy = p2.lat - p1.lat;
     const len = Math.sqrt(dx * dx + dy * dy);
+
     const offsetLng = (offset * dy) / len;
     const offsetLat = (-offset * dx) / len;
 
@@ -373,40 +378,33 @@ async function confirmarConfiguracion() {
       const lat = p1.lat + (p2.lat - p1.lat) * t;
       const lng = p1.lng + (p2.lng - p1.lng) * t;
 
-      let latl = lat + offsetLat;
-      let lngl = lng + offsetLng;
-      let latr = lat - offsetLat;
-      let lngr = lng - offsetLng;
+      const centro = { lat, lng };
+      const izquierda = {
+        lat: lat + offsetLat,
+        lng: lng + offsetLng
+      };
+      const derecha = {
+        lat: lat - offsetLat,
+        lng: lng - offsetLng
+      };
 
-      // Detectar si hay cruce con el segmento anterior
-      if (seniales.length > 0) {
-        const prev = seniales[seniales.length - 1];
-        const cruzan =
-          cruza(prev.latl, prev.lngl, latl, lngl, prev.latr, prev.lngr, latr, lngr);
-        if (cruzan) {
-          // Invertir lados
-          [latl, latr] = [latr, latl];
-          [lngl, lngr] = [lngr, lngl];
-        }
-      }
-
-      const tipo =
-        i === 0 && j === 0 ? "O" :
-        i === puntosControl.length - 2 && j === steps ? "F" : "I";
+      let tipo = "I";
+      if (i === 0 && j === 0) tipo = "O";
+      if (i === puntosControl.length - 2 && j === steps) tipo = "F";
 
       seniales.push({
         ruta_id: rutaId,
-        mts: acumulado,
-        latl,
-        lngl,
-        latr,
-        lngr,
-        latc: lat,
-        lngc: lng,
-        tipo
+        mts: mts,
+        latc: centro.lat,
+        lngc: centro.lng,
+        latl: izquierda.lat,
+        lngl: izquierda.lng,
+        latr: derecha.lat,
+        lngr: derecha.lng,
+        tipo: tipo
       });
 
-      acumulado += distanciaEntrePuntos;
+      mts += distanciaEntrePuntos;
     }
   }
 
@@ -425,13 +423,4 @@ async function confirmarConfiguracion() {
     alert("❌ Error al enviar señales.");
     console.error(e);
   }
-}
-
-// Verifica si los segmentos se cruzan (solo si hay rotación de lados)
-function cruza(ax, ay, bx, by, cx, cy, dx, dy) {
-  function ccw(x1, y1, x2, y2, x3, y3) {
-    return (y3 - y1) * (x2 - x1) > (y2 - y1) * (x3 - x1);
-  }
-  return ccw(ax, ay, cx, cy, dx, dy) !== ccw(bx, by, cx, cy, dx, dy) &&
-         ccw(ax, ay, bx, by, cx, cy) !== ccw(ax, ay, bx, by, dx, dy);
 }

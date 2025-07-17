@@ -195,6 +195,23 @@ function initMapaFinal() {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19
   }).addTo(mapaFinal);
+
+  // **NUEVA ADICIÓN:** Crear un control personalizado para la información del corredor
+    const infoControl = L.control({ position: 'topright' });
+
+    infoControl.onAdd = function (map) {
+      this._div = L.DomUtil.create('div', 'info-corredor'); // Crear un div con una clase
+      this._div.innerHTML = '<h4>Info Corredor</h4>'; // Título inicial
+      this._div.style.backgroundColor = 'white'; // Fondo blanco
+      this._div.style.padding = '10px';
+      this._div.style.borderRadius = '5px';
+      this._div.style.boxShadow = '0 0 15px rgba(0,0,0,0.2)';
+      this._div.style.lineHeight = '1.6';
+      this._div.style.fontFamily = 'Arial, sans-serif';
+      this._div.style.fontSize = '14px';
+      return this._div;
+    };
+    infoControl.addTo(mapaFinal);
 }
 
 // ✅ Versión corregida e integral de dibujarCorredorVirtual() al 17/07/2025 hora 12:00
@@ -442,6 +459,7 @@ async function confirmarConfiguracion() {
     }
 
     alert("✅ Corredor virtual confirmado correctamente.");
+    irASolapa(0); // Vuelve a la primera solapa
 
   } catch (error) {
     console.error("❌ Error al confirmar:", error);

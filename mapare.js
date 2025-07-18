@@ -54,7 +54,8 @@ async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
           latitud: p.latitud,
           longitud: p.longitud,
           etiqueta: p.etiqueta || `Punto ${i + 1}`,
-          nadadorruta_id: p.nadadorruta_id // 👈 asegurate que este campo venga en el JSON
+          nadadorruta_id: p.nadadorruta_id, // 👈 asegurate que este campo venga en el JSON
+          rutaId: idRuta // <--- ¡AQUÍ ES DONDE DEBE IR! DENTRO DEL OBJETO.
         });
 
         // Círculo del color de la ruta
@@ -321,7 +322,7 @@ async function cargarRutas(idRuta) {
         latitud: p.latitud,
         longitud: p.longitud,
         etiqueta: p.etiqueta || `Punto ${i + 1}`,
-        nadadorruta_id: p.nadadorruta_id
+        nadadorruta_id: p.nadadorruta_id,
         rutaId: idRuta // <--- AÑADIR ESTO
       });
 

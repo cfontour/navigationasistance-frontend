@@ -243,6 +243,7 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
           nadadorrutaId: usuarioid, // 👈 ahora como String plano
           puntoControl: punto.etiqueta,
           fechaHora: new Date().toISOString(),
+          rutaId: punto.rutaId // <--- USAR ESTO
         };
 
         console.log("📤 Intentando enviar:", payload);
@@ -321,6 +322,7 @@ async function cargarRutas(idRuta) {
         longitud: p.longitud,
         etiqueta: p.etiqueta || `Punto ${i + 1}`,
         nadadorruta_id: p.nadadorruta_id
+        rutaId: idRuta // <--- AÑADIR ESTO
       });
 
       L.circle(latlng, {

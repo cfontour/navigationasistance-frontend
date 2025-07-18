@@ -235,7 +235,9 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
     puntosControl.forEach(async punto => {
       const distancia = distanciaMetros(latActual, lngActual, punto.latitud, punto.longitud);
 
-      if (distancia < 20) {
+      console.log(`📏 Distancia para ${usuarioid} al punto "${punto.etiqueta}": ${distancia.toFixed(2)}m`); // <-- AÑADE ESTO
+
+      if (distancia < 40) {
 
         const payload = {
           nadadorrutaId: usuarioid, // 👈 ahora como String plano

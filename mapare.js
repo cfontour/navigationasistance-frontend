@@ -270,8 +270,6 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
   }
 }
 
-let polylineTraza = null;
-
 async function cargarUsuariosEnSelector() {
   const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
   const relaciones = await res.json();
@@ -361,6 +359,8 @@ async function cargarRutas(idRuta) {
   }
 }
 
+let polylineTraza = null;
+
 async function trazarRutaUsuario() {
   mostrarTraza = true; // ✅ activar la traza manualmente
 
@@ -402,10 +402,13 @@ async function trazarRutaUsuario() {
     }
 
     // 🔹 Eliminar traza anterior si existe
+    console.log("Estado de polylineTraza antes de eliminar:", polylineTraza);
     if (polylineTraza) {
-      map.removeLayer(polylineTraza);
+        map.removeLayer(polylineTraza);
+        console.log("polylineTraza eliminada del mapa.");
     }
-
+    console.log("Nuevo polylineTraza asignado:", polylineTraza); // Después de L.polyline(...)
+    
     // 🔹 Dibujar nueva traza
     polylineTraza = L.polyline(latlngs, {
       color: 'yellow',

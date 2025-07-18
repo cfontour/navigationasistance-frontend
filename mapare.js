@@ -9,7 +9,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 /*
 // Tu capa satelital anterior (comentada o eliminada si ya no la necesitas)
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '&copy; OpenStreetMap',
+  attribution: '&copy; Esri',
   maxZoom: 19
 }).addTo(map);
 */
@@ -24,8 +24,9 @@ let puntosControl = []; // guardará todos los puntos
 let registrosHechos = new Set(); // para evitar múltiples registros del mismo punto
 let mostrarTraza = false;
 
-async function cargarRutas(idRuta) {
+async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
   try {
+    // Se inserta el idRuta en la URL del endpoint
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/${idRuta}`);
     const rutas = await res.json();
 
@@ -284,6 +285,65 @@ async function cargarUsuariosEnSelector() {
   }
 }
 
+async function cargarRutas(idRuta) {
+  try {
+    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/${idRuta}`);
+    const ruta = await res.json(); // 'ruta' ya es el objeto de la ruta
+
+    // No hay forEach aquí, procesamos 'ruta' directamente
+    const titulo = document.createElement("h2");
+    titulo.innerText = ruta.nombre;
+    titulo.style.color = "white";
+    titulo.style.fontSize = "1.5em";
+    titulo.style.textShadow = "1px 1px 3px black";
+    document.body.insertBefore(titulo, document.getElementById("map"));
+
+    const puntos = ruta.puntos;
+    if (!puntos || puntos.length === 0) return;
+
+    const bounds = [];
+
+    puntos.forEach((p, i) => { // Este forEach es para los 'puntos' dentro de la 'ruta'
+      const latlng = [p.latitud, p.longitud];
+      bounds.push(latlng);
+
+      console.log("🧩 Punto recibido:", p);
+
+      if (typeof puntosControl === 'undefined') {
+          console.warn("puntosControl no está definido. Asegúrate de declararlo.");
+      }
+
+      puntosControl.push({
+        latitud: p.latitud,
+        longitud: p.longitud,
+        etiqueta: p.etiqueta || `Punto ${i + 1}`,
+        nadadorruta_id: p.nadadorruta_id
+      });
+
+      L.circle(latlng, {
+        radius: 5,
+        color: ruta.color,
+        fillColor: ruta.color,
+        fillOpacity: 1
+      }).addTo(map);
+
+      let icon = iconoIntermedio;
+      if (i === 0) icon = iconoInicio;
+      else if (i === puntos.length - 1) icon = iconoFinal;
+
+      L.marker(latlng, { icon })
+        .addTo(map)
+        .bindPopup(`Etiqueta: ${p.etiqueta}<br>Lat: ${p.latitud}<br>Lng: ${p.longitud}`);
+    });
+
+    console.log("🧭 puntosControl cargados:", puntosControl);
+    map.fitBounds(bounds);
+
+  } catch (err) {
+    console.error("Error al cargar rutas:", err);
+  }
+}
+
 async function trazarRutaUsuario() {
   mostrarTraza = true; // ✅ activar la traza manualmente
 
@@ -386,3 +446,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 5000);
 });
+

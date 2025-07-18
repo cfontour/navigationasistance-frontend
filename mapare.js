@@ -386,7 +386,21 @@ async function trazarRutaUsuario() {
 
     // 🔹 Obtener puntos del recorrido
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${ultimaRuta}`);
-    const puntos = await res.json();
+    let puntos = await res.json();
+
+    // ✅ ¡ESTA ES LA MODIFICACIÓN CLAVE EN EL FRONTEND!
+    // Ordenar los puntos por fecha y hora para garantizar la cronología
+    puntos.sort((a, b) => {
+        // Combinar fecha y hora para una comparación precisa de tiempo
+        const fechaHoraA = new Date(`${a.nadadorfecha}T${a.nadadorhora.split('T')[1]}`);
+        const fechaHoraB = new Date(`${b.nadadorfecha}T${b.nadadorhora.split('T')[1]}`);
+
+        if (fechaHoraA.getTime() === fechaHoraB.getTime()) {
+            // Si las horas son idénticas, usa la secuencia como desempate
+            return Number(a.secuencia) - Number(b.secuencia);
+        }
+        return fechaHoraA.getTime() - fechaHoraB.getTime();
+    });
 
     const latlngs = puntos
       .filter(p =>
@@ -408,7 +422,7 @@ async function trazarRutaUsuario() {
         console.log("polylineTraza eliminada del mapa.");
     }
     console.log("Nuevo polylineTraza asignado:", polylineTraza); // Después de L.polyline(...)
-    
+
     // 🔹 Dibujar nueva traza
     polylineTraza = L.polyline(latlngs, {
       color: 'yellow',

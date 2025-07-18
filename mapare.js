@@ -177,6 +177,7 @@ let historialPuntos = new Map();
 async function actualizarPopup(usuarioid) {
   try {
     // 1. Traer los puntos de control del usuario
+    console.log(`🔄 Actualizando popup para usuario: ${usuarioid}`);
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorNadadorrutaId/${usuarioid}`);
     const historial = await res.json();
 

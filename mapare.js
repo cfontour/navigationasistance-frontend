@@ -1,5 +1,7 @@
 const map = L.map("map").setView([-34.9, -56.1], 13);
 
+const RADIO_PUNTO_CONTROL = 50;
+
 // Capa de mapa callejero (OpenStreetMap estándar)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -238,7 +240,7 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
 
       console.log(`📏 Distancia para ${usuarioid} al punto "${punto.etiqueta}": ${distancia.toFixed(2)}m`); // <-- AÑADE ESTO
 
-      if (distancia < 40) {
+      if (distancia < RADIO_PUNTO_CONTROL) {
 
         const payload = {
           nadadorrutaId: usuarioid, // 👈 ahora como String plano
@@ -325,6 +327,15 @@ async function cargarRutas(idRuta) {
         nadadorruta_id: p.nadadorruta_id,
         rutaId: idRuta // <--- AÑADIR ESTO
       });
+
+      // ✅ Círculo sombreado para marcar el radio de 20 metros del punto de control
+      const controlPointRadius = L.circle(latlng, {
+        radius: RADIO_PUNTO_CONTROL,          // Radio en metros (coincide con tu lógica de 20m)
+        color: 'blue',       // Color del borde del círculo
+        fillColor: '#3388ff',// Color de relleno (un azul más claro)
+        fillOpacity: 0.2,    // Transparencia del relleno (0.2 es bastante transparente)
+        weight: 1            // Grosor del borde
+      }).addTo(map);
 
       L.circle(latlng, {
         radius: 5,

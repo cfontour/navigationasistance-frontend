@@ -1,18 +1,10 @@
 const map = L.map("map").setView([-34.9, -56.1], 13);
 
-// Capa de mapa callejero (OpenStreetMap estándar)
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  maxZoom: 19
-}).addTo(map);
-
-/*
-// Tu capa satelital anterior (comentada o eliminada si ya no la necesitas)
+// Capa satelital
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
   attribution: '&copy; Esri',
   maxZoom: 19
 }).addTo(map);
-*/
 
 // Íconos personalizados
 const iconoInicio = L.icon({ iconUrl: 'img/start_flag.png', iconSize: [32, 32] });
@@ -24,10 +16,9 @@ let puntosControl = []; // guardará todos los puntos
 let registrosHechos = new Set(); // para evitar múltiples registros del mismo punto
 let mostrarTraza = false;
 
-async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
+async function cargarRutas() {
   try {
-    // Se inserta el idRuta en la URL del endpoint
-    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/${idRuta}`);
+    const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar");
     const rutas = await res.json();
 
     rutas.forEach(ruta => {
@@ -88,7 +79,7 @@ async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
 
 function crearIconoCompetidor() {
   return L.icon({
-    iconUrl: 'img/optimist_marker_30x30.png',
+    iconUrl: 'img/aventurero.png',
     iconSize: [34, 50],             // tamaño controlado
     iconAnchor: [16, 48],           // punta inferior del globo
     popupAnchor: [0, -48]           // para que el popup salga justo arriba
@@ -285,62 +276,63 @@ async function cargarUsuariosEnSelector() {
   }
 }
 
-async function cargarRutas(idRuta) {
+async function trazarRutaUsuario() {
+  mostrarTraza = true; // ✅ activar la traza manualmente
+
+  const usuarioId = document.getElementById("selector-usuario").value;
+  const hoy = new Date().toISOString().split("T")[0];
+
+  if (!usuarioId) {
+    alert("❗ Debe seleccionar un usuario.");
+    return;
+  }
+
   try {
-    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/${idRuta}`);
-    const ruta = await res.json(); // 'ruta' ya es el objeto de la ruta
+    // 🔹 Obtener último recorrido UUID
+    const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${hoy}`);
+    const uuidList = await resUuid.json();
 
-    // No hay forEach aquí, procesamos 'ruta' directamente
-    const titulo = document.createElement("h2");
-    titulo.innerText = ruta.nombre;
-    titulo.style.color = "white";
-    titulo.style.fontSize = "1.5em";
-    titulo.style.textShadow = "1px 1px 3px black";
-    document.body.insertBefore(titulo, document.getElementById("map"));
+    if (!uuidList || uuidList.length === 0) {
+      alert("❌ No hay recorridos registrados hoy para este usuario.");
+      return;
+    }
 
-    const puntos = ruta.puntos;
-    if (!puntos || puntos.length === 0) return;
+    const ultimaRuta = uuidList[0]; // solo uno, ya viene ordenado y limitado en el backend
 
-    const bounds = [];
+    // 🔹 Obtener puntos del recorrido
+    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${ultimaRuta}`);
+    const puntos = await res.json();
 
-    puntos.forEach((p, i) => { // Este forEach es para los 'puntos' dentro de la 'ruta'
-      const latlng = [p.latitud, p.longitud];
-      bounds.push(latlng);
+    const latlngs = puntos
+      .filter(p =>
+        Number.isFinite(parseFloat(p.nadadorlat)) &&
+        Number.isFinite(parseFloat(p.nadadorlng)) &&
+        Number(p.secuencia) >= 1
+      )
+      .map(p => [parseFloat(p.nadadorlat), parseFloat(p.nadadorlng)]);
 
-      console.log("🧩 Punto recibido:", p);
+    if (latlngs.length === 0) {
+      alert("❌ La ruta no contiene puntos válidos.");
+      return;
+    }
 
-      if (typeof puntosControl === 'undefined') {
-          console.warn("puntosControl no está definido. Asegúrate de declararlo.");
-      }
+    // 🔹 Eliminar traza anterior si existe
+    if (polylineTraza) {
+      map.removeLayer(polylineTraza);
+    }
 
-      puntosControl.push({
-        latitud: p.latitud,
-        longitud: p.longitud,
-        etiqueta: p.etiqueta || `Punto ${i + 1}`,
-        nadadorruta_id: p.nadadorruta_id
-      });
+    // 🔹 Dibujar nueva traza
+    polylineTraza = L.polyline(latlngs, {
+      color: 'yellow',
+      weight: 3,
+      dashArray: '10, 10'
+    }).addTo(map);
 
-      L.circle(latlng, {
-        radius: 5,
-        color: ruta.color,
-        fillColor: ruta.color,
-        fillOpacity: 1
-      }).addTo(map);
-
-      let icon = iconoIntermedio;
-      if (i === 0) icon = iconoInicio;
-      else if (i === puntos.length - 1) icon = iconoFinal;
-
-      L.marker(latlng, { icon })
-        .addTo(map)
-        .bindPopup(`Etiqueta: ${p.etiqueta}<br>Lat: ${p.latitud}<br>Lng: ${p.longitud}`);
-    });
-
-    console.log("🧭 puntosControl cargados:", puntosControl);
-    map.fitBounds(bounds);
+    //map.fitBounds(polylineTraza.getBounds());
 
   } catch (err) {
-    console.error("Error al cargar rutas:", err);
+    console.error("❌ Error al trazar ruta:", err);
+    alert("⚠️ Error inesperado al intentar trazar la ruta.");
   }
 }
 
@@ -354,7 +346,7 @@ function borrarTraza() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  cargarRutas("46");
+  cargarRutas();
   cargarNavegantesVinculados();
   cargarUsuariosEnSelector();
 

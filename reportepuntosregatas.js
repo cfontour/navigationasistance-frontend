@@ -33,7 +33,7 @@ async function generarReporte() {
       puntos = await res.json();
     } else {
       //const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listar");
-      const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorRutaId/45");
+      const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarPorRutaId/46");
       puntos = await res.json();
       puntos.sort((a, b) => a.nadadorrutaId.localeCompare(b.nadadorrutaId));
     }

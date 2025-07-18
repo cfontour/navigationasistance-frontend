@@ -24,9 +24,9 @@ let puntosControl = []; // guardará todos los puntos
 let registrosHechos = new Set(); // para evitar múltiples registros del mismo punto
 let mostrarTraza = false;
 
-async function cargarRutas() {
+async function cargarRutas(idRuta) {
   try {
-    const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listarId/46");
+    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/${idRuta}`);
     const rutas = await res.json();
 
     rutas.forEach(ruta => {
@@ -354,7 +354,7 @@ function borrarTraza() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  cargarRutas();
+  cargarRutas("46");
   cargarNavegantesVinculados();
   cargarUsuariosEnSelector();
 

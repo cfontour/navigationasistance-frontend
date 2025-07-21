@@ -109,7 +109,7 @@ function crearIconoCompetidorConBearing(bearing) {
 
   // Formatear el número con ceros a la izquierda (ej: 000, 010, 350)
   const paddedAngle = String(iconAngle).padStart(3, '0');
-  const iconUrl = `img/barco_bearing_iconos/barco_${paddedAngle}.png`;
+  const iconUrl = `img/barco_bearing_icons/barco_${paddedAngle}.png`;
 
   return L.icon({
     iconUrl: iconUrl,

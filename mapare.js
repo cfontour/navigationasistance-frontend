@@ -111,6 +111,8 @@ function crearIconoCompetidorConBearing(bearing) {
   const paddedAngle = String(iconAngle).padStart(3, '0');
   const iconUrl = `img/barco_bearing_icons/barco_${paddedAngle}.png`;
 
+  console.log("🔍 Nombre icono:", iconUrl);
+
   return L.icon({
     iconUrl: iconUrl,
     iconSize: [32, 32],             // Ajusta el tamaño si es necesario para tus íconos de barco

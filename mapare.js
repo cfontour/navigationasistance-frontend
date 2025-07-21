@@ -89,12 +89,33 @@ async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
   }
 }
 
-function crearIconoCompetidor() {
+// Dentro de tu archivo JS, en la sección de definición de íconos o funciones auxiliares
+
+function crearIconoCompetidorConBearing(bearing) {
+  // Asegurarse de que el bearing esté entre 0 y 359
+  let normalizedBearing = bearing % 360;
+  if (normalizedBearing < 0) {
+    normalizedBearing += 360;
+  }
+
+  // Redondear al múltiplo de 10 más cercano
+  // Math.round(normalizedBearing / 10) * 10
+  // Si tenemos 5, queremos 0; si tenemos 6, queremos 10.
+  // 5 grados => 000, 15 grados => 010
+  let iconAngle = Math.round(normalizedBearing / 10) * 10;
+  if (iconAngle === 360) { // Manejo especial para 360 grados, que es 000
+    iconAngle = 0;
+  }
+
+  // Formatear el número con ceros a la izquierda (ej: 000, 010, 350)
+  const paddedAngle = String(iconAngle).padStart(3, '0');
+  const iconUrl = `img/barco_bearing_iconos/barco_${paddedAngle}.png`;
+
   return L.icon({
-    iconUrl: 'img/optimist_marker_30x30.png',
-    iconSize: [34, 50],             // tamaño controlado
-    iconAnchor: [16, 48],           // punta inferior del globo
-    popupAnchor: [0, -48]           // para que el popup salga justo arriba
+    iconUrl: iconUrl,
+    iconSize: [32, 32],             // Ajusta el tamaño si es necesario para tus íconos de barco
+    iconAnchor: [16, 16],           // La punta inferior central del icono
+    popupAnchor: [0, -16]           // Para que el popup salga justo arriba
   });
 }
 
@@ -114,6 +135,7 @@ async function cargarNavegantesVinculados() {
     nadadores.forEach(n => {
       const lat = parseFloat(n.nadadorlat);
       const lng = parseFloat(n.nadadorlng);
+      const bearing = parseFloat(n.bearing);
 
       console.log("👤 Navegante activo:", n);
 
@@ -123,9 +145,9 @@ async function cargarNavegantesVinculados() {
         return;
       }
 
-      // 🎯 Mostrarlo en el mapa SIEMPRE
+      // ✅ CORRECTO: Llamada directa a crearIconoCompetidorConBearing
       const marcador = L.marker([lat, lng], {
-        icon: crearIconoCompetidor()
+        icon: crearIconoCompetidorConBearing(bearing) // <-- ¡Aquí se usa directamente!
       }).addTo(map)
         .bindPopup(`🧍 Usuario: ${n.usuarioid}<br>🕓 ${n.fechaUltimaActualizacion}`);
 
@@ -427,6 +449,7 @@ async function trazarRutaUsuario() {
     polylineTraza = L.polyline(latlngs, {
       color: 'yellow',
       weight: 3,
+
       dashArray: '10, 10'
     }).addTo(map);
 

@@ -99,7 +99,7 @@ async function cargarRutasDisponiblesEnSelector() {
   }
 
   try {
-    const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutasa/listar"); // Este endpoint debería listar todas tus rutas
+    const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar"); // Este endpoint debería listar todas tus rutas
     const rutasDisponibles = await res.json();
 
     rutasDisponibles.forEach((ruta) => {

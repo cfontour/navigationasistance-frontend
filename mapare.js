@@ -89,6 +89,31 @@ async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
   }
 }
 
+// FUNCIÓN NUEVA: Para llenar el selector de rutas con las opciones del backend
+async function cargarRutasDisponiblesEnSelector() {
+  const selectorRuta = document.getElementById("selectRuta");
+
+  // Limpiar opciones existentes (excepto la primera "Seleccione una ruta")
+  while (selectorRuta.options.length > 1) {
+    selectorRuta.remove(1);
+  }
+
+  try {
+    const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutasa/listar"); // Este endpoint debería listar todas tus rutas
+    const rutasDisponibles = await res.json();
+
+    rutasDisponibles.forEach((ruta) => {
+      const opt = document.createElement("option");
+      opt.value = ruta.id; // Asume que el ID de la ruta está en 'ruta.id'
+      opt.textContent = `Ruta ${ruta.id} - ${ruta.nombre} [${ruta.color}]`;
+      selectorRuta.appendChild(opt);
+    });
+  } catch (e) {
+    console.error("❌ Error al cargar rutas disponibles en el selector:", e);
+    alert("❌ Error al cargar la lista de rutas disponibles.");
+  }
+}
+
 // Dentro de tu archivo JS, en la sección de definición de íconos o funciones auxiliares
 
 function crearIconoCompetidorConBearing(bearing) {
@@ -473,7 +498,13 @@ function borrarTraza() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  cargarRutas("46");
+  cargarRutasDisponiblesEnSelector(); // <-- LLAMA A LA NUEVA FUNCIÓN AQUÍ PARA LLENAR EL SELECTOR DE RUTAS
+  // 2. **ESTO ES LO CLAVE:** Añadir el escuchador de eventos para el selector de rutas
+  selectorRuta.addEventListener('change', (event) => {
+    const idRutaSeleccionada = event.target.value;
+    // LLAMA A TU FUNCIÓN EXISTENTE 'cargarRutas' CON EL ID SELECCIONADO
+    cargarRutas(idRutaSeleccionada);
+  });
   cargarNavegantesVinculados();
   cargarUsuariosEnSelector();
 

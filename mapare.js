@@ -1,6 +1,6 @@
 const map = L.map("map").setView([-34.9, -56.1], 13);
 
-const RADIO_PUNTO_CONTROL = 50;
+const RADIO_PUNTO_CONTROL = 100;
 
 // Capa de mapa callejero (OpenStreetMap estándar)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

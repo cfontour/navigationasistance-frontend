@@ -498,13 +498,14 @@ function borrarTraza() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  cargarRutasDisponiblesEnSelector(); // <-- LLAMA A LA NUEVA FUNCIÓN AQUÍ PARA LLENAR EL SELECTOR DE RUTAS
+  //cargarRutasDisponiblesEnSelector(); // <-- LLAMA A LA NUEVA FUNCIÓN AQUÍ PARA LLENAR EL SELECTOR DE RUTAS
   // 2. **ESTO ES LO CLAVE:** Añadir el escuchador de eventos para el selector de rutas
-  selectorRuta.addEventListener('change', (event) => {
-    const idRutaSeleccionada = event.target.value;
+  //selectorRuta.addEventListener('change', (event) => {
+  //  const idRutaSeleccionada = event.target.value;
     // LLAMA A TU FUNCIÓN EXISTENTE 'cargarRutas' CON EL ID SELECCIONADO
     cargarRutas(idRutaSeleccionada);
-  });
+    cargarRutas("46");
+  //});
   cargarNavegantesVinculados();
   cargarUsuariosEnSelector();
 

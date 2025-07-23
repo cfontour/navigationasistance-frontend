@@ -503,7 +503,7 @@ document.addEventListener("DOMContentLoaded", () => {
   //selectorRuta.addEventListener('change', (event) => {
   //  const idRutaSeleccionada = event.target.value;
     // LLAMA A TU FUNCIÓN EXISTENTE 'cargarRutas' CON EL ID SELECCIONADO
-    cargarRutas(idRutaSeleccionada);
+    //cargarRutas(idRutaSeleccionada);
     cargarRutas("46");
   //});
   cargarNavegantesVinculados();

@@ -86,6 +86,7 @@ function eliminarZona() {
   alert("🔧 Funcionalidad Eliminar Zona en construcción.");
 }
 
+// ✅ Versión corregida de initMapaRuta() con soporte táctil
 function initMapaRuta() {
   mapaRuta = L.map('map1').setView([-34.9, -56.2], 13);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -93,12 +94,21 @@ function initMapaRuta() {
   }).addTo(mapaRuta);
 
   let timeout = null;
+  let isLongPress = false; // Flag para controlar la pulsación larga
+
+  // Listener para CLICKS (toques cortos) en el mapa para agregar marcador
   mapaRuta.on('click', function (e) {
+    // Si es un "long press" que ya manejó la eliminación, no agregamos un nuevo marcador
+    if (isLongPress) {
+        isLongPress = false; // Resetear el flag
+        return;
+    }
     const { lat, lng } = e.latlng;
     const marcador = L.marker([lat, lng]).addTo(mapaRuta);
     marcadoresRuta.push(marcador);
     puntosRuta.push([lat, lng]);
 
+    // Vincular popup para preguntar si es punto final
     marcador.bindPopup(`
       <div>
         ¿Este es el punto final?<br/>
@@ -107,21 +117,60 @@ function initMapaRuta() {
       </div>
     `, { closeOnClick: false }).openPopup();
 
+    // Añadir listeners para detectar pulsación larga en el MARCADOR
+    // Tanto para eventos de mouse como táctiles
+    addMarkerLongPressListeners(marcador, lat, lng);
+
+    // Redibujar la polilínea de la ruta
+    if (polyline) mapaRuta.removeLayer(polyline);
+    polyline = L.polyline(puntosRuta, { color: 'red' }).addTo(mapaRuta);
+  });
+
+  // Función auxiliar para añadir listeners de pulsación larga a un marcador
+  function addMarkerLongPressListeners(marcador, lat, lng) {
+    // Para MOUSE (comportamiento actual)
     marcador.on('mousedown', () => {
       timeout = setTimeout(() => {
+        isLongPress = true; // Marcar que se detectó una pulsación larga
         mapaRuta.removeLayer(marcador);
         puntosRuta = puntosRuta.filter(p => !(p[0] === lat && p[1] === lng));
         marcadoresRuta = marcadoresRuta.filter(m => m !== marcador);
         if (polyline) mapaRuta.removeLayer(polyline);
         polyline = L.polyline(puntosRuta, { color: 'red' }).addTo(mapaRuta);
-      }, 2000);
+        mapaRuta.closePopup(); // Cierra el popup si se elimina el marcador
+      }, 1000); // Reducido a 1 segundo para mejor UX en móvil
     });
 
-    marcador.on('mouseup', () => clearTimeout(timeout));
+    marcador.on('mouseup', () => {
+        clearTimeout(timeout);
+        // Si el long press ocurrió, reseteamos el flag aquí.
+        // La lógica en mapaRuta.on('click') lo manejará.
+    });
 
-    if (polyline) mapaRuta.removeLayer(polyline);
-    polyline = L.polyline(puntosRuta, { color: 'red' }).addTo(mapaRuta);
-  });
+    // Para TOUCH (NUEVO)
+    marcador.on('touchstart', (e) => {
+      // Prevenir el comportamiento por defecto (zoom, scroll)
+      // e.originalEvent.preventDefault(); // Esto puede ser demasiado agresivo y bloquear el scroll del mapa
+
+      timeout = setTimeout(() => {
+        isLongPress = true; // Marcar que se detectó una pulsación larga
+        mapaRuta.removeLayer(marcador);
+        puntosRuta = puntosRuta.filter(p => !(p[0] === lat && p[1] === lng));
+        marcadoresRuta = marcadoresRadores.filter(m => m !== marcador);
+        if (polyline) mapaRuta.removeLayer(polyline);
+        polyline = L.polyline(puntosRuta, { color: 'red' }).addTo(mapaRuta);
+        mapaRuta.closePopup(); // Cierra el popup si se elimina el marcador
+      }, 1000); // Mismo tiempo que para mouse
+    });
+
+    marcador.on('touchend', () => {
+      clearTimeout(timeout);
+    });
+
+    marcador.on('touchcancel', () => { // En caso de que el toque se cancele (ej. un pop-up del sistema)
+      clearTimeout(timeout);
+    });
+  }
 }
 
 function confirmarPuntoFinal() {
@@ -401,7 +450,7 @@ function dibujarCorredorVirtual() {
   const infoDiv = document.querySelector('.info-corredor');
   if (infoDiv) {
     infoDiv.innerHTML = `
-      <h4>Info Corredor</h4>
+      <h4>Info Corredor Virtual</h4>
       <ul>
         <li>📏 Distancia total del trayecto: <strong>${Math.round(distanciaTotal)} m</strong></li>
         <li>📍 Distancia puntos de control: <strong>${distanciaControl} m</strong></li>

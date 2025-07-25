@@ -2,9 +2,9 @@ const map = L.map("map").setView([-34.9, -56.1], 13);
 
 const RADIO_PUNTO_CONTROL = 20;
 
-// Capa de mapa callejero (OpenStreetMap estándar)
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+// Capa satelital
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '&copy; Esri',
   maxZoom: 19
 }).addTo(map);
 

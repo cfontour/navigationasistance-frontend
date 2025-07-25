@@ -19,12 +19,30 @@ const iconoInicio = L.icon({ iconUrl: 'img/start_flag.png', iconSize: [32, 32] }
 const iconoIntermedio = L.icon({ iconUrl: 'img/white_flag.png', iconSize: [24, 24] });
 const iconoFinal = L.icon({ iconUrl: 'img/finish_flag.png', iconSize: [32, 32] });
 
+const anchoCorredorInput = document.getElementById('anchoCorredor');
+const anchoLabelSpan = document.getElementById('anchoLabel');
+
 let marcadores = new Map(); //let marcadores = []; // ⬅️ Para limpiar luego los círculos de competidores
 let puntosControl = []; // guardará todos los puntos
 let registrosHechos = new Set(); // para evitar múltiples registros del mismo punto
 let mostrarTraza = false;
 
-let RADIO_PUNTO_CONTROL = parseFloat(document.getElementById('anchoCorredor').value);
+let RADIO_PUNTO_CONTROL = parseFloat(anchoCorredorInput.value);
+
+function actualizarLabel(labelId, value) {
+    document.getElementById(labelId).innerText = value;
+}
+
+anchoCorredorInput.addEventListener('input', (event) => {
+    // a. Actualiza la variable 'RADIO_PUNTO_CONTROL' con el nuevo valor del slider
+    RADIO_PUNTO_CONTROL = parseFloat(event.target.value);
+
+    // b. Llama a tu función para actualizar el label visualmente
+    actualizarLabel('anchoLabel', event.target.value);
+
+    // Opcional: Si necesitas hacer algo más inmediatamente cuando el slider cambia, hazlo aquí.
+    console.log("Nuevo RADIO_PUNTO_CONTROL:", RADIO_PUNTO_CONTROL);
+});
 
 async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
   try {

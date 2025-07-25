@@ -22,7 +22,7 @@ async function cargarRutas(idRuta) {
     const rutas = await res.json();
 
     const titulo = document.createElement("h2");
-    titulo.innerText = ruta.nombre;
+    titulo.innerText = rutas.nombre;
     titulo.style.color = "white";
     titulo.style.fontSize = "1.5em";
     titulo.style.textShadow = "1px 1px 3px black";

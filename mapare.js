@@ -1,7 +1,5 @@
 const map = L.map("map").setView([-34.9, -56.1], 13);
 
-const RADIO_PUNTO_CONTROL = 10;
-
 // Capa de mapa callejero (OpenStreetMap estándar)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -26,11 +24,10 @@ let puntosControl = []; // guardará todos los puntos
 let registrosHechos = new Set(); // para evitar múltiples registros del mismo punto
 let mostrarTraza = false;
 
+let RADIO_PUNTO_CONTROL = parseFloat(document.getElementById('anchoCorredor').value);
+
 async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
   try {
-
-    const ancho = parseFloat(document.getElementById('anchoCorredor').value);
-    RADIO_PUNTO_CONTROL = ancho;
 
     // Se inserta el idRuta en la URL del endpoint
 

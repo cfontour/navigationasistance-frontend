@@ -30,7 +30,7 @@ async function cargarRutas(idRuta) {
 
     rutas.forEach(ruta => {
 
-      const puntos = ruta.puntos;
+      const puntos = rutas.puntos;
       if (!puntos || puntos.length === 0) return;
 
       const bounds = [];
@@ -52,8 +52,8 @@ async function cargarRutas(idRuta) {
         // Círculo del color de la ruta
         L.circle(latlng, {
           radius: 5,
-          color: ruta.color,
-          fillColor: ruta.color,
+          color: 'rgba(255, 255, 0, 0.5)',
+          fillColor: 'rgba(255, 255, 0, 0.5)',
           fillOpacity: 1
         }).addTo(map);
 

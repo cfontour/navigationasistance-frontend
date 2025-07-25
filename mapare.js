@@ -105,7 +105,7 @@ async function cargarRutasDisponiblesEnSelector() {
     rutasDisponibles.forEach((ruta) => {
       const opt = document.createElement("option");
       opt.value = ruta.id; // Asume que el ID de la ruta está en 'ruta.id'
-      opt.textContent = `Ruta ${ruta.id} - ${ruta.nombre} [${ruta.color}]`;
+      opt.textContent = `Ruta ${ruta.id} - ${ruta.nombre}`;
       selectorRuta.appendChild(opt);
     });
   } catch (e) {

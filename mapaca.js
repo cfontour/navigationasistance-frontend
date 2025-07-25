@@ -91,6 +91,15 @@ async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
   }
 }
 
+function crearIconoCompetidor() {
+  return L.icon({
+    iconUrl: 'img/aventurero.png',
+    iconSize: [34, 50],             // tamaño controlado
+    iconAnchor: [16, 48],           // punta inferior del globo
+    popupAnchor: [0, -48]           // para que el popup salga justo arriba
+  });
+}
+
 // FUNCIÓN NUEVA: Para llenar el selector de rutas con las opciones del backend
 async function cargarRutasDisponiblesEnSelector() {
   const selectorRuta = document.getElementById("select-ruta");
@@ -120,36 +129,6 @@ async function cargarRutasDisponiblesEnSelector() {
 
 // Dentro de tu archivo JS, en la sección de definición de íconos o funciones auxiliares
 
-function crearIconoCompetidorConBearing(bearing) {
-  // Asegurarse de que el bearing esté entre 0 y 359
-  let normalizedBearing = bearing % 360;
-  if (normalizedBearing < 0) {
-    normalizedBearing += 360;
-  }
-
-  // Redondear al múltiplo de 10 más cercano
-  // Math.round(normalizedBearing / 10) * 10
-  // Si tenemos 5, queremos 0; si tenemos 6, queremos 10.
-  // 5 grados => 000, 15 grados => 010
-  let iconAngle = Math.round(normalizedBearing / 10) * 10;
-  if (iconAngle === 360) { // Manejo especial para 360 grados, que es 000
-    iconAngle = 0;
-  }
-
-  // Formatear el número con ceros a la izquierda (ej: 000, 010, 350)
-  const paddedAngle = String(iconAngle).padStart(3, '0');
-  const iconUrl = `/img/barco_bearing_icons/barco_${paddedAngle}.png`;
-
-  console.log("🔍 Nombre icono:", iconUrl);
-
-  return L.icon({
-    iconUrl: iconUrl,
-    iconSize: [32, 32],             // Ajusta el tamaño si es necesario para tus íconos de barco
-    iconAnchor: [16, 16],           // La punta inferior central del icono
-    popupAnchor: [0, -16]           // Para que el popup salga justo arriba
-  });
-}
-
 async function cargarNavegantesVinculados() {
   try {
     const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listarActivosEnCarrera");
@@ -176,9 +155,9 @@ async function cargarNavegantesVinculados() {
         return;
       }
 
-      // ✅ CORRECTO: Llamada directa a crearIconoCompetidorConBearing
+      // ✅ 
       const marcador = L.marker([lat, lng], {
-        icon: crearIconoCompetidorConBearing(bearing) // <-- ¡Aquí se usa directamente!
+        icon: crearIconoCompetidor() // <-- ¡Aquí se usa directamente!
       }).addTo(map)
         .bindPopup(`🧍 Usuario: ${n.usuarioid}<br>🕓 ${n.fechaUltimaActualizacion}`);
 

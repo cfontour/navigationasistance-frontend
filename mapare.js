@@ -63,8 +63,8 @@ async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
         // Círculo del color de la ruta
         L.circle(latlng, {
           radius: 5,
-          color: ruta.color,
-          fillColor: ruta.color,
+          color: 'rgba(255, 255, 0, 0.5)',
+          fillColor: 'rgba(255, 255, 0, 0.5)',
           fillOpacity: 1
         }).addTo(map);
 

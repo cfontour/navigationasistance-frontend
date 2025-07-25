@@ -1,6 +1,7 @@
 async function procesarCarga() {
   const nombre = document.getElementById("nombreRuta").value.trim();
-  const color = document.getElementById("colorRuta").value;
+  //const color = document.getElementById("colorRuta").value;
+  const color = 'REGATA';
   const archivo = document.getElementById("excelFile").files[0];
   const resultado = document.getElementById("resultado");
   resultado.innerHTML = "";

@@ -91,7 +91,7 @@ async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
 
 // FUNCIÓN NUEVA: Para llenar el selector de rutas con las opciones del backend
 async function cargarRutasDisponiblesEnSelector() {
-  const selectorRuta = document.getElementById("selectRuta");
+  const selectorRuta = document.getElementById("select-ruta");
 
   // Limpiar opciones existentes (excepto la primera "Seleccione una ruta")
   while (selectorRuta.options.length > 1) {

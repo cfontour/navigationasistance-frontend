@@ -18,7 +18,7 @@ let mostrarTraza = false;
 
 async function cargarRutas(idRuta) {
   try {
-    const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar");
+    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/${idRuta}`);
     const rutas = await res.json();
 
     const titulo = document.createElement("h2");

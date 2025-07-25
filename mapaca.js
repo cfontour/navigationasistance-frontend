@@ -21,13 +21,14 @@ async function cargarRutas(idRuta) {
     const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar");
     const rutas = await res.json();
 
+    const titulo = document.createElement("h2");
+    titulo.innerText = ruta.nombre;
+    titulo.style.color = "white";
+    titulo.style.fontSize = "1.5em";
+    titulo.style.textShadow = "1px 1px 3px black";
+    document.body.insertBefore(titulo, document.getElementById("map"));
+
     rutas.forEach(ruta => {
-      const titulo = document.createElement("h2");
-      titulo.innerText = ruta.nombre;
-      titulo.style.color = "white";
-      titulo.style.fontSize = "1.5em";
-      titulo.style.textShadow = "1px 1px 3px black";
-      document.body.insertBefore(titulo, document.getElementById("map"));
 
       const puntos = ruta.puntos;
       if (!puntos || puntos.length === 0) return;

@@ -1,6 +1,6 @@
 const map = L.map("map").setView([-34.9, -56.1], 13);
 
-const RADIO_PUNTO_CONTROL = 20;
+const RADIO_PUNTO_CONTROL = 10;
 
 // Capa de mapa callejero (OpenStreetMap estándar)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -28,6 +28,10 @@ let mostrarTraza = false;
 
 async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
   try {
+
+    const ancho = parseFloat(document.getElementById('anchoCorredor').value);
+    RADIO_PUNTO_CONTROL = ancho;
+
     // Se inserta el idRuta en la URL del endpoint
 
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/${idRuta}`);
@@ -41,7 +45,7 @@ async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
     document.body.insertBefore(titulo, document.getElementById("map"));
 
     rutas.forEach(ruta => {
-   
+
       const puntos = ruta.puntos;
       if (!puntos || puntos.length === 0) return;
 

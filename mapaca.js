@@ -16,7 +16,7 @@ let puntosControl = []; // guardará todos los puntos
 let registrosHechos = new Set(); // para evitar múltiples registros del mismo punto
 let mostrarTraza = false;
 
-async function cargarRutas() {
+async function cargarRutas(idRuta) {
   try {
     const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar");
     const rutas = await res.json();
@@ -84,6 +84,33 @@ function crearIconoCompetidor() {
     iconAnchor: [16, 48],           // punta inferior del globo
     popupAnchor: [0, -48]           // para que el popup salga justo arriba
   });
+}
+
+// FUNCIÓN NUEVA: Para llenar el selector de rutas con las opciones del backend
+async function cargarRutasDisponiblesEnSelector() {
+  const selectorRuta = document.getElementById("select-ruta");
+
+  // Limpiar opciones existentes (excepto la primera "Seleccione una ruta")
+  while (selectorRuta.options.length > 1) {
+    selectorRuta.remove(1);
+  }
+
+  try {
+    const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listarSimples"); // Este endpoint debería listar todas tus rutas
+    const rutasDisponibles = await res.json();
+
+    rutasDisponibles.forEach((ruta) => {
+      if (ruta.color === "CARRERA") {
+        const opt = document.createElement("option");
+        opt.value = ruta.id; // Asume que el ID de la ruta está en 'ruta.id'
+        opt.textContent = `Ruta ${ruta.id} - ${ruta.nombre}`;
+        selectorRuta.appendChild(opt);
+      }
+    });
+  } catch (e) {
+    console.error("❌ Error al cargar rutas disponibles en el selector:", e);
+    alert("❌ Error al cargar la lista de rutas disponibles.");
+  }
 }
 
 async function cargarNavegantesVinculados() {
@@ -346,7 +373,14 @@ function borrarTraza() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  cargarRutas();
+  const selectorRuta = document.getElementById("select-ruta");
+  cargarRutasDisponiblesEnSelector();
+  selectorRuta.addEventListener('change', (event) => {
+      const idRutaSeleccionada = event.target.value;
+      // LLAMA A TU FUNCIÓN EXISTENTE 'cargarRutas' CON EL ID SELECCIONADO
+      cargarRutas(idRutaSeleccionada);
+      //cargarRutas("45");
+    });
   cargarNavegantesVinculados();
   cargarUsuariosEnSelector();
 

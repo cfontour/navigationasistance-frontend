@@ -103,10 +103,12 @@ async function cargarRutasDisponiblesEnSelector() {
     const rutasDisponibles = await res.json();
 
     rutasDisponibles.forEach((ruta) => {
-      const opt = document.createElement("option");
-      opt.value = ruta.id; // Asume que el ID de la ruta está en 'ruta.id'
-      opt.textContent = `Ruta ${ruta.id} - ${ruta.nombre}`;
-      selectorRuta.appendChild(opt);
+      if (ruta.color === "REGATA") {
+        const opt = document.createElement("option");
+        opt.value = ruta.id; // Asume que el ID de la ruta está en 'ruta.id'
+        opt.textContent = `Ruta ${ruta.id} - ${ruta.nombre}`;
+        selectorRuta.appendChild(opt);
+      }
     });
   } catch (e) {
     console.error("❌ Error al cargar rutas disponibles en el selector:", e);

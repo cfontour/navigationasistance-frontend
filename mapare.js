@@ -497,7 +497,7 @@ async function trazarRutaUsuario() {
 
     // 🔹 Dibujar nueva traza
     polylineTraza = L.polyline(latlngs, {
-      color: 'yellow',
+      color: 'orange',
       weight: 3,
 
       dashArray: '10, 10'

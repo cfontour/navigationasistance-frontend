@@ -508,7 +508,7 @@ async function trazarRutaUsuario() {
 
   } catch (err) {
     console.error("❌ Error al trazar ruta:", err);
-    alert("⚠️ Error inesperado al intentar trazar la ruta.");
+    //alert("⚠️ Error inesperado al intentar trazar la ruta.");
   }
 }
 

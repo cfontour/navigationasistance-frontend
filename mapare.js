@@ -450,7 +450,8 @@ async function trazarRutaUsuario() {
     const uuidList = await resUuid.json();
 
     if (!uuidList || uuidList.length === 0) {
-      alert("❌ No hay recorridos registrados hoy para este usuario.");
+      console.log("❌ No hay recorridos registrados hoy para el usuario: " + usuarioid + ", para la fecha: " + hoy);
+      alert("❌ No hay recorridos registrados hoy para el usuario: " + usuarioid + ", para la fecha: " + hoy);
       return;
     }
 
@@ -498,7 +499,7 @@ async function trazarRutaUsuario() {
     // 🔹 Dibujar nueva traza
     polylineTraza = L.polyline(latlngs, {
       color: 'orange',
-      weight: 3,
+      weight: 4,
 
       dashArray: '10, 10'
     }).addTo(map);

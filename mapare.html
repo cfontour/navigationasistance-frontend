@@ -2,12 +2,22 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
-    <!--
     <title>GEOTRASER - Regatas - Puntos</title>
-    -->
-    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
+        /* Estilos para el logo en esquina superior derecha */
+        .logo {
+            position: fixed; /* o absolute dependiendo de tu necesidad */
+            top: 20px;
+            right: 20px;
+            max-width: 200px; /* Ajustado para esquina */
+            z-index: 1000; /* Asegura que esté por encima de otros elementos */
+        }
+
+        /* Opcional: agregar sombra para mejor visibilidad */
+        .logo {
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
         body {
           margin: 0;
           padding: 0;
@@ -51,7 +61,9 @@
     </style>
 </head>
 <body id="page-top" style="background-image: url('img/fondo_regata.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
-<h1>🧭 GEOTRASER - MARINE - Regatas</h1>
+<!-- Logo en esquina superior derecha -->
+<img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
+<h1>🧭 Regatas</h1>
 <h2 id="tituloRuta">Ubicación de boyado de:</h2>
 
 <div id="controles-superiores">

@@ -155,7 +155,7 @@ async function cargarNavegantesVinculados() {
         return;
       }
 
-      // ✅ 
+      // ✅
       const marcador = L.marker([lat, lng], {
         icon: crearIconoCompetidor() // <-- ¡Aquí se usa directamente!
       }).addTo(map)
@@ -467,7 +467,7 @@ async function trazarRutaUsuario() {
 
   } catch (err) {
     console.error("❌ Error al trazar ruta:", err);
-    alert("⚠️ Error inesperado al intentar trazar la ruta.");
+    //alert("⚠️ Error inesperado al intentar trazar la ruta.");
   }
 }
 

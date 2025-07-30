@@ -679,6 +679,23 @@ async function obtenerMetricasUsuario(usuarioId) {
             };
         }
 
+        // 🎯 OBTENER BEARING DE LA POSICIÓN ACTIVA (MÁS ACTUAL)
+        let bearingActual = 0;
+        try {
+            const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listarActivosEnCarrera");
+            const nadadores = await response.json();
+            const nadadorActual = nadadores.find(n => n.usuarioid == usuarioId);
+
+            if (nadadorActual && nadadorActual.bearing !== undefined) {
+                bearingActual = parseFloat(nadadorActual.bearing) || 0;
+                console.log(`🧭 Bearing actual para ${usuarioId}: ${bearingActual}°`);
+            }
+        } catch (error) {
+            console.warn('⚠️ No se pudo obtener bearing actual, usando del histórico');
+            const ultimoPunto = datos[datos.length - 1];
+            bearingActual = ultimoPunto.bearing || 0;
+        }
+
         // Último punto (más reciente por tiempo)
         const ultimoPunto = datos[datos.length - 1];
 
@@ -696,30 +713,40 @@ async function obtenerMetricasUsuario(usuarioId) {
             );
         }
 
-        // Calcular velocidad (últimos 2 puntos)
+        // Calcular velocidad (últimos 3-5 puntos para suavizar)
         let velocidadNudos = 0;
-        if (datos.length >= 2) {
-            const punto1 = datos[datos.length - 1]; // Más reciente
-            const punto2 = datos[datos.length - 2]; // Anterior
+        if (datos.length >= 3) {
+            // Usar más puntos para calcular velocidad promedio
+            const puntosParaVelocidad = datos.slice(-5); // Últimos 5 puntos
+            let distanciaTotal = 0;
+            let tiempoTotal = 0;
 
-            const distancia = calcularDistanciaHaversine(
-                parseFloat(punto2.nadadorlat),
-                parseFloat(punto2.nadadorlng),
-                parseFloat(punto1.nadadorlat),
-                parseFloat(punto1.nadadorlng)
-            );
+            for (let i = 1; i < puntosParaVelocidad.length; i++) {
+                const punto1 = puntosParaVelocidad[i];
+                const punto2 = puntosParaVelocidad[i-1];
 
-            const tiempo1 = new Date(`${punto1.nadadorfecha}T${punto1.nadadorhora.split('T')[1]}`).getTime();
-            const tiempo2 = new Date(`${punto2.nadadorfecha}T${punto2.nadadorhora.split('T')[1]}`).getTime();
-            const tiempoSegundos = Math.abs(tiempo1 - tiempo2) / 1000;
+                const distancia = calcularDistanciaHaversine(
+                    parseFloat(punto2.nadadorlat),
+                    parseFloat(punto2.nadadorlng),
+                    parseFloat(punto1.nadadorlat),
+                    parseFloat(punto1.nadadorlng)
+                );
 
-            if (tiempoSegundos > 0) {
-                velocidadNudos = calcularVelocidadNudos(distancia, tiempoSegundos);
+                const tiempo1 = new Date(`${punto1.nadadorfecha}T${punto1.nadadorhora.split('T')[1]}`).getTime();
+                const tiempo2 = new Date(`${punto2.nadadorfecha}T${punto2.nadadorhora.split('T')[1]}`).getTime();
+                const tiempoSegundos = Math.abs(tiempo1 - tiempo2) / 1000;
+
+                distanciaTotal += distancia;
+                tiempoTotal += tiempoSegundos;
+            }
+
+            if (tiempoTotal > 0) {
+                velocidadNudos = calcularVelocidadNudos(distanciaTotal, tiempoTotal);
             }
         }
 
         return {
-            bearing: ultimoPunto.bearing || 0,
+            bearing: bearingActual, // 🎯 USAR BEARING ACTUAL
             millasNauticas: metrosAMillasNauticas(distanciaTotal),
             velocidadNudos: velocidadNudos,
             ultimoPunto: ultimoPunto,

@@ -12,9 +12,9 @@ $(document).ready(function () {
     mostrarItemRespaldoSiUsuarioLogueado();
 
     if (usuario.rol === "ADMINISTRADOR") {
-        cargarUsuarios(); // Solo cargar usuarios, DataTable se inicializa después
+        await cargarUsuarios(); // Solo cargar usuarios, DataTable se inicializa después
     } else {
-        cargarUsuarioUnico(usuario.id);
+        await cargarUsuarioUnico(usuario.id);
         document.getElementById("card-cambiar-password").classList.remove("d-none");
     }
 });
@@ -131,7 +131,7 @@ async function eliminarUsuario(id) {
             headers: getHeaders()
         });
 
-        cargarUsuarios(); // Esto recargará la tabla y reinicializará DataTable
+        await cargarUsuarios(); // Esto recargará la tabla y reinicializará DataTable
     } catch (error) {
         console.error("Error al eliminar usuario:", error);
     }
@@ -178,9 +178,9 @@ async function agregarUsuario() {
         const usuarioStr = localStorage.getItem("usuarioLogueado");
         const usuarioLogueado = JSON.parse(usuarioStr);
         if (usuarioLogueado.rol === "ADMINISTRADOR") {
-            cargarUsuarios(); // Esto recargará la tabla y reinicializará DataTable
+            await cargarUsuarios(); // Esto recargará la tabla y reinicializará DataTable
         } else {
-            cargarUsuarioUnico(usuarioLogueado.id);
+            await cargarUsuarioUnico(usuarioLogueado.id);
         }
 
     } catch (error) {

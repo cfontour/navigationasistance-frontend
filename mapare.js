@@ -521,6 +521,264 @@ function borrarTraza() {
   }
 }
 
+// Función para calcular distancia entre dos puntos (Haversine)
+function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
+    const R = 6371000; // Radio de la Tierra en metros
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distancia en metros
+}
+
+// Función para convertir metros a millas náuticas
+function metrosAMillasNauticas(metros) {
+    return metros / 1852;
+}
+
+// Función para calcular velocidad en nudos
+function calcularVelocidadNudos(distanciaMetros, tiempoSegundos) {
+    if (tiempoSegundos === 0) return 0;
+    const velocidadMs = distanciaMetros / tiempoSegundos;
+    const velocidadNudos = velocidadMs * 1.94384; // m/s a nudos
+    return velocidadNudos;
+}
+
+// Función para actualizar el panel de métricas (simplificada)
+function actualizarMetricas(metricas) {
+    if (!metricas || metricas.totalPuntos === 0) {
+        mostrarSinDatos();
+        return;
+    }
+
+    // Actualizar cada métrica
+    actualizarBearing(metricas.bearing);
+    actualizarDistancia(metricas.millasNauticas);
+    actualizarVelocidad(metricas.velocidadNudos);
+
+    // Log para debugging
+    console.log(`📊 Métricas actualizadas: Bearing: ${metricas.bearing}°, Distancia: ${metricas.millasNauticas.toFixed(2)} mn, Velocidad: ${metricas.velocidadNudos.toFixed(1)} nudos`);
+}
+
+// Funciones para actualizar cada métrica individualmente
+function actualizarBearing(bearing) {
+    const bearingElement = document.getElementById('bearing-value');
+    const needleElement = document.getElementById('bearing-needle');
+
+    bearingElement.textContent = bearing.toFixed(0) + '°';
+    bearingElement.classList.add('actualizado');
+    setTimeout(() => bearingElement.classList.remove('actualizado'), 400);
+
+    // Rotar la aguja de la brújula
+    needleElement.style.transform = `rotate(${bearing}deg)`;
+}
+
+function actualizarDistancia(millas) {
+    const distanciaElement = document.getElementById('distancia-value');
+    distanciaElement.textContent = millas.toFixed(2);
+    distanciaElement.classList.add('actualizado');
+    setTimeout(() => distanciaElement.classList.remove('actualizado'), 400);
+}
+
+function actualizarVelocidad(nudos) {
+    const velocidadElement = document.getElementById('velocidad-value');
+    velocidadElement.textContent = nudos.toFixed(1);
+    velocidadElement.classList.add('actualizado');
+    setTimeout(() => velocidadElement.classList.remove('actualizado'), 400);
+}
+
+function mostrarSinDatos() {
+    document.querySelectorAll('.metrica').forEach(metrica => {
+        metrica.classList.add('sin-datos');
+    });
+
+    document.getElementById('bearing-value').textContent = '---°';
+    document.getElementById('distancia-value').textContent = '0.00';
+    document.getElementById('velocidad-value').textContent = '0.0';
+}
+
+// Función para obtener datos históricos usando tus endpoints reales
+async function obtenerDatosHistoricos(usuarioId) {
+    try {
+        const hoy = new Date().toISOString().split("T")[0];
+
+        // 🔹 Paso 1: Obtener último recorrido UUID (igual que en tu código)
+        const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${hoy}`);
+
+        if (!resUuid.ok) {
+            console.log(`❌ Error al obtener UUID: ${resUuid.status}`);
+            return [];
+        }
+
+        const uuidList = await resUuid.json();
+
+        if (!uuidList || uuidList.length === 0) {
+            console.log(`❌ No hay recorridos registrados hoy para el usuario: ${usuarioId}, fecha: ${hoy}`);
+            return [];
+        }
+
+        const ultimaRuta = uuidList[0];
+        console.log(`✅ UUID encontrado: ${ultimaRuta}`);
+
+        // 🔹 Paso 2: Obtener puntos del recorrido (igual que en tu código)
+        const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${ultimaRuta}`);
+
+        if (!res.ok) {
+            console.log(`❌ Error al obtener puntos: ${res.status}`);
+            return [];
+        }
+
+        let puntos = await res.json();
+
+        if (!puntos || puntos.length === 0) {
+            console.log('❌ No se encontraron puntos para la ruta');
+            return [];
+        }
+
+        // 🔹 Paso 3: Ordenar puntos por tiempo (igual que en tu código)
+        puntos.sort((a, b) => {
+            const fechaHoraA = new Date(`${a.nadadorfecha}T${a.nadadorhora.split('T')[1]}`);
+            const fechaHoraB = new Date(`${b.nadadorfecha}T${b.nadadorhora.split('T')[1]}`);
+
+            if (fechaHoraA.getTime() === fechaHoraB.getTime()) {
+                return Number(a.secuencia) - Number(b.secuencia);
+            }
+            return fechaHoraA.getTime() - fechaHoraB.getTime();
+        });
+
+        // 🔹 Paso 4: Filtrar puntos válidos
+        const puntosValidos = puntos.filter(p =>
+            Number.isFinite(parseFloat(p.nadadorlat)) &&
+            Number.isFinite(parseFloat(p.nadadorlng)) &&
+            Number(p.secuencia) >= 1
+        );
+
+        console.log(`✅ Obtenidos ${puntosValidos.length} puntos válidos para métricas`);
+        return puntosValidos;
+
+    } catch (error) {
+        console.error('❌ Error obteniendo datos históricos:', error);
+        return [];
+    }
+}
+
+// Función específica para obtener métricas en tiempo real
+async function obtenerMetricasUsuario(usuarioId) {
+    try {
+        const datos = await obtenerDatosHistoricos(usuarioId);
+
+        if (!datos || datos.length === 0) {
+            return {
+                bearing: 0,
+                millasNauticas: 0,
+                velocidadNudos: 0,
+                ultimoPunto: null,
+                totalPuntos: 0
+            };
+        }
+
+        // Último punto (más reciente por tiempo)
+        const ultimoPunto = datos[datos.length - 1];
+
+        // Calcular distancia total
+        let distanciaTotal = 0;
+        for (let i = 1; i < datos.length; i++) {
+            const puntoActual = datos[i];
+            const puntoAnterior = datos[i-1];
+
+            distanciaTotal += calcularDistanciaHaversine(
+                parseFloat(puntoAnterior.nadadorlat),
+                parseFloat(puntoAnterior.nadadorlng),
+                parseFloat(puntoActual.nadadorlat),
+                parseFloat(puntoActual.nadadorlng)
+            );
+        }
+
+        // Calcular velocidad (últimos 2 puntos)
+        let velocidadNudos = 0;
+        if (datos.length >= 2) {
+            const punto1 = datos[datos.length - 1]; // Más reciente
+            const punto2 = datos[datos.length - 2]; // Anterior
+
+            const distancia = calcularDistanciaHaversine(
+                parseFloat(punto2.nadadorlat),
+                parseFloat(punto2.nadadorlng),
+                parseFloat(punto1.nadadorlat),
+                parseFloat(punto1.nadadorlng)
+            );
+
+            const tiempo1 = new Date(`${punto1.nadadorfecha}T${punto1.nadadorhora.split('T')[1]}`).getTime();
+            const tiempo2 = new Date(`${punto2.nadadorfecha}T${punto2.nadadorhora.split('T')[1]}`).getTime();
+            const tiempoSegundos = Math.abs(tiempo1 - tiempo2) / 1000;
+
+            if (tiempoSegundos > 0) {
+                velocidadNudos = calcularVelocidadNudos(distancia, tiempoSegundos);
+            }
+        }
+
+        return {
+            bearing: ultimoPunto.bearing || 0,
+            millasNauticas: metrosAMillasNauticas(distanciaTotal),
+            velocidadNudos: velocidadNudos,
+            ultimoPunto: ultimoPunto,
+            totalPuntos: datos.length,
+            recorridoId: ultimoPunto.recorridoid || ultimoPunto.recorrido_id
+        };
+
+    } catch (error) {
+        console.error('❌ Error calculando métricas:', error);
+        return {
+            bearing: 0,
+            millasNauticas: 0,
+            velocidadNudos: 0,
+            ultimoPunto: null,
+            totalPuntos: 0
+        };
+    }
+}
+
+// Función para iniciar el polling de datos
+function iniciarActualizacionMetricas(usuarioId) {
+    if (intervaloPollling) {
+        clearInterval(intervaloPollling);
+    }
+
+    // Actualización inmediata
+    actualizarDatos(usuarioId);
+
+    // Actualización cada 5 segundos
+    intervaloPollling = setInterval(() => {
+        actualizarDatos(usuarioId);
+    }, 5000);
+}
+
+async function actualizarDatos(usuarioId) {
+    const panel = document.getElementById('panel-metricas');
+    panel.classList.add('panel-updating');
+
+    try {
+        // Usar la nueva función que calcula métricas directamente
+        const metricas = await obtenerMetricasUsuario(usuarioId);
+        actualizarMetricas(metricas);
+    } catch (error) {
+        console.error('❌ Error actualizando métricas:', error);
+        mostrarSinDatos();
+    } finally {
+        setTimeout(() => panel.classList.remove('panel-updating'), 300);
+    }
+}
+
+// Función para detener el polling
+function detenerActualizacionMetricas() {
+    if (intervaloPollling) {
+        clearInterval(intervaloPollling);
+        intervaloPollling = null;
+    }
+    mostrarSinDatos();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const selectorRuta = document.getElementById("select-ruta");
   cargarRutasDisponiblesEnSelector(); // <-- LLAMA A LA NUEVA FUNCIÓN AQUÍ PARA LLENAR EL SELECTOR DE RUTAS
@@ -533,6 +791,19 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   cargarNavegantesVinculados();
   cargarUsuariosEnSelector();
+
+  // 🎯 AGREGAR ESTAS LÍNEAS AQUÍ:
+  const selectorUsuario = document.getElementById('selector-usuario');
+  if (selectorUsuario) {
+    selectorUsuario.addEventListener('change', function() {
+      const usuarioId = this.value;
+      if (usuarioId && usuarioId !== 'Seleccione un usuario') {
+        iniciarActualizacionMetricas(usuarioId);
+      } else {
+        detenerActualizacionMetricas();
+      }
+    });
+  }
 
   setInterval(cargarNavegantesVinculados, 5000);
 

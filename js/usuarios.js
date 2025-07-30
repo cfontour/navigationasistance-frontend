@@ -1,6 +1,7 @@
 // usuarios.js
 
 let modoEditar = false;
+let dataTable; // Variable global para el DataTable
 
 $(document).ready(function () {
     const usuarioStr = localStorage.getItem("usuarioLogueado");
@@ -11,8 +12,7 @@ $(document).ready(function () {
     mostrarItemRespaldoSiUsuarioLogueado();
 
     if (usuario.rol === "ADMINISTRADOR") {
-        cargarUsuarios();
-        $('#usuarios').DataTable();
+        cargarUsuarios(); // Solo cargar usuarios, DataTable se inicializa después
     } else {
         cargarUsuarioUnico(usuario.id);
         document.getElementById("card-cambiar-password").classList.remove("d-none");
@@ -33,29 +33,79 @@ function actualizarEmailDelUsuario() {
     }
 }
 
-async function cargarUsuarios() {
-    const request = await fetch('https://navigationasistance-backend-1.onrender.com/usuarios/listar', {
-        method: 'GET',
-        headers: getHeaders()
-    });
-
-    const usuarios = await request.json();
-    let listadoHtml = '';
-
-    for (let usuario of usuarios) {
-        let botonEliminar = `<a href="#" onclick="eliminarUsuario('${usuario.id}')" class="btn btn-danger btn-circle btn-sm"><i class="fas fa-trash"></i></a>`;
-        let botonEditar = `<a href="#" onclick="editarUsuario('${usuario.id}')" class="btn btn-info btn-circle btn-sm"><i class="fas fa-edit"></i></a>`;
-        let usuarioHtml = `<tr>
-            <td>${usuario.id}</td>
-            <td>${usuario.nombre} ${usuario.apellido}</td>
-            <td>${usuario.email}</td>
-            <td>${usuario.telefono || ''}</td>
-            <td>${botonEditar} ${botonEliminar}</td>
-        </tr>`;
-        listadoHtml += usuarioHtml;
+// Función para inicializar DataTable
+function inicializarDataTable() {
+    // Destruir DataTable existente si ya existe
+    if (dataTable) {
+        dataTable.destroy();
     }
 
-    document.querySelector('#usuarios tbody').innerHTML = listadoHtml;
+    // Inicializar nuevo DataTable
+    dataTable = $('#usuarios').DataTable({
+        "language": {
+            "lengthMenu": "Mostrar _MENU_ registros por página",
+            "zeroRecords": "No se encontraron registros",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay registros disponibles",
+            "infoFiltered": "(filtrado de _MAX_ registros totales)",
+            "search": "Buscar:",
+            "paginate": {
+                "first": "Primero",
+                "last": "Último",
+                "next": "Siguiente",
+                "previous": "Anterior"
+            }
+        },
+        "pageLength": 10,
+        "lengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
+        "ordering": true,
+        "searching": true,
+        "paging": true,
+        "info": true,
+        "responsive": true,
+        "autoWidth": false,
+        "columnDefs": [
+            {
+                "targets": [4], // Columna de acciones (índice 4)
+                "orderable": false
+            }
+        ],
+        "order": [[0, 'asc']] // Ordenar por ID ascendente
+    });
+}
+
+async function cargarUsuarios() {
+    try {
+        const request = await fetch('https://navigationasistance-backend-1.onrender.com/usuarios/listar', {
+            method: 'GET',
+            headers: getHeaders()
+        });
+
+        const usuarios = await request.json();
+        let listadoHtml = '';
+
+        for (let usuario of usuarios) {
+            let botonEliminar = `<a href="#" onclick="eliminarUsuario('${usuario.id}')" class="btn btn-danger btn-circle btn-sm"><i class="fas fa-trash"></i></a>`;
+            let botonEditar = `<a href="#" onclick="editarUsuario('${usuario.id}')" class="btn btn-info btn-circle btn-sm"><i class="fas fa-edit"></i></a>`;
+            let usuarioHtml = `<tr>
+                <td>${usuario.id}</td>
+                <td>${usuario.nombre} ${usuario.apellido}</td>
+                <td>${usuario.email}</td>
+                <td>${usuario.telefono || ''}</td>
+                <td>${botonEditar} ${botonEliminar}</td>
+            </tr>`;
+            listadoHtml += usuarioHtml;
+        }
+
+        // Primero cargar los datos
+        document.querySelector('#usuarios tbody').innerHTML = listadoHtml;
+
+        // Después inicializar DataTable
+        inicializarDataTable();
+
+    } catch (error) {
+        console.error("Error al cargar usuarios:", error);
+    }
 }
 
 async function cargarUsuarioUnico(id) {
@@ -75,12 +125,16 @@ async function cargarUsuarioUnico(id) {
 async function eliminarUsuario(id) {
     if (!confirm('¿Desea eliminar el usuario?')) return;
 
-    await fetch('https://navigationasistance-backend-1.onrender.com/usuarios/eliminar/' + id, {
-        method: 'DELETE',
-        headers: getHeaders()
-    });
+    try {
+        await fetch('https://navigationasistance-backend-1.onrender.com/usuarios/eliminar/' + id, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
 
-    cargarUsuarios();
+        cargarUsuarios(); // Esto recargará la tabla y reinicializará DataTable
+    } catch (error) {
+        console.error("Error al eliminar usuario:", error);
+    }
 }
 
 async function agregarUsuario() {
@@ -124,7 +178,7 @@ async function agregarUsuario() {
         const usuarioStr = localStorage.getItem("usuarioLogueado");
         const usuarioLogueado = JSON.parse(usuarioStr);
         if (usuarioLogueado.rol === "ADMINISTRADOR") {
-            cargarUsuarios();
+            cargarUsuarios(); // Esto recargará la tabla y reinicializará DataTable
         } else {
             cargarUsuarioUnico(usuarioLogueado.id);
         }

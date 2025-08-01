@@ -23,6 +23,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
+        /* Estilos para el logo en esquina superior izquierda */
+        .logo {
+            position: fixed;
+            top: 20px;
+            left: 10px;
+            max-width: 200px;
+            z-index: 1000;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+
         #map {
           height: 500px;
           width: 100%;
@@ -45,7 +55,8 @@
 </head>
 
 <body id="page-top" style="background-image: url('img/fondo_regata.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
-<h1>🧭 GEOTRASER - MARINE - Histórico de Regatas</h1>
+<img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
+<h1>🧭 Marine Version - Histórico de Regatas</h1>
 <div id="wrapper">
 
     <!-- Content Wrapper -->

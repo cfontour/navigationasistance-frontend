@@ -131,48 +131,79 @@ document.addEventListener("DOMContentLoaded", () => {
   async function cargarRutas(idRuta) {
     try {
       const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/${idRuta}`);
-      const ruta = await res.json(); // 'ruta' ya es el objeto de la ruta
+      const ruta = await res.json();
 
-      // No hay forEach aquí, procesamos 'ruta' directamente
+      // Buscar y eliminar título anterior si existe
+      const tituloExistente = document.querySelector("h2[data-titulo-ruta]");
+      if (tituloExistente) {
+        tituloExistente.remove();
+      }
+
+      // Crear nuevo título
       const titulo = document.createElement("h2");
+      titulo.setAttribute("data-titulo-ruta", "true"); // Marcador para identificarlo después
       titulo.innerText = ruta.nombre;
       titulo.style.color = "white";
       titulo.style.fontSize = "1.5em";
       titulo.style.textShadow = "1px 1px 3px black";
-      document.body.insertBefore(titulo, document.getElementById("map"));
+      titulo.style.marginBottom = "20px";
+      titulo.style.textAlign = "center";
+
+      // Encontrar el elemento mapa y su contenedor padre
+      const mapElement = document.getElementById("map");
+      if (!mapElement) {
+        console.error("Elemento #map no encontrado");
+        return;
+      }
+
+      // Insertar el título antes del mapa, dentro del mismo contenedor padre
+      const contenedorMapa = mapElement.parentNode;
+      contenedorMapa.insertBefore(titulo, mapElement);
 
       const puntos = ruta.puntos;
-      if (!puntos || puntos.length === 0) return;
+      if (!puntos || puntos.length === 0) {
+        console.warn("No hay puntos en la ruta");
+        return;
+      }
 
       const bounds = [];
 
-      puntos.forEach((p, i) => { // Este forEach es para los 'puntos' dentro de la 'ruta'
+      // Verificar que puntosControl esté definido (esto parece ser una variable global)
+      if (typeof puntosControl === 'undefined') {
+        console.warn("puntosControl no está definido. Inicializándolo...");
+        window.puntosControl = []; // o decláralo como global
+      }
+
+      // Limpiar puntos de control anteriores
+      puntosControl.length = 0;
+
+      puntos.forEach((p, i) => {
         const latlng = [p.latitud, p.longitud];
         bounds.push(latlng);
 
         console.log("🧩 Punto recibido:", p);
-
-        if (typeof puntosControl === 'undefined') {
-            console.warn("puntosControl no está definido. Asegúrate de declararlo.");
-        }
 
         puntosControl.push({
           latitud: p.latitud,
           longitud: p.longitud,
           etiqueta: p.etiqueta || `Punto ${i + 1}`,
           nadadorruta_id: p.nadadorruta_id,
-          rutaId: idRuta // <--- AÑADIR ESTO
+          rutaId: idRuta
         });
 
-        // ✅ Círculo sombreado para marcar el radio de 20 metros del punto de control
+        // Verificar que RADIO_PUNTO_CONTROL esté definido
+        const radioPuntoControl = typeof RADIO_PUNTO_CONTROL !== 'undefined' ? RADIO_PUNTO_CONTROL : 20;
+
+        // Círculo sombreado para marcar el radio del punto de control
         const controlPointRadius = L.circle(latlng, {
-          radius: RADIO_PUNTO_CONTROL,          // Radio en metros (coincide con tu lógica de 20m)
-          color: 'blue',       // Color del borde del círculo
-          fillColor: '#3388ff',// Color de relleno (un azul más claro)
-          fillOpacity: 0.2,    // Transparencia del relleno (0.2 es bastante transparente)
-          weight: 1            // Grosor del borde
+          radius: radioPuntoControl,
+          color: 'blue',
+          fillColor: '#3388ff',
+          fillOpacity: 0.2,
+          weight: 1
         }).addTo(map);
 
+        // Círculo pequeño para el punto exacto
         L.circle(latlng, {
           radius: 5,
           color: 'rgba(255, 255, 0, 0.5)',
@@ -180,20 +211,49 @@ document.addEventListener("DOMContentLoaded", () => {
           fillOpacity: 1
         }).addTo(map);
 
-        let icon = iconoIntermedio;
-        if (i === 0) icon = iconoInicio;
-        else if (i === puntos.length - 1) icon = iconoFinal;
+        // Determinar el icono según la posición
+        let icon;
+        if (typeof iconoInicio !== 'undefined' && typeof iconoFinal !== 'undefined' && typeof iconoIntermedio !== 'undefined') {
+          if (i === 0) icon = iconoInicio;
+          else if (i === puntos.length - 1) icon = iconoFinal;
+          else icon = iconoIntermedio;
+        } else {
+          // Iconos por defecto si no están definidos
+          const iconConfig = {
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+          };
 
+          if (i === 0) {
+            icon = L.icon({ ...iconConfig, iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png' });
+          } else if (i === puntos.length - 1) {
+            icon = L.icon({ ...iconConfig, iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png' });
+          } else {
+            icon = L.icon({ ...iconConfig, iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png' });
+          }
+        }
+
+        // Crear marcador
         L.marker(latlng, { icon })
           .addTo(map)
-          .bindPopup(`Etiqueta: ${p.etiqueta}<br>Lat: ${p.latitud}<br>Lng: ${p.longitud}`);
+          .bindPopup(`
+            <strong>Etiqueta:</strong> ${p.etiqueta}<br>
+            <strong>Lat:</strong> ${p.latitud}<br>
+            <strong>Lng:</strong> ${p.longitud}
+          `);
       });
 
       console.log("🧭 puntosControl cargados:", puntosControl);
-      map.fitBounds(bounds);
+
+      // Ajustar la vista del mapa a todos los puntos
+      if (bounds.length > 0) {
+        map.fitBounds(bounds);
+      }
 
     } catch (err) {
       console.error("Error al cargar rutas:", err);
+      alert("Error al cargar la ruta. Por favor, inténtalo de nuevo.");
     }
   }
 

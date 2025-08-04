@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>GEOTRASER - Regatas - Puntos</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        /* Estilos para el logo en esquina superior izquierda */
+        .logo {
+            position: fixed;
+            top: 20px;
+            left: 10px;
+            max-width: 200px;
+            z-index: 1000;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            padding-top: 80px;
+        }
+
+        /* Panel de métricas en tiempo real */
+        #panel-metricas {
+            position: fixed;
+            top: 120px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 180px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .metrica {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .metrica:hover {
+            background: rgba(0,123,255,0.1);
+            transform: translateX(2px);
+        }
+
+        .metrica:last-child {
+            margin-bottom: 0;
+        }
+
+        .metrica .icono {
+            font-size: 20px;
+            margin-right: 10px;
+            width: 25px;
+            text-align: center;
+        }
+
+        .metrica .valor {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-right: 8px;
+            min-width: 60px;
+            text-align: right;
+            transition: all 0.4s ease;
+        }
+
+        .metrica .valor.actualizado {
+            color: #27ae60;
+            transform: scale(1.1);
+        }
+
+        .metrica .label {
+            font-size: 11px;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        /* Indicador de bearing visual */
+        .bearing-compass {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .bearing-needle {
+            display: inline-block;
+            transform-origin: center;
+            transition: transform 0.5s ease;
+            font-size: 14px;
+        }
+
+        #controles-superiores {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            align-items: center;
+        }
+
+        #controles-superiores button {
+            padding: 6px 10px;
+            font-weight: bold;
+            border: 1px solid #999;
+            background-color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #selector-usuario {
+            padding: 5px;
+        }
+
+        #map {
+            height: 90vh;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: #333;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Animación de pulso para actualizaciones */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .panel-updating {
+            animation: pulse 0.3s ease;
+        }
+
+        /* Estilos para datos sin conexión */
+        .metrica.sin-datos .valor {
+            color: #e74c3c;
+        }
+
+        .metrica.sin-datos .icono {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body id="page-top" style="background-image: url('img/fondo_regata.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+
+<img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
+
+<!-- Panel de métricas en tiempo real -->
+<div id="panel-metricas">
+    <div class="metrica" id="metrica-bearing">
+        <span class="icono">🧭</span>
+        <span class="valor" id="bearing-value">---°</span>
+        <span class="label">Bearing</span>
+        <div class="bearing-compass">
+            <span class="bearing-needle" id="bearing-needle">↑</span>
+        </div>
+    </div>
+    <div class="metrica" id="metrica-distancia">
+        <span class="icono">📏</span>
+        <span class="valor" id="distancia-value">0.00</span>
+        <span class="label">Millas Náuticas</span>
+    </div>
+    <div class="metrica" id="metrica-velocidad">
+        <span class="icono">⚡</span>
+        <span class="valor" id="velocidad-value">0.0</span>
+        <span class="label">Nudos</span>
+    </div>
+</div>
+
+<h1>     </h1>
+<h2 id="tituloRuta">🧭 Regatas: Ubicación de boyado de:</h2>
+
+<div id="controles-superiores">
+    <select id="selector-usuario">
+        <option disabled selected>Seleccione un usuario</option>
+    </select>
+    <button id="boton-traza">Trazar Ruta</button>
+    <button id="boton-borrar-traza">Borrar Traza</button>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    // Variables globales para métricas
+    let ultimoUUID = null;
+    let datosHistoricos = [];
+    let intervaloPollling = null;
+
+    // Función para calcular distancia entre dos puntos (Haversine)
+    function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
+        const R = 6371000; // Radio de la Tierra en metros
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c; // Distancia en metros
+    }
+
+    // Función para convertir metros a millas náuticas
+    function metrosAMillasNauticas(metros) {
+        return metros / 1852;
+    }
+
+    // Función para calcular velocidad en nudos
+    function calcularVelocidadNudos(distanciaMetros, tiempoSegundos) {
+        if (tiempoSegundos === 0) return 0;
+        const velocidadMs = distanciaMetros / tiempoSegundos;
+        const velocidadNudos = velocidadMs * 1.94384; // m/s a nudos
+        return velocidadNudos;
+    }
+
+    // Función para actualizar el panel de métricas
+    function actualizarMetricas(datos) {
+        if (!datos || datos.length === 0) {
+            mostrarSinDatos();
+            return;
+        }
+
+        // Filtrar datos del último UUID (sesión actual)
+        const ultimoRecorridoId = datos[0].recorrido_id;
+        const datosSesionActual = datos.filter(d => d.recorrido_id === ultimoRecorridoId);
+
+        if (datosSesionActual.length === 0) {
+            mostrarSinDatos();
+            return;
+        }
+
+        // Ordenar por secuencia descendente
+        datosSesionActual.sort((a, b) => b.secuencia - a.secuencia);
+
+        // Último punto (más reciente)
+        const ultimoPunto = datosSesionActual[0];
+
+        // Actualizar bearing
+        actualizarBearing(ultimoPunto.bearing || 0);
+
+        // Calcular distancia total recorrida
+        let distanciaTotal = 0;
+        for (let i = 1; i < datosSesionActual.length; i++) {
+            const puntoActual = datosSesionActual[i];
+            const puntoAnterior = datosSesionActual[i-1];
+
+            distanciaTotal += calcularDistanciaHaversine(
+                parseFloat(puntoAnterior.nadadorlat),
+                parseFloat(puntoAnterior.nadadorlng),
+                parseFloat(puntoActual.nadadorlat),
+                parseFloat(puntoActual.nadadorlng)
+            );
+        }
+
+        const millasNauticas = metrosAMillasNauticas(distanciaTotal);
+        actualizarDistancia(millasNauticas);
+
+        // Calcular velocidad (usando últimos 3 puntos para suavizar)
+        let velocidadNudos = 0;
+        if (datosSesionActual.length >= 2) {
+            const punto1 = datosSesionActual[0];
+            const punto2 = datosSesionActual[1];
+
+            const distancia = calcularDistanciaHaversine(
+                parseFloat(punto2.nadadorlat),
+                parseFloat(punto2.nadadorlng),
+                parseFloat(punto1.nadadorlat),
+                parseFloat(punto1.nadadorlng)
+            );
+
+            const tiempo1 = new Date(punto1.nadadorhora).getTime();
+            const tiempo2 = new Date(punto2.nadadorhora).getTime();
+            const tiempoSegundos = Math.abs(tiempo1 - tiempo2) / 1000;
+
+            velocidadNudos = calcularVelocidadNudos(distancia, tiempoSegundos);
+        }
+
+        actualizarVelocidad(velocidadNudos);
+    }
+
+    // Funciones para actualizar cada métrica individualmente
+    function actualizarBearing(bearing) {
+        const bearingElement = document.getElementById('bearing-value');
+        const needleElement = document.getElementById('bearing-needle');
+
+        bearingElement.textContent = bearing.toFixed(0) + '°';
+        bearingElement.classList.add('actualizado');
+        setTimeout(() => bearingElement.classList.remove('actualizado'), 400);
+
+        // Rotar la aguja de la brújula
+        needleElement.style.transform = `rotate(${bearing}deg)`;
+    }
+
+    function actualizarDistancia(millas) {
+        const distanciaElement = document.getElementById('distancia-value');
+        distanciaElement.textContent = millas.toFixed(2);
+        distanciaElement.classList.add('actualizado');
+        setTimeout(() => distanciaElement.classList.remove('actualizado'), 400);
+    }
+
+    function actualizarVelocidad(nudos) {
+        const velocidadElement = document.getElementById('velocidad-value');
+        velocidadElement.textContent = nudos.toFixed(1);
+        velocidadElement.classList.add('actualizado');
+        setTimeout(() => velocidadElement.classList.remove('actualizado'), 400);
+    }
+
+    function mostrarSinDatos() {
+        document.querySelectorAll('.metrica').forEach(metrica => {
+            metrica.classList.add('sin-datos');
+        });
+
+        document.getElementById('bearing-value').textContent = '---°';
+        document.getElementById('distancia-value').textContent = '0.00';
+        document.getElementById('velocidad-value').textContent = '0.0';
+    }
+
+    // Función para simular obtención de datos (reemplazar con tu API real)
+    async function obtenerDatosHistoricos(usuarioId) {
+        try {
+            // AQUÍ DEBES REEMPLAZAR CON TU LLAMADA REAL A LA API/BD
+            // Por ahora simulo datos de ejemplo
+            const datos = [
+                {
+                    recorrido_id: "84ee4bcc-2490-4d1b-ad68-49c8dbabd460",
+                    nadadorlat: "-34.9011",
+                    nadadorlng: "-56.1645",
+                    nadadorhora: "2025-07-30T12:20:15.000Z",
+                    secuencia: 25,
+                    bearing: 45
+                },
+                {
+                    recorrido_id: "84ee4bcc-2490-4d1b-ad68-49c8dbabd460",
+                    nadadorlat: "-34.9012",
+                    nadadorlng: "-56.1646",
+                    nadadorhora: "2025-07-30T12:20:10.000Z",
+                    secuencia: 24,
+                    bearing: 42
+                }
+                // Agregar más datos simulados aquí
+            ];
+
+            return datos;
+        } catch (error) {
+            console.error('Error obteniendo datos históricos:', error);
+            return [];
+        }
+    }
+
+    // Función para iniciar el polling de datos
+    function iniciarActualizacionMetricas(usuarioId) {
+        if (intervaloPollling) {
+            clearInterval(intervaloPollling);
+        }
+
+        // Actualización inmediata
+        actualizarDatos(usuarioId);
+
+        // Actualización cada 5 segundos
+        intervaloPollling = setInterval(() => {
+            actualizarDatos(usuarioId);
+        }, 5000);
+    }
+
+    async function actualizarDatos(usuarioId) {
+        const panel = document.getElementById('panel-metricas');
+        panel.classList.add('panel-updating');
+
+        try {
+            const datos = await obtenerDatosHistoricos(usuarioId);
+            actualizarMetricas(datos);
+        } catch (error) {
+            console.error('Error actualizando métricas:', error);
+            mostrarSinDatos();
+        } finally {
+            setTimeout(() => panel.classList.remove('panel-updating'), 300);
+        }
+    }
+
+    // Función para detener el polling
+    function detenerActualizacionMetricas() {
+        if (intervaloPollling) {
+            clearInterval(intervaloPollling);
+            intervaloPollling = null;
+        }
+        mostrarSinDatos();
+    }
+
+    // Inicialización del mapa (tu código existente aquí)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tu código de inicialización del mapa aquí
+        console.log('Panel de métricas inicializado');
+
+        // Ejemplo de uso: iniciar métricas cuando se seleccione un usuario
+        const selectorUsuario = document.getElementById('selector-usuario');
+        if (selectorUsuario) {
+            selectorUsuario.addEventListener('change', function() {
+                const usuarioId = this.value;
+                if (usuarioId && usuarioId !== 'Seleccione un usuario') {
+                    iniciarActualizacionMetricas(usuarioId);
+                } else {
+                    detenerActualizacionMetricas();
+                }
+            });
+        }
+    });
+
+    // Tu función actualizarLabel existente
+    function actualizarLabel(labelId, value) {
+        document.getElementById(labelId).textContent = value;
+    }
+</script>
+<script src="mapare.js"></script>
+
+<footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">
+    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
+</footer>
+
+</body>
+</html>

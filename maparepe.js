@@ -163,8 +163,8 @@ function crearIconoCompetidorConBearing(bearing) {
 
   return L.icon({
     iconUrl: iconUrl,
-    iconSize: [32, 32],             // Ajusta el tamaño si es necesario para tus íconos de barco
-    iconAnchor: [16, 16],           // La punta inferior central del icono
+    iconSize: [40, 40],             // Ajusta el tamaño si es necesario para tus íconos de barco
+    iconAnchor: [18, 18],           // La punta inferior central del icono
     popupAnchor: [0, -16]           // Para que el popup salga justo arriba
   });
 }

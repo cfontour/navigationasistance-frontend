@@ -157,14 +157,14 @@ function crearIconoCompetidorConBearing(bearing) {
 
   // Formatear el número con ceros a la izquierda (ej: 000, 010, 350)
   const paddedAngle = String(iconAngle).padStart(3, '0');
-  const iconUrl = `/img/barco_bearings_icons_1/barco_${paddedAngle}.png`;
+  const iconUrl = `/img/barco_bearing_icons/barco_${paddedAngle}.png`;
 
   console.log("🔍 Nombre icono:", iconUrl);
 
   return L.icon({
     iconUrl: iconUrl,
-    iconSize: [40, 40],             // Ajusta el tamaño si es necesario para tus íconos de barco
-    iconAnchor: [18, 18],           // La punta inferior central del icono
+    iconSize: [32, 32],             // Ajusta el tamaño si es necesario para tus íconos de barco
+    iconAnchor: [16, 16],           // La punta inferior central del icono
     popupAnchor: [0, -16]           // Para que el popup salga justo arriba
   });
 }

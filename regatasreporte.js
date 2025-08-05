@@ -178,11 +178,11 @@ class RegatasDashboard {
             const lastRoute = await lastRouteResponse.json();
             console.log("🔍 Respuesta último recorrido:", lastRoute);
 
-            if (lastRoute && lastRoute.rutaId) {
-                 console.log("🔍 RutaId encontrado:", lastRoute.rutaId);
-
+            if (lastRoute && Array.isArray(lastRoute) && lastRoute.length > 0) {
+                const rutaId = lastRoute[0]; // Tomar el primer elemento del array
+                console.log("🔍 RutaId encontrado:", rutaId);
                 // Obtener puntos de la ruta
-                const routeResponse = await fetch(`${this.baseURL}/nadadorhistoricorutas/ruta/${lastRoute.rutaId}`);
+                const routeResponse = await fetch(`${this.baseURL}/nadadorhistoricorutas/ruta/${rutaId}`);
                 console.log("🔍 URL puntos de ruta:", routeUrl);
 
                 const routePoints = await routeResponse.json();

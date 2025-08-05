@@ -33,7 +33,7 @@ class RegatasDashboard {
 
         // Definir iconos personalizados
         this.iconoInicio = L.icon({
-            iconUrl: 'img/start_flag.png'
+            iconUrl: 'img/start_flag.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
             iconSize: [25, 41],
             iconAnchor: [12, 41],

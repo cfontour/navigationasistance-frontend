@@ -183,7 +183,7 @@ class RegatasDashboard {
                 console.log("🔍 RutaId encontrado:", rutaId);
                 // Obtener puntos de la ruta
                 const routeResponse = await fetch(`${this.baseURL}/nadadorhistoricorutas/ruta/${rutaId}`);
-                console.log("🔍 URL puntos de ruta:", routeUrl);
+                console.log("🔍 URL puntos de ruta:", routeResponse);
 
                 const routePoints = await routeResponse.json();
 

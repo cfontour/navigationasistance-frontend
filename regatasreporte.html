@@ -17,9 +17,22 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-image: url('img/fondo_regata.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             height: 100vh;
             overflow: hidden;
+        }
+
+        /* Estilos para el logo en esquina superior izquierda */
+        .logo {
+            position: fixed;
+            top: 20px;
+            left: 10px;
+            max-width: 200px;
+            z-index: 1000;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
         }
 
         .dashboard-container {
@@ -80,8 +93,8 @@
         }
 
         .user-avatar {
-            width: 80px;
-            height: 80px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             margin: 0 auto 15px;
             border: 3px solid #3498db;
@@ -237,7 +250,10 @@
         }
     </style>
 </head>
-<body>
+<body id="page-top">
+<!-- Logo superior izquierdo -->
+<img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
+
 <div class="dashboard-container">
     <!-- Sección izquierda: Selector + Datos del usuario -->
     <div class="section user-section">

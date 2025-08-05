@@ -9,6 +9,8 @@ class RegatasDashboard {
         this.currentIndex = 0;
         this.playInterval = null;
         this.selectedUserId = null;
+        this.puntosControl = [];
+        this.RADIO_PUNTO_CONTROL = 20; // 20 metros
 
         this.init();
     }
@@ -17,6 +19,8 @@ class RegatasDashboard {
         this.initMap();
         this.setupEventListeners();
         await this.loadParticipants();
+        // Cargar automáticamente la ruta 52
+        await this.cargarRutas("52");
     }
 
     initMap() {
@@ -26,6 +30,34 @@ class RegatasDashboard {
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(this.map);
+
+        // Definir iconos personalizados
+        this.iconoInicio = L.icon({
+            iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-green.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        this.iconoFinal = L.icon({
+            iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        this.iconoIntermedio = L.icon({
+            iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-blue.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
     }
 
     setupEventListeners() {
@@ -362,6 +394,80 @@ class RegatasDashboard {
         const element = document.getElementById(elementId);
         if (element) {
             element.innerHTML = `<div class="error">${message}</div>`;
+        }
+    }
+
+    // Nueva función para cargar la ruta específica
+    async cargarRutas(idRuta) {
+        try {
+            const res = await fetch(`${this.baseURL}/rutas/listarId/${idRuta}`);
+            const ruta = await res.json(); // 'ruta' ya es el objeto de la ruta
+
+            // Agregar título de la ruta
+            const titulo = document.createElement("h2");
+            titulo.innerText = ruta.nombre;
+            titulo.style.color = "white";
+            titulo.style.fontSize = "1.5em";
+            titulo.style.textShadow = "1px 1px 3px black";
+            titulo.style.position = "absolute";
+            titulo.style.top = "10px";
+            titulo.style.left = "50%";
+            titulo.style.transform = "translateX(-50%)";
+            titulo.style.zIndex = "1000";
+            titulo.style.margin = "0";
+            titulo.style.padding = "10px 20px";
+            titulo.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+            titulo.style.borderRadius = "10px";
+            document.body.appendChild(titulo);
+
+            const puntos = ruta.puntos;
+            if (!puntos || puntos.length === 0) return;
+
+            const bounds = [];
+
+            puntos.forEach((p, i) => {
+                const latlng = [p.latitud, p.longitud];
+                bounds.push(latlng);
+
+                console.log("🧩 Punto recibido:", p);
+
+                this.puntosControl.push({
+                    latitud: p.latitud,
+                    longitud: p.longitud,
+                    etiqueta: p.etiqueta || `Punto ${i + 1}`,
+                    nadadorruta_id: p.nadadorruta_id,
+                    rutaId: idRuta
+                });
+
+                // ✅ Círculo sombreado para marcar el radio de 20 metros del punto de control
+                const controlPointRadius = L.circle(latlng, {
+                    radius: this.RADIO_PUNTO_CONTROL, // Radio en metros
+                    color: 'blue',
+                    fillColor: '#3388ff',
+                    fillOpacity: 0.2,
+                    weight: 1
+                }).addTo(this.map);
+
+                L.circle(latlng, {
+                    radius: 5,
+                    color: 'rgba(255, 255, 0, 0.5)',
+                    fillColor: 'rgba(255, 255, 0, 0.5)',
+                    fillOpacity: 1
+                }).addTo(this.map);
+
+                let icon = this.iconoIntermedio;
+                if (i === 0) icon = this.iconoInicio;
+                else if (i === puntos.length - 1) icon = this.iconoFinal;
+
+                L.marker(latlng, { icon })
+                    .addTo(this.map)
+                    .bindPopup(`Etiqueta: ${p.etiqueta}<br>Lat: ${p.latitud}<br>Lng: ${p.longitud}`);
+            });
+
+            console.log("🧭 puntosControl cargados:", this.puntosControl);
+            this.map.fitBounds(bounds);
+        } catch (err) {
+            console.error("Error al cargar rutas:", err);
         }
     }
 }

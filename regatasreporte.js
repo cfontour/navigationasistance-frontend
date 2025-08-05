@@ -165,20 +165,32 @@ class RegatasDashboard {
 
     async loadUserRoute(userId) {
         try {
+            console.log("🔍 INICIO - Cargando ruta para usuario:", userId);
+
             // Obtener la fecha actual para el último recorrido
             const today = new Date().toISOString().split('T')[0];
+            console.log("🔍 Fecha calculada:", today);
 
             // Obtener último recorrido
             const lastRouteResponse = await fetch(`${this.baseURL}/nadadorhistoricorutas/ultimorecorrido/${userId}/${today}`);
+            console.log("🔍 URL último recorrido:", lastRouteResponse);
+
             const lastRoute = await lastRouteResponse.json();
+            console.log("🔍 Respuesta último recorrido:", lastRoute);
 
             if (lastRoute && lastRoute.rutaId) {
+                 console.log("🔍 RutaId encontrado:", lastRoute.rutaId);
+
                 // Obtener puntos de la ruta
                 const routeResponse = await fetch(`${this.baseURL}/nadadorhistoricorutas/ruta/${lastRoute.rutaId}`);
+                console.log("🔍 URL puntos de ruta:", routeUrl);
+
                 const routePoints = await routeResponse.json();
 
                 if (routePoints && Array.isArray(routePoints)) {
+                    console.log("✅ Procesando puntos...");
                     this.routeData = this.processRouteData(routePoints);
+                    console.log("✅ routeData final:", this.routeData.length);
                     this.displayRoute();
                     this.resetPlayback();
                 }

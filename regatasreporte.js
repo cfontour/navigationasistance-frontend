@@ -145,11 +145,29 @@ class RegatasDashboard {
                 </div>
                 <div class="info-item">
                     <span class="info-label">Email:</span>
+                    <span class="info-value">${userData?.nombre || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">${userData?.apellido || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">${userData?.telefono || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email:</span>
                     <span class="info-value">${userData?.email || 'N/A'}</span>
                 </div>
+                /*
                 <div class="info-item">
                     <span class="info-label">Estado:</span>
                     <span class="info-value">${userData?.activo ? 'Activo' : 'Inactivo'}</span>
+                </div>
+                */
+                <div class="info-item">
+                    <span class="info-label">Nombre Embarcación:</span>
+                    <span class="info-value">${personData?.nombre || 'N/A'}</span>
                 </div>
                 ${personData?.datoExtra ? `
                 <div class="info-item">

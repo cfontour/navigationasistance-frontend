@@ -140,7 +140,7 @@ class RegatasDashboard {
                      src="${personData?.apellido || `img/${userData?.id}.png` || 'img/avatar-default.png'}"
                      alt="Avatar"
                      onerror="this.src='https://via.placeholder.com/80'">
-                <h4>${userData?.nombre || 'Usuario'}</h4>
+                <h4>${personData?.nombre || 'N/A'}</h4>
             </div>
             <div class="user-info">
                 <div class="info-item">

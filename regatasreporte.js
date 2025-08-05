@@ -133,7 +133,7 @@ class RegatasDashboard {
         const profileHTML = `
             <div class="user-profile">
                 <img class="user-avatar"
-                     src="${personData?.imagen || 'https://via.placeholder.com/80'}"
+                     src="${personData?.imagen || 'img/avatar-default.png'}"
                      alt="Avatar"
                      onerror="this.src='https://via.placeholder.com/80'">
                 <h4>${userData?.nombre || 'Usuario'}</h4>

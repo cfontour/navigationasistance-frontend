@@ -33,7 +33,7 @@ class RegatasDashboard {
 
         // Definir iconos personalizados
         this.iconoInicio = L.icon({
-            iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-green.png',
+            iconUrl: 'img/start_flag.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
             iconSize: [25, 41],
             iconAnchor: [12, 41],
@@ -42,7 +42,7 @@ class RegatasDashboard {
         });
 
         this.iconoFinal = L.icon({
-            iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-red.png',
+            iconUrl: 'img/finish_flag.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
             iconSize: [25, 41],
             iconAnchor: [12, 41],
@@ -51,7 +51,7 @@ class RegatasDashboard {
         });
 
         this.iconoIntermedio = L.icon({
-            iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-blue.png',
+            iconUrl: 'img/white_flag.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
             iconSize: [25, 41],
             iconAnchor: [12, 41],
@@ -133,7 +133,7 @@ class RegatasDashboard {
         const profileHTML = `
             <div class="user-profile">
                 <img class="user-avatar"
-                     src="${personData?.imagen || 'https://via.placeholder.com/80'}"
+                     src="${personData?.imagen || 'img/avatar-default.png'}"
                      alt="Avatar"
                      onerror="this.src='https://via.placeholder.com/80'">
                 <h4>${userData?.nombre || 'Usuario'}</h4>
@@ -165,100 +165,68 @@ class RegatasDashboard {
 
     async loadUserRoute(userId) {
         try {
-            // Debug: mostrar qué usuario se está cargando
-            console.log("🔍 Cargando ruta para usuario:", userId);
-
             // Obtener la fecha actual para el último recorrido
             const today = new Date().toISOString().split('T')[0];
-            console.log("🔍 Fecha actual:", today);
 
             // Obtener último recorrido
-            const lastRouteUrl = `${this.baseURL}/nadadorhistoricorutas/ultimorecorrido/${userId}/${today}`;
-            console.log("🔍 URL último recorrido:", lastRouteUrl);
-
-            const lastRouteResponse = await fetch(lastRouteUrl);
+            const lastRouteResponse = await fetch(`${this.baseURL}/nadadorhistoricorutas/ultimorecorrido/${userId}/${today}`);
             const lastRoute = await lastRouteResponse.json();
-            console.log("🔍 Respuesta último recorrido:", lastRoute);
 
             if (lastRoute && lastRoute.rutaId) {
                 // Obtener puntos de la ruta
-                const routeUrl = `${this.baseURL}/nadadorhistoricorutas/ruta/${lastRoute.rutaId}`;
-                console.log("🔍 URL ruta:", routeUrl);
-
-                const routeResponse = await fetch(routeUrl);
+                const routeResponse = await fetch(`${this.baseURL}/nadadorhistoricorutas/ruta/${lastRoute.rutaId}`);
                 const routePoints = await routeResponse.json();
-                console.log("🔍 Puntos de ruta recibidos:", routePoints);
-                console.log("🔍 Cantidad de puntos:", routePoints?.length);
 
-                if (routePoints && Array.isArray(routePoints) && routePoints.length > 0) {
+                if (routePoints && Array.isArray(routePoints)) {
                     this.routeData = this.processRouteData(routePoints);
-                    console.log("🔍 Datos procesados:", this.routeData);
-                    console.log("🔍 Cantidad de puntos procesados:", this.routeData.length);
-
                     this.displayRoute();
                     this.resetPlayback();
-                    console.log("✅ Ruta cargada y mostrada correctamente");
-                } else {
-                    console.warn("⚠️ No se encontraron puntos de ruta válidos");
                 }
-            } else {
-                console.warn("⚠️ No se encontró rutaId en la respuesta:", lastRoute);
             }
         } catch (error) {
-            console.error("❌ Error loading route:", error);
+            console.error('Error loading route:', error);
             this.showError('map', 'Error cargando ruta del usuario');
         }
     }
 
     processRouteData(points) {
-        console.log("🔧 Procesando puntos:", points);
-
         // Procesar puntos y calcular velocidades
         const processed = points.map((point, index) => {
             let speed = 0;
             let distance = 0;
 
-            // Verificar estructura del punto
-            console.log(`🔧 Punto ${index}:`, point);
-
             if (index > 0) {
                 const prevPoint = points[index - 1];
                 distance = this.calculateDistance(
-                    parseFloat(prevPoint.nadadorlat), parseFloat(prevPoint.nadadorlng),
-                    parseFloat(point.nadadorlat), parseFloat(point.nadadorlng)
+                    prevPoint.latitud, prevPoint.longitud,
+                    point.latitud, point.longitud
                 );
 
-                // Calcular tiempo transcurrido usando nadadorhora
-                const currentTime = new Date(point.nadadorhora).getTime();
-                const prevTime = new Date(prevPoint.nadadorhora).getTime();
-                const timeDiff = (currentTime - prevTime) / 1000; // en segundos
+                // Calcular tiempo transcurrido (asumiendo que hay timestamp)
+                const timeDiff = point.timestamp ?
+                    (new Date(point.timestamp) - new Date(prevPoint.timestamp)) / 1000 : 1;
 
                 // Velocidad en nudos (millas náuticas por hora)
                 speed = timeDiff > 0 ? (distance / timeDiff) * 3600 / 1.852 : 0;
             }
 
-            const processedPoint = {
-                lat: parseFloat(point.nadadorlat),
-                lng: parseFloat(point.nadadorlng),
+            return {
+                lat: parseFloat(point.latitud),
+                lng: parseFloat(point.longitud),
                 speed: speed,
                 distance: distance,
-                timestamp: point.nadadorhora,
+                timestamp: point.timestamp || null,
                 cumulativeDistance: 0
             };
-
-            console.log(`🔧 Punto procesado ${index}:`, processedPoint);
-            return processedPoint;
         });
 
         // Calcular distancia acumulativa
         let totalDistance = 0;
-        processed.forEach((point, index) => {
+        processed.forEach(point => {
             totalDistance += point.distance;
             point.cumulativeDistance = totalDistance;
-            console.log(`🔧 Distancia acumulativa punto ${index}:`, totalDistance);
         });
 
-        console.log("✅ Procesamiento completado. Total puntos:", processed.length);
         return processed;
     }
 
@@ -306,22 +274,14 @@ class RegatasDashboard {
     }
 
     togglePlayback() {
-        console.log("🎮 Toggle playback - routeData length:", this.routeData.length);
-        console.log("🎮 Current playing state:", this.isPlaying);
-
-        if (this.routeData.length === 0) {
-            console.warn("⚠️ No hay datos de ruta para reproducir");
-            return;
-        }
+        if (this.routeData.length === 0) return;
 
         const playBtn = document.getElementById('playBtn');
 
         if (this.isPlaying) {
-            console.log("⏸️ Pausando playback");
             this.pausePlayback();
             playBtn.textContent = '▶️ Play';
         } else {
-            console.log("▶️ Iniciando playback");
             this.startPlayback();
             playBtn.textContent = '⏸️ Pause';
         }

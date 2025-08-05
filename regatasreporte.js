@@ -366,7 +366,7 @@ class RegatasDashboard {
 
            const popupContent = `
                <strong>${personData?.nombre || 'Usuario'}</strong><br>
-               Velocidad: ${currentPoint.speed.toFixed(1)} nudos<br>
+               Embarcación: ${personData?.nombre || 'N/A'}<br>
                Usuario: ${userData?.nombre || 'N/A'} ${userData?.apellido || ''}<br>
                Teléfono: ${userData?.telefono || 'N/A'}
            `;

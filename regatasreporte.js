@@ -120,6 +120,10 @@ class RegatasDashboard {
                 personData = await personResponse.json();
             }
 
+            // AGREGAR ESTAS LÍNEAS:
+            this.currentUserData = userData;
+            this.currentPersonData = personData;
+
             this.displayUserProfile(userData, personData);
         } catch (error) {
             console.error('Error loading user details:', error);
@@ -356,9 +360,20 @@ class RegatasDashboard {
             this.map.removeLayer(this.currentMarker);
         }
 
-        this.currentMarker = L.marker([currentPoint.lat, currentPoint.lng])
-            .addTo(this.map)
-            .bindPopup(`Velocidad: ${currentPoint.speed.toFixed(1)} nudos`);
+       // Obtener datos del usuario actual para el popup
+           const userData = this.currentUserData; // Necesitas guardar esto cuando se selecciona el usuario
+           const personData = this.currentPersonData; // Necesitas guardar esto también
+
+           const popupContent = `
+               <strong>${personData?.nombre || 'Usuario'}</strong><br>
+               Velocidad: ${currentPoint.speed.toFixed(1)} nudos<br>
+               Usuario: ${userData?.nombre || 'N/A'} ${userData?.apellido || ''}<br>
+               Teléfono: ${userData?.telefono || 'N/A'}
+           `;
+
+           this.currentMarker = L.marker([currentPoint.lat, currentPoint.lng])
+               .addTo(this.map)
+               .bindPopup(popupContent);
     }
 
     updateGauges() {

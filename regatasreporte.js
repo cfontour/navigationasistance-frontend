@@ -115,10 +115,10 @@ class RegatasDashboard {
             const userData = await userResponse.json();
 
             let personData = null;
-            if (userData && userData.personaId) {
-                const personResponse = await fetch(`${this.baseURL}/personas/listarId/${userData.personaId}`);
-                personData = await personResponse.json();
-            }
+
+            const personResponse = await fetch(`${this.baseURL}/personas/listarId/${userId}`);
+            personData = await personResponse.json();
+            console.log("🔍 PersonData desde endpoint:", personData);
 
             // AGREGAR ESTAS LÍNEAS:
             this.currentUserData = userData;

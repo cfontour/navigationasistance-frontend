@@ -198,21 +198,22 @@ class RegatasDashboard {
             if (index > 0) {
                 const prevPoint = points[index - 1];
                 distance = this.calculateDistance(
-                    prevPoint.latitud, prevPoint.longitud,
-                    point.latitud, point.longitud
+                    parseFloat(prevPoint.nadadorlat), parseFloat(prevPoint.nadadorlng),
+                    parseFloat(point.nadadorlat), parseFloat(point.nadadorlng)
                 );
 
                 // Calcular tiempo transcurrido (asumiendo que hay timestamp)
-                const timeDiff = point.timestamp ?
-                    (new Date(point.timestamp) - new Date(prevPoint.timestamp)) / 1000 : 1;
+                const currentTime = new Date(point.nadadorhora).getTime();
+                const prevTime = new Date(prevPoint.nadadorhora).getTime();
+                const timeDiff = (currentTime - prevTime) / 1000;
 
                 // Velocidad en nudos (millas náuticas por hora)
                 speed = timeDiff > 0 ? (distance / timeDiff) * 3600 / 1.852 : 0;
             }
 
             return {
-                lat: parseFloat(point.latitud),
-                lng: parseFloat(point.longitud),
+                lat: parseFloat(point.nadadorlat),
+                lng: parseFloat(point.nadadorlng),
                 speed: speed,
                 distance: distance,
                 timestamp: point.timestamp || null,

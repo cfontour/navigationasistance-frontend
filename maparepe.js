@@ -22,6 +22,9 @@ const iconoFinal = L.icon({ iconUrl: 'img/finish_flag.png', iconSize: [32, 32] }
 const anchoCorredorInput = document.getElementById('anchoCorredor');
 const anchoLabelSpan = document.getElementById('anchoLabel');
 
+const sirenaAudio = new Audio('img/sirena.mp3'); // colocá el archivo en la misma carpeta que el mapa.html
+sirenaAudio.loop = false;
+
 let marcadores = new Map(); //let marcadores = []; // ⬅️ Para limpiar luego los círculos de competidores
 let puntosControl = []; // guardará todos los puntos
 let registrosHechos = new Set(); // para evitar múltiples registros del mismo punto
@@ -215,8 +218,12 @@ async function cargarNavegantesVinculados() {
       }
 
       // ✅ CORRECTO: Llamada directa a crearIconoCompetidorConBearing
+      //const marcador = L.marker([lat, lng], {
+      //  icon: crearIconoCompetidorConBearing(bearing) // <-- ¡Aquí se usa directamente!
+      //}).addTo(map)
+
       const marcador = L.marker([lat, lng], {
-        icon: crearIconoCompetidorConBearing(bearing) // <-- ¡Aquí se usa directamente!
+        icon: icono // <-- ¡Usar la variable icono!
       }).addTo(map)
         .bindPopup(`🧍 Usuario: ${n.usuarioid}<br>🕓 ${n.fechaUltimaActualizacion}`);
 
@@ -834,9 +841,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // LLAMA A TU FUNCIÓN EXISTENTE 'cargarRutas' CON EL ID SELECCIONADO
     //cargarRutas(idRutaSeleccionada);
   //});
-
-  const sirenaAudio = new Audio('img/sirena.mp3'); // colocá el archivo en la misma carpeta que el mapa.html
-  sirenaAudio.loop = false;
 
   cargarRutas("52");
   cargarNavegantesVinculados();

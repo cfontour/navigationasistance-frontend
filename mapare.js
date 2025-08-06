@@ -195,6 +195,25 @@ async function cargarNavegantesVinculados() {
         return;
       }
 
+      // 🚨 MANEJO DE EMERGENCIAS - Seleccionar el icono apropiado
+      let icono;
+      if (n.emergency === true) {
+        icono = L.icon({
+          iconUrl: 'img/marker-emergencia-36x39.png',
+          iconSize: [36, 39],
+          iconAnchor: [18, 39],
+          className: 'icono-emergencia'
+        });
+
+        // 🔊 Reproducir sonido de emergencia
+        if (sirenaAudio.paused) {
+          sirenaAudio.play().catch(e => console.warn("No se pudo reproducir la sirena:", e));
+        }
+      } else {
+        // ✅ CORRECTO: Usar icono normal con bearing
+        icono = crearIconoCompetidorConBearing(bearing);
+      }
+
       // ✅ CORRECTO: Llamada directa a crearIconoCompetidorConBearing
       const marcador = L.marker([lat, lng], {
         icon: crearIconoCompetidorConBearing(bearing) // <-- ¡Aquí se usa directamente!

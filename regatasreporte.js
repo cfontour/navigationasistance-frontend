@@ -98,7 +98,7 @@ class RegatasDashboard {
                 data.forEach(participant => {
                     const option = document.createElement('option');
                     option.value = participant.usuarioId || participant.id;
-                    option.textContent = `${participant.usuarioId || participant.id} - ${participant.nombre || 'Sin nombre'} ${participant.apellido || ''}`;
+                    option.textContent = participant.nombre || `Participante ${participant.usuarioId || participant.id}`;
                     selector.appendChild(option);
                 });
             }

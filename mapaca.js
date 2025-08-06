@@ -21,9 +21,6 @@ const iconoInicio = L.icon({ iconUrl: 'img/start_flag.png', iconSize: [32, 32] }
 const iconoIntermedio = L.icon({ iconUrl: 'img/white_flag.png', iconSize: [24, 24] });
 const iconoFinal = L.icon({ iconUrl: 'img/finish_flag.png', iconSize: [32, 32] });
 
-const sirenaAudio = new Audio('img/sirena.mp3'); // colocá el archivo en la misma carpeta que el mapa.html
-sirenaAudio.loop = false;
-
 let marcadores = new Map(); //let marcadores = []; // ⬅️ Para limpiar luego los círculos de competidores
 let puntosControl = []; // guardará todos los puntos
 let registrosHechos = new Set(); // para evitar múltiples registros del mismo punto
@@ -503,6 +500,10 @@ function borrarTraza() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+
+  const sirenaAudio = new Audio('img/sirena.mp3'); // colocá el archivo en la misma carpeta que el mapa.html
+  sirenaAudio.loop = false;
+
   const selectorRuta = document.getElementById("select-ruta");
   cargarRutasDisponiblesEnSelector(); // <-- LLAMA A LA NUEVA FUNCIÓN AQUÍ PARA LLENAR EL SELECTOR DE RUTAS
   // 2. **ESTO ES LO CLAVE:** Añadir el escuchador de eventos para el selector de rutas

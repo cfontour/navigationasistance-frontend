@@ -163,7 +163,7 @@ async function exportarPDF() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  obtenerRutaIdPorNombre("PUNTADELESTE"); // o el nombre exacto de la ruta
+  obtenerRutaIdPorNombre("PUNTA DEL ESTE"); // o el nombre exacto de la ruta
   cargarUsuarios();
   cargarParticipantes();
 });

@@ -334,38 +334,6 @@
       document.getElementById('velocidad-value').textContent = '0.0';
   }
 
-  // Función para simular obtención de datos (reemplazar con tu API real)
-  async function obtenerDatosHistoricos(usuarioId) {
-      try {
-          // AQUÍ DEBES REEMPLAZAR CON TU LLAMADA REAL A LA API/BD
-          // Por ahora simulo datos de ejemplo
-          const datos = [
-              {
-                  recorrido_id: "84ee4bcc-2490-4d1b-ad68-49c8dbabd460",
-                  nadadorlat: "-34.9011",
-                  nadadorlng: "-56.1645",
-                  nadadorhora: "2025-07-30T12:20:15.000Z",
-                  secuencia: 25,
-                  bearing: 45
-              },
-              {
-                  recorrido_id: "84ee4bcc-2490-4d1b-ad68-49c8dbabd460",
-                  nadadorlat: "-34.9012",
-                  nadadorlng: "-56.1646",
-                  nadadorhora: "2025-07-30T12:20:10.000Z",
-                  secuencia: 24,
-                  bearing: 42
-              }
-              // Agregar más datos simulados aquí
-          ];
-
-          return datos;
-      } catch (error) {
-          console.error('Error obteniendo datos históricos:', error);
-          return [];
-      }
-  }
-
   // Función para iniciar el polling de datos
   function iniciarActualizacionMetricas(usuarioId) {
       if (intervaloPollling) {

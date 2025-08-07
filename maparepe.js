@@ -241,6 +241,7 @@ window.toggleTrazaDesdePopup = function(usuarioid) {
     // Desactivar traza actual
     borrarTraza();
     usuarioTrazaActiva = null;
+    detenerActualizacionMetricas(); // ← AGREGAR ESTA LÍNEA
     console.log("❌ Traza desactivada");
   } else {
     // Activar traza para este usuario
@@ -253,6 +254,7 @@ window.toggleTrazaDesdePopup = function(usuarioid) {
     //}
 
     // Trazar ruta
+    iniciarActualizacionMetricas(usuarioid); // ← AGREGAR ESTA LÍNEA
     trazarRutaUsuarioEspecifico(usuarioid);
     console.log(`✅ Traza activada para usuario: ${usuarioid}`);
   }
@@ -298,7 +300,8 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
       .map(p => [parseFloat(p.nadadorlat), parseFloat(p.nadadorlng)]);
 
     if (latlngs.length === 0) {
-      alert("❌ La ruta no contiene puntos válidos.");
+      console.error("❌ La ruta no contiene puntos válidos.");
+      //alert("❌ La ruta no contiene puntos válidos.");
       return;
     }
 
@@ -314,7 +317,7 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
 
   } catch (err) {
     console.error("❌ Error al trazar ruta:", err);
-    alert("⚠️ Error al trazar la ruta del usuario.");
+    //alert("⚠️ Error al trazar la ruta del usuario.");
   }
 }
 
@@ -550,7 +553,7 @@ async function trazarRutaUsuario() {
 
     if (!uuidList || uuidList.length === 0) {
       console.log("❌ No hay recorridos registrados hoy para el usuario: " + usuarioid + ", para la fecha: " + hoy);
-      alert("❌ No hay recorridos registrados hoy para el usuario: " + usuarioid + ", para la fecha: " + hoy);
+      //alert("❌ No hay recorridos registrados hoy para el usuario: " + usuarioid + ", para la fecha: " + hoy);
       return;
     }
 
@@ -583,7 +586,8 @@ async function trazarRutaUsuario() {
       .map(p => [parseFloat(p.nadadorlat), parseFloat(p.nadadorlng)]);
 
     if (latlngs.length === 0) {
-      alert("❌ La ruta no contiene puntos válidos.");
+      console.error("❌ La ruta no contiene puntos válidos.");
+      //alert("❌ La ruta no contiene puntos válidos.");
       return;
     }
 
@@ -606,7 +610,7 @@ async function trazarRutaUsuario() {
     //map.fitBounds(polylineTraza.getBounds());
 
   } catch (err) {
-    console.error("❌ Error al trazar ruta:", err);
+    console.error("❌ Error inesperado al trazar ruta:", err);
     //alert("⚠️ Error inesperado al intentar trazar la ruta.");
   }
 }

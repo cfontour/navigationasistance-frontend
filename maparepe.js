@@ -50,72 +50,6 @@ anchoCorredorInput.addEventListener('input', (event) => {
     console.log("Nuevo RADIO_PUNTO_CONTROL:", RADIO_PUNTO_CONTROL);
 });
 
-async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
-  try {
-
-    // Se inserta el idRuta en la URL del endpoint
-
-    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/${idRuta}`);
-    const rutas = await res.json();
-
-    const titulo = document.createElement("h2");
-    titulo.innerText = ruta.nombre;
-    titulo.style.color = "white";
-    titulo.style.fontSize = "1.5em";
-    titulo.style.textShadow = "1px 1px 3px black";
-    document.body.insertBefore(titulo, document.getElementById("map"));
-
-    rutas.forEach(ruta => {
-
-      const puntos = ruta.puntos;
-      if (!puntos || puntos.length === 0) return;
-
-      const bounds = [];
-
-      puntos.forEach((p, i) => {
-        const latlng = [p.latitud, p.longitud];
-        bounds.push(latlng);
-
-        // Guardar este punto como punto de control completo
-        console.log("🧩 Punto recibido:", p);
-
-        puntosControl.push({
-          latitud: p.latitud,
-          longitud: p.longitud,
-          etiqueta: p.etiqueta || `Punto ${i + 1}`,
-          nadadorruta_id: p.nadadorruta_id, // 👈 asegurate que este campo venga en el JSON
-          rutaId: idRuta // <--- ¡AQUÍ ES DONDE DEBE IR! DENTRO DEL OBJETO.
-        });
-
-        // Círculo del color de la ruta
-        L.circle(latlng, {
-          radius: 5,
-          color: 'rgba(255, 255, 0, 0.5)',
-          fillColor: 'rgba(255, 255, 0, 0.5)',
-          fillOpacity: 1
-        }).addTo(map);
-
-        // Ícono correspondiente
-        let icon = iconoIntermedio;
-        if (i === 0) icon = iconoInicio;
-        else if (i === puntos.length - 1) icon = iconoFinal;
-
-        L.marker(latlng, { icon })
-          .addTo(map)
-          .bindPopup(`Etiqueta: ${p.etiqueta}<br>Lat: ${p.latitud}<br>Lng: ${p.longitud}`);
-      });
-
-      // ✅ AÑADIDO: revisar que los puntos tengan nadadorruta_id
-      console.log("🧭 puntosControl cargados:", puntosControl);
-
-      map.fitBounds(bounds);
-    });
-
-  } catch (err) {
-    console.error("Error al cargar rutas:", err);
-  }
-}
-
 // FUNCIÓN NUEVA: Para llenar el selector de rutas con las opciones del backend
 async function cargarRutasDisponiblesEnSelector() {
   const selectorRuta = document.getElementById("select-ruta");
@@ -423,6 +357,12 @@ async function actualizarPopup(usuarioid) {
       console.warn(`⚠️ El historial no es un array para ${usuarioid}:`, historial);
       return;
     }
+
+    // 👈 AGREGAR ESTA LÍNEA después de obtener el historial:
+    historialPuntos.set(usuarioid, historial.map(p => ({
+      etiqueta: p.puntoControl || "❓(sin etiqueta)",
+      fechaHora: p.fechaHora
+    })));
 
     // 2. Traer nombre y apellido del usuario
     const resUsuario = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${usuarioid}`);
@@ -985,37 +925,32 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarUsuariosEnSelector();
 
   // REEMPLAZAR EL EVENT LISTENER DEL SELECTOR:
-  selectorUsuario.addEventListener('change', function() {
-    const usuarioId = this.value;
-    if (usuarioId && usuarioId !== 'Seleccione un usuario') {
-      iniciarActualizacionMetricas(usuarioId);
+  const selectorUsuario = document.getElementById('selector-usuario');
+  if (selectorUsuario) {
+    selectorUsuario.addEventListener('change', function() {
+      const usuarioId = this.value;
+      if (usuarioId && usuarioId !== 'Seleccione un usuario') {
+        iniciarActualizacionMetricas(usuarioId);
 
-      // 👈 AGREGAR ESTAS LÍNEAS:
-      setTimeout(() => {
-        const marcador = marcadores.get(String(usuarioId));
-        if (marcador) {
-          marcador.openPopup();
-          console.log(`🎯 Popup abierto automáticamente para usuario: ${usuarioId}`);
-        }
-      }, 500);
+        setTimeout(() => {
+          const marcador = marcadores.get(String(usuarioId));
+          if (marcador) {
+            marcador.openPopup();
+            console.log(`🎯 Popup abierto automáticamente para usuario: ${usuarioId}`);
+          }
+        }, 500);
 
-    } else {
-      detenerActualizacionMetricas();
-      // 👈 AGREGAR ESTA LÍNEA:
-      marcadores.forEach(marcador => marcador.closePopup());
-    }
-  });
+      } else {
+        detenerActualizacionMetricas();
+        marcadores.forEach(marcador => marcador.closePopup());
+      }
+    });
+  }
 
   setInterval(cargarNavegantesVinculados, 5000);
 
-
-  // ⏱️ Actualizar traza automáticamente si hay usuario seleccionado
   setInterval(() => {
-    if (!mostrarTraza) return; // 🛑 NO hacer nada si no está activo
-
-    setInterval(() => {
-      if (!mostrarTraza || !usuarioTrazaActiva) return;
-
+    if (!mostrarTraza || !usuarioTrazaActiva) return;
       trazarRutaUsuarioEspecifico(usuarioTrazaActiva);
-    }, 5000);
+  }, 5000);
 });

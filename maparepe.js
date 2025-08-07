@@ -929,27 +929,27 @@ document.addEventListener("DOMContentLoaded", () => {
   //cargarUsuariosEnSelector();
 
   // REEMPLAZAR EL EVENT LISTENER DEL SELECTOR:
-  const selectorUsuario = document.getElementById('selector-usuario');
-  if (selectorUsuario) {
-    selectorUsuario.addEventListener('change', function() {
-      const usuarioId = this.value;
-      if (usuarioId && usuarioId !== 'Seleccione un usuario') {
-        iniciarActualizacionMetricas(usuarioId);
+  //const selectorUsuario = document.getElementById('selector-usuario');
+  //if (selectorUsuario) {
+  //  selectorUsuario.addEventListener('change', function() {
+  //    const usuarioId = this.value;
+  //    if (usuarioId && usuarioId !== 'Seleccione un usuario') {
+  //      iniciarActualizacionMetricas(usuarioId);
 
-        setTimeout(() => {
-          const marcador = marcadores.get(String(usuarioId));
-          if (marcador) {
-            marcador.openPopup();
-            console.log(`🎯 Popup abierto automáticamente para usuario: ${usuarioId}`);
-          }
-        }, 500);
+  //      setTimeout(() => {
+  //        const marcador = marcadores.get(String(usuarioId));
+  //        if (marcador) {
+  //          marcador.openPopup();
+  //          console.log(`🎯 Popup abierto automáticamente para usuario: ${usuarioId}`);
+  //        }
+  //      }, 500);
 
-      } else {
-        detenerActualizacionMetricas();
-        marcadores.forEach(marcador => marcador.closePopup());
-      }
-    });
-  }
+  //    } else {
+  //      detenerActualizacionMetricas();
+  //      marcadores.forEach(marcador => marcador.closePopup());
+  //    }
+  //  });
+  //}
 
   setInterval(cargarNavegantesVinculados, 5000);
 

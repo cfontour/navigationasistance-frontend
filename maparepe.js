@@ -1,5 +1,6 @@
 // Variable para controlar qué usuario tiene la traza activa
 let usuarioTrazaActiva = null;
+let intervaloPollling = null; 
 
 const map = L.map("map").setView([-34.9, -56.1], 13);
 

@@ -247,10 +247,10 @@ window.toggleTrazaDesdePopup = function(usuarioid) {
     usuarioTrazaActiva = usuarioid;
 
     // Actualizar selector de usuario para que coincida
-    const selector = document.getElementById("selector-usuario");
-    if (selector) {
-      selector.value = usuarioid;
-    }
+    //const selector = document.getElementById("selector-usuario");
+    //if (selector) {
+    //  selector.value = usuarioid;
+    //}
 
     // Trazar ruta
     trazarRutaUsuarioEspecifico(usuarioid);
@@ -441,25 +441,25 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
   }
 }
 
-async function cargarUsuariosEnSelector() {
-  const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
-  const relaciones = await res.json();
-  const selector = document.getElementById("selector-usuario");
+//async function cargarUsuariosEnSelector() {
+//  const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
+//  const relaciones = await res.json();
+//  const selector = document.getElementById("selector-usuario");
 
-  for (const rel of relaciones) {
-    try {
-      const resUsuario = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${rel.usuarioId}`);
-      const usuario = await resUsuario.json();
+//  for (const rel of relaciones) {
+//    try {
+//      const resUsuario = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${rel.usuarioId}`);
+//      const usuario = await resUsuario.json();
 
-      const option = document.createElement("option");
-      option.value = rel.usuarioId; // 👈 Se guarda el usuarioId
-      option.textContent = `${rel.usuarioId} - ${usuario.nombre} ${usuario.apellido}`;
-      selector.appendChild(option);
-    } catch (err) {
-      console.warn(`❌ No se pudo obtener info para usuario ${rel.usuarioId}:`, err);
-    }
-  }
-}
+//      const option = document.createElement("option");
+//      option.value = rel.usuarioId; // 👈 Se guarda el usuarioId
+//      option.textContent = `${rel.usuarioId} - ${usuario.nombre} ${usuario.apellido}`;
+//      selector.appendChild(option);
+//    } catch (err) {
+//      console.warn(`❌ No se pudo obtener info para usuario ${rel.usuarioId}:`, err);
+//    }
+//  }
+//}
 
 async function cargarRutas(idRuta) {
   try {
@@ -922,7 +922,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   cargarRutas("52");
   cargarNavegantesVinculados();
-  cargarUsuariosEnSelector();
+  //cargarUsuariosEnSelector();
 
   // REEMPLAZAR EL EVENT LISTENER DEL SELECTOR:
   const selectorUsuario = document.getElementById('selector-usuario');

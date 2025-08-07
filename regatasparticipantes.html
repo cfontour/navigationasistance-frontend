@@ -109,18 +109,6 @@
 </head>
 
 <script src="https://cdn.jsdelivr.net/npm/dual-listbox@3.0.4/dist/dual-listbox.min.js"></script>
-<script>
-    // Envolvés tu <select multiple> con DualListbox
-    const dualListbox = new DualListbox('#usuariosDisponibles', {
-      availableTitle: 'USUARIOS',
-      selectedTitle: 'PARTICIPANTES DE REGATAS',
-      addButtonText: 'Agregar',
-      removeButtonText: 'Quitar',
-      addAllButtonText: 'Agregar todos',
-      removeAllButtonText: 'Quitar todos',
-      searchable: true
-    });
-</script>
 
 <body id="page-top" style="background-image: url('img/fondo_regata.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
 
@@ -184,6 +172,19 @@
         <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px;">
     </div>
 </section>
+
+<script>
+    // Envolvés tu <select multiple> con DualListbox
+    const dualListbox = new DualListbox('#usuariosDisponibles', {
+      availableTitle: 'USUARIOS',
+      selectedTitle: 'PARTICIPANTES DE REGATAS',
+      addButtonText: 'Agregar',
+      removeButtonText: 'Quitar',
+      addAllButtonText: 'Agregar todos',
+      removeAllButtonText: 'Quitar todos',
+      searchable: true
+    });
+</script>
 
 </body>
 </html>

@@ -115,7 +115,7 @@ async function cargarRutasDisponiblesEnSelector() {
 
 // Dentro de tu archivo JS, en la sección de definición de íconos o funciones auxiliares
 
-function crearIconoCompetidorConBearing(bearing) {
+function crearIconoCompetidorConBearing(bearing, usuarioid) {
   // Asegurarse de que el bearing esté entre 0 y 359
   let normalizedBearing = bearing % 360;
   if (normalizedBearing < 0) {
@@ -133,7 +133,7 @@ function crearIconoCompetidorConBearing(bearing) {
   const iconUrl = `/img/barco_bearings_icons_1/barco_${paddedAngle}.png`;
 
   // 🎨 NUEVO: Obtener color único para este usuario
-  const colorUsuario = obtenerColorUsuario(usuarioid);
+  //const colorUsuario = obtenerColorUsuario(usuarioid);
 
   console.log("🔍 Nombre icono:", iconUrl);
 
@@ -141,7 +141,8 @@ function crearIconoCompetidorConBearing(bearing) {
     iconUrl: iconUrl,
     iconSize: [40, 40],             // Ajusta el tamaño si es necesario para tus íconos de barco
     iconAnchor: [20, 20],           // La punta inferior central del icono
-    popupAnchor: [0, -16]           // Para que el popup salga justo arriba
+    popupAnchor: [0, -16],           // Para que el popup salga justo arriba
+    className: `barco-icon barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, '_')}`
   });
 }
 
@@ -219,13 +220,8 @@ async function cargarNavegantesVinculados() {
         }
       } else {
         // ✅ CORRECTO: Usar icono normal con bearing
-        icono = crearIconoCompetidorConBearing(bearing);
+        icono = crearIconoCompetidorConBearing(bearing, usuarioid);
       }
-
-      // ✅ CORRECTO: Llamada directa a crearIconoCompetidorConBearing
-      //const marcador = L.marker([lat, lng], {
-      //  icon: crearIconoCompetidorConBearing(bearing) // <-- ¡Aquí se usa directamente!
-      //}).addTo(map)
 
       const marcador = L.marker([lat, lng], {
         icon: icono // <-- ¡Usar la variable icono!
@@ -270,7 +266,7 @@ function generarContenidoPopup(usuarioid, datosUsuario = {}) {
     `Usuario ${usuarioid}`;
 
   // 🎨 NUEVO: Obtener color del usuario para mostrar en el popup
-  const colorUsuario = obtenerColorUsuario(usuarioid);
+  //const colorUsuario = obtenerColorUsuario(usuarioid);
 
   return `
     <div style="min-width: 200px;">
@@ -608,86 +604,6 @@ async function cargarRutas(idRuta) {
 }
 
 let polylineTraza = null;
-
-async function trazarRutaUsuario() {
-  mostrarTraza = true; // ✅ activar la traza manualmente
-
-  const usuarioId = document.getElementById("selector-usuario").value;
-  const hoy = new Date().toISOString().split("T")[0];
-
-  if (!usuarioId) {
-    alert("❗ Debe seleccionar un usuario.");
-    return;
-  }
-
-  try {
-    // 🔹 Obtener último recorrido UUID
-    const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${hoy}`);
-    const uuidList = await resUuid.json();
-
-    if (!uuidList || uuidList.length === 0) {
-      console.log("❌ No hay recorridos registrados hoy para el usuario: " + usuarioid + ", para la fecha: " + hoy);
-      //alert("❌ No hay recorridos registrados hoy para el usuario: " + usuarioid + ", para la fecha: " + hoy);
-      return;
-    }
-
-    const ultimaRuta = uuidList[0]; // solo uno, ya viene ordenado y limitado en el backend
-
-    // 🔹 Obtener puntos del recorrido
-    const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${ultimaRuta}`);
-    let puntos = await res.json();
-
-    // ✅ ¡ESTA ES LA MODIFICACIÓN CLAVE EN EL FRONTEND!
-    // Ordenar los puntos por fecha y hora para garantizar la cronología
-    puntos.sort((a, b) => {
-        // Combinar fecha y hora para una comparación precisa de tiempo
-        const fechaHoraA = new Date(`${a.nadadorfecha}T${a.nadadorhora.split('T')[1]}`);
-        const fechaHoraB = new Date(`${b.nadadorfecha}T${b.nadadorhora.split('T')[1]}`);
-
-        if (fechaHoraA.getTime() === fechaHoraB.getTime()) {
-            // Si las horas son idénticas, usa la secuencia como desempate
-            return Number(a.secuencia) - Number(b.secuencia);
-        }
-        return fechaHoraA.getTime() - fechaHoraB.getTime();
-    });
-
-    const latlngs = puntos
-      .filter(p =>
-        Number.isFinite(parseFloat(p.nadadorlat)) &&
-        Number.isFinite(parseFloat(p.nadadorlng)) &&
-        Number(p.secuencia) >= 1
-      )
-      .map(p => [parseFloat(p.nadadorlat), parseFloat(p.nadadorlng)]);
-
-    if (latlngs.length === 0) {
-      console.error("❌ La ruta no contiene puntos válidos.");
-      //alert("❌ La ruta no contiene puntos válidos.");
-      return;
-    }
-
-    // 🔹 Eliminar traza anterior si existe
-    console.log("Estado de polylineTraza antes de eliminar:", polylineTraza);
-    if (polylineTraza) {
-        map.removeLayer(polylineTraza);
-        console.log("polylineTraza eliminada del mapa.");
-    }
-    console.log("Nuevo polylineTraza asignado:", polylineTraza); // Después de L.polyline(...)
-
-    // 🔹 Dibujar nueva traza
-    polylineTraza = L.polyline(latlngs, {
-      color: 'orange',
-      weight: 4,
-
-      dashArray: '10, 10'
-    }).addTo(map);
-
-    //map.fitBounds(polylineTraza.getBounds());
-
-  } catch (err) {
-    console.error("❌ Error inesperado al trazar ruta:", err);
-    //alert("⚠️ Error inesperado al intentar trazar la ruta.");
-  }
-}
 
 function borrarTraza() {
   mostrarTraza = false; // ✅ desactiva el redibujo

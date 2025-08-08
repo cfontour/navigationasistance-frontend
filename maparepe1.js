@@ -399,6 +399,8 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
         map.removeLayer(polylineTraza);
     }
 
+    const colorUsuario = obtenerColorUsuario(usuarioId);
+
     polylineTraza = L.polyline(latlngs, {
       color: colorUsuario,
       weight: 7,

@@ -11,6 +11,14 @@ $(document).ready(function () {
     actualizarEmailDelUsuario();
     mostrarItemRespaldoSiUsuarioLogueado();
 
+    // 🔹 Ocultar "Control de Navegantes (ADM)" si no es admin
+    if (usuario.rol !== "ADMINISTRADOR") {
+       const controlNavItem = document.querySelector('a[href="verposicion.html"]');
+       if (controlNavItem) {
+          controlNavItem.parentElement.classList.add("d-none");
+       }
+    }
+
     if (usuario.rol === "ADMINISTRADOR") {
         cargarUsuarios(); // Solo cargar usuarios, DataTable se inicializa después
     } else {

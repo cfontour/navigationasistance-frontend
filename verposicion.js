@@ -1,6 +1,5 @@
 // verposicion.js
 $(document).ready(function () {
-  // DataTable en español; desactivar orden en las 2 últimas (SOS y Acciones)
   const tabla = $('#navegantes').DataTable({
     language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" },
     columnDefs: [
@@ -23,26 +22,23 @@ $(document).ready(function () {
           const lat = item.nadadorlat ?? "";
           const lng = item.nadadorlng ?? "";
           const fecha = formatearFecha(item.fechaUltimaActualizacion);
+          const emergenciaIcono = item.emergency ? "🚨" : "";
 
-          // Columna "Emergencia": ícono (solo si está activo)
-          const emergenciaIcono = item.emergency === true ? "🚨" : "";
-
-          // Botón SOS: rojo (activo) / amarillo (apagado)
+          // Botón SOS: rojo (true) / amarillo (false)
           const btnSOS = `
             <button class="btn btn-sm ${item.emergency ? 'btn-danger' : 'btn-warning'} sos-btn"
                     data-usuario="${usuario}"
+                    data-estado="${item.emergency}"
                     title="${item.emergency ? 'Apagar SOS' : 'Encender SOS'}">
               <i class="fas fa-exclamation-triangle"></i>
             </button>`;
 
-          // Botón Eliminar
           const btnEliminar = `
             <button class="btn btn-sm btn-danger eliminar-btn"
                     data-usuario="${usuario}" title="Eliminar">
               <i class="fas fa-trash"></i>
             </button>`;
 
-          // Agregar fila
           tabla.row.add([id, usuario, lat, lng, fecha, emergenciaIcono, btnSOS, btnEliminar]);
         });
 
@@ -51,13 +47,16 @@ $(document).ready(function () {
       .catch(err => console.error("Error cargando datos:", err));
   }
 
-  // Toggle SOS: POST /emergency/{id}
+  // Toggle SOS con body { emergency: true/false }
   $('#navegantes').on('click', '.sos-btn', function () {
     const usuarioId = $(this).data('usuario');
-    if (!usuarioId) return;
+    const estadoActual = $(this).data('estado'); // true o false
+    const nuevoEstado = !estadoActual; // alternar
 
     fetch(`https://navigationasistance-backend-1.onrender.com/nadadorposicion/emergency/${encodeURIComponent(usuarioId)}`, {
-      method: 'POST'
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ emergency: nuevoEstado })
     })
     .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
     .then(() => cargarDatos())
@@ -67,7 +66,7 @@ $(document).ready(function () {
     });
   });
 
-  // Eliminar: POST /eliminar/{id}
+  // Eliminar
   $('#navegantes').on('click', '.eliminar-btn', function () {
     const usuarioId = $(this).data('usuario');
     if (!usuarioId) return;

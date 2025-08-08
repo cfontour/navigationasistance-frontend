@@ -221,6 +221,10 @@ async function cargarNavegantesVinculados() {
       } else {
         // ✅ CORRECTO: Usar icono normal con bearing
         icono = crearIconoCompetidorConBearing(bearing, n.usuarioid);
+
+        // 🎨 APLICAR COLOR:
+          const colorUsuario = obtenerColorUsuario(n.usuarioid);
+          setTimeout(() => aplicarColorIcono(n.usuarioid, colorUsuario), 100);
       }
 
       const marcador = L.marker([lat, lng], {

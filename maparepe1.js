@@ -71,6 +71,56 @@ function obtenerColorUsuario(usuarioid) {
   return coloresAsignados.get(usuarioid);
 }
 
+function aplicarColorIcono(usuarioid, color) {
+  const className = `barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, '_')}`;
+
+  // Convertir hex a filtros CSS
+  const filtros = convertirHexAFiltro(color);
+
+  let styleSheet = document.getElementById('iconos-dinamicos-css');
+  if (!styleSheet) {
+    styleSheet = document.createElement('style');
+    styleSheet.id = 'iconos-dinamicos-css';
+    document.head.appendChild(styleSheet);
+  }
+
+  const newRule = `.${className} { filter: ${filtros} !important; }`;
+
+  const existingRuleIndex = Array.from(styleSheet.sheet.cssRules).findIndex(
+    rule => rule.selectorText === `.${className}`
+  );
+
+  if (existingRuleIndex !== -1) {
+    styleSheet.sheet.deleteRule(existingRuleIndex);
+  }
+
+  styleSheet.sheet.insertRule(newRule, styleSheet.sheet.cssRules.length);
+}
+
+function convertirHexAFiltro(hex) {
+  // Filtros CSS específicos para cada color
+  const filtrosMap = {
+    '#ff6b6b': 'sepia(100%) saturate(200%) hue-rotate(0deg)',      // rojo
+    '#4ecdc4': 'sepia(100%) saturate(200%) hue-rotate(160deg)',    // verde agua
+    '#45b7d1': 'sepia(100%) saturate(200%) hue-rotate(200deg)',    // azul
+    '#96ceb4': 'sepia(100%) saturate(200%) hue-rotate(120deg)',    // verde menta
+    '#feca57': 'sepia(100%) saturate(200%) hue-rotate(40deg)',     // amarillo
+    '#ff9ff3': 'sepia(100%) saturate(200%) hue-rotate(300deg)',    // rosa
+    '#54a0ff': 'sepia(100%) saturate(200%) hue-rotate(220deg)',    // azul claro
+    '#5f27cd': 'sepia(100%) saturate(200%) hue-rotate(260deg)',    // púrpura
+    '#00d2d3': 'sepia(100%) saturate(200%) hue-rotate(180deg)',    // cian
+    '#ff9f43': 'sepia(100%) saturate(200%) hue-rotate(25deg)',     // naranja
+    '#10ac84': 'sepia(100%) saturate(200%) hue-rotate(140deg)',    // verde esmeralda
+    '#ee5a6f': 'sepia(100%) saturate(200%) hue-rotate(340deg)',    // rosa salmón
+    '#c44569': 'sepia(100%) saturate(200%) hue-rotate(320deg)',    // rosa oscuro
+    '#40739e': 'sepia(100%) saturate(200%) hue-rotate(210deg)',    // azul marino
+    '#487eb0': 'sepia(100%) saturate(200%) hue-rotate(205deg)',    // azul acero
+    '#8c7ae6': 'sepia(100%) saturate(200%) hue-rotate(270deg)'     // lavanda
+  };
+
+  return filtrosMap[hex] || 'sepia(100%) saturate(200%) hue-rotate(0deg)';
+}
+
 function actualizarLabel(labelId, value) {
     document.getElementById(labelId).innerText = value;
 }
@@ -189,6 +239,10 @@ async function cargarNavegantesVinculados() {
       } else {
         // ✅ CORRECTO: Usar icono normal con bearing
         icono = crearIconoCompetidorConBearing(bearing, n.usuarioid);
+
+        // Aplicar color después de crear el marcador
+        const colorUsuario = obtenerColorUsuario(n.usuarioid);
+        setTimeout(() => aplicarColorIcono(n.usuarioid, colorUsuario), 200);
 
       }
 

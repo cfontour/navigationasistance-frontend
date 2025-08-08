@@ -133,7 +133,7 @@ function crearIconoCompetidorConBearing(bearing, usuarioid) {
   const iconUrl = `/img/barco_bearings_icons_1/barco_${paddedAngle}.png`;
 
   // 🎨 NUEVO: Obtener color único para este usuario
-  //const colorUsuario = obtenerColorUsuario(usuarioid);
+  const colorUsuario = obtenerColorUsuario(usuarioid);
 
   console.log("🔍 Nombre icono:", iconUrl);
 
@@ -190,10 +190,6 @@ async function cargarNavegantesVinculados() {
         // ✅ CORRECTO: Usar icono normal con bearing
         icono = crearIconoCompetidorConBearing(bearing, n.usuarioid);
 
-        // 🎨 APLICAR COLOR:
-        const colorUsuario = obtenerColorUsuario(n.usuarioid);
-        const colorIndex = COLORES_USUARIOS.indexOf(colorUsuario);
-        const iconUrl = `/img/barco_bearing_icons/barco_${paddedAngle}_color${colorIndex}.png`;
       }
 
       const marcador = L.marker([lat, lng], {
@@ -351,6 +347,8 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
 
     // 🎨 NUEVO: Usar color del usuario para la traza
     const colorUsuario = obtenerColorUsuario(usuarioId);
+    const colorIndex = COLORES_USUARIOS.indexOf(colorUsuario);
+    const iconUrl = `/img/barco_bearing_icons/barco_${paddedAngle}_color${colorIndex}.png`;
 
     polylineTraza = L.polyline(latlngs, {
       color: 'orange',

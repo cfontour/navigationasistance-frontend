@@ -399,13 +399,8 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
         map.removeLayer(polylineTraza);
     }
 
-    // 🎨 NUEVO: Usar color del usuario para la traza
-    const colorUsuario = obtenerColorUsuario(usuarioId);
-    const colorIndex = COLORES_USUARIOS.indexOf(colorUsuario);
-    const iconUrl = `/img/barco_bearing_icons/barco_${paddedAngle}_color${colorIndex}.png`;
-
     polylineTraza = L.polyline(latlngs, {
-      color: 'orange',
+      color: colorUsuario,
       weight: 7,
       dashArray: '10, 10'
     }).addTo(map);

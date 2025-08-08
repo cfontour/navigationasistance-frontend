@@ -1,13 +1,11 @@
 // js/usuarios.js
 $(document).ready(function () {
-  // DataTable: español vía CDN y última columna sin orden
+  // DataTable en español y última columna sin orden
   const tabla = $('#navegantes').DataTable({
     language: {
       url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
     },
-    columnDefs: [
-      { targets: -1, orderable: false } // "Acciones"
-    ]
+    columnDefs: [{ targets: -1, orderable: false }]
   });
 
   cargarDatos();
@@ -27,31 +25,29 @@ $(document).ready(function () {
           const lat = item.nadadorlat ?? "";
           const lng = item.nadadorlng ?? "";
           const fecha = formatearFecha(item.fechaUltimaActualizacion);
-          const emergencia = item.emergency === true ? "🚨" : ""; // nada si es false
-          const acciones =
-            `<button class="btn btn-sm btn-danger eliminar-btn"
-                     data-usuario="${usuario}" title="Eliminar">
-               <i class="fas fa-trash"></i>
-             </button>`;
+          const emergencia = item.emergency === true ? "🚨" : ""; // vacío si es false
+          const acciones = `
+            <button class="btn btn-sm btn-danger eliminar-btn"
+                    data-usuario="${usuario}" title="Eliminar">
+              <i class="fas fa-trash"></i>
+            </button>`;
 
           tabla.row.add([id, usuario, lat, lng, fecha, emergencia, acciones]);
         });
 
         tabla.draw();
       })
-      .catch(err => {
-        console.error("Error cargando datos:", err);
-      });
+      .catch(err => console.error("Error cargando datos:", err));
   }
 
-  // Borrar por usuarioId
+  // Eliminar usando POST /eliminar/{id}
   $('#navegantes').on('click', '.eliminar-btn', function () {
     const usuarioId = $(this).data('usuario');
     if (!usuarioId) return;
 
     if (confirm(`¿Seguro que querés eliminar al usuario ${usuarioId}?`)) {
-      fetch(`https://navigationasistance-backend-1.onrender.com/nadadorposicion/eliminar/${usuarioId}`, {
-        method: 'DELETE'
+      fetch(`https://navigationasistance-backend-1.onrender.com/nadadorposicion/eliminar/${encodeURIComponent(usuarioId)}`, {
+        method: 'POST'
       })
         .then(r => {
           if (!r.ok) throw new Error(`HTTP ${r.status}`);

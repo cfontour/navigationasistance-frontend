@@ -158,10 +158,12 @@ function aplicarColorIcono(usuarioid, color) {
     document.head.appendChild(styleSheet);
   }
 
-  // 🎨 CSS CORRECTO para colorear iconos PNG transparentes:
+  // 🎨 CSS para colorear con el color específico del usuario:
   const newRule = `
     .${className} {
-      filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%) !important;
+      filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(10000%) hue-rotate(0deg) brightness(1) contrast(1) !important;
+      background-color: ${color};
+      mix-blend-mode: multiply;
     }
   `;
 

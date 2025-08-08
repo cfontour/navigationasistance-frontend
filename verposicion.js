@@ -1,70 +1,72 @@
 // js/usuarios.js
 $(document).ready(function () {
+  // DataTable: español vía CDN y última columna sin orden
+  const tabla = $('#navegantes').DataTable({
+    language: {
+      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+    },
+    columnDefs: [
+      { targets: -1, orderable: false } // "Acciones"
+    ]
+  });
 
-    // Inicializar DataTable con columna extra para botón de eliminar
-    let tabla = $('#navegantes').DataTable({
-        language: {
-            url: "vendor/datatables/es-ES.json"
-        },
-        columns: [
-            { title: "ID" },
-            { title: "Usuario" },
-            { title: "Latitud" },
-            { title: "Longitud" },
-            { title: "Fecha" },
-            { title: "Emergencia" },
-            { title: "Acciones", orderable: false }
-        ]
-    });
+  cargarDatos();
 
-    cargarDatos();
+  function cargarDatos() {
+    fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar")
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(data => {
+        tabla.clear();
 
-    function cargarDatos() {
-        fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar")
-            .then(response => {
-                if (!response.ok) throw new Error(`Error en la respuesta: ${response.status}`);
-                return response.json();
-            })
-            .then(data => {
-                tabla.clear();
+        data.forEach((item, idx) => {
+          const id = idx + 1;
+          const usuario = item.usuarioid ?? "";
+          const lat = item.nadadorlat ?? "";
+          const lng = item.nadadorlng ?? "";
+          const fecha = formatearFecha(item.fechaUltimaActualizacion);
+          const emergencia = item.emergency === true ? "🚨" : ""; // nada si es false
+          const acciones =
+            `<button class="btn btn-sm btn-danger eliminar-btn"
+                     data-usuario="${usuario}" title="Eliminar">
+               <i class="fas fa-trash"></i>
+             </button>`;
 
-                data.forEach((item, index) => {
-                    tabla.row.add([
-                        index + 1,
-                        item.usuarioid || "",
-                        item.nadadorlat || "",
-                        item.nadadorlng || "",
-                        formatearFecha(item.fechaUltimaActualizacion),
-                        item.emergency ? "🚨" : "", // ahora solo se ve si es true
-                        `<button class="btn btn-danger btn-sm eliminar-btn" data-usuario="${item.usuarioid}"><i class="fas fa-trash"></i></button>`
-                    ]);
-                });
+          tabla.row.add([id, usuario, lat, lng, fecha, emergencia, acciones]);
+        });
 
-                tabla.draw();
-            })
-            .catch(error => console.error("Error cargando datos:", error));
+        tabla.draw();
+      })
+      .catch(err => {
+        console.error("Error cargando datos:", err);
+      });
+  }
+
+  // Borrar por usuarioId
+  $('#navegantes').on('click', '.eliminar-btn', function () {
+    const usuarioId = $(this).data('usuario');
+    if (!usuarioId) return;
+
+    if (confirm(`¿Seguro que querés eliminar al usuario ${usuarioId}?`)) {
+      fetch(`https://navigationasistance-backend-1.onrender.com/nadadorposicion/eliminar/${usuarioId}`, {
+        method: 'DELETE'
+      })
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          cargarDatos();
+        })
+        .catch(err => {
+          console.error("Error eliminando usuario:", err);
+          alert("No se pudo eliminar. Revisá el backend.");
+        });
     }
+  });
 
-    // Eliminar registro
-    $('#navegantes').on('click', '.eliminar-btn', function () {
-        let usuarioId = $(this).data("usuario");
-
-        if (confirm(`¿Seguro que quieres eliminar al usuario ${usuarioId}?`)) {
-            fetch(`https://navigationasistance-backend-1.onrender.com/nadadorposicion/eliminar/${usuarioId}`, {
-                method: 'DELETE'
-            })
-                .then(response => {
-                    if (!response.ok) throw new Error(`Error al eliminar: ${response.status}`);
-                    alert("Usuario eliminado correctamente");
-                    cargarDatos();
-                })
-                .catch(error => console.error("Error eliminando usuario:", error));
-        }
-    });
-
-    function formatearFecha(fechaIso) {
-        if (!fechaIso) return "";
-        const fecha = new Date(fechaIso);
-        return fecha.toLocaleString("es-UY", { timeZone: "America/Montevideo" });
-    }
+  function formatearFecha(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return d.toLocaleString("es-UY", { timeZone: "America/Montevideo" });
+  }
 });

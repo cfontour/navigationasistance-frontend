@@ -150,7 +150,6 @@ function crearIconoCompetidorConBearing(bearing, usuarioid) {
 function aplicarColorIcono(usuarioid, color) {
   const className = `barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
-  // Crear o actualizar el estilo CSS dinámicamente
   let styleSheet = document.getElementById('iconos-dinamicos-css');
   if (!styleSheet) {
     styleSheet = document.createElement('style');
@@ -159,14 +158,13 @@ function aplicarColorIcono(usuarioid, color) {
     document.head.appendChild(styleSheet);
   }
 
-  // Añadir regla CSS para este usuario específico
+  // 🎨 CSS CORRECTO para colorear iconos PNG transparentes:
   const newRule = `
     .${className} {
-      filter: hue-rotate(0deg) saturate(0%) brightness(0) drop-shadow(0 0 0 ${color}) !important;
+      filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%) !important;
     }
   `;
 
-  // Si ya existe una regla para este usuario, la reemplazamos
   const existingRuleIndex = Array.from(styleSheet.sheet.cssRules).findIndex(
     rule => rule.selectorText === `.${className}`
   );

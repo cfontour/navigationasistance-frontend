@@ -127,7 +127,7 @@ async function cargarParticipantes() {
     // Fila grilla
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${p.id}</td>
+      <td>${usuarioId}</td>
       <td>${nombre}</td>
       <td>${apellido}</td>
       <td>${email}</td>

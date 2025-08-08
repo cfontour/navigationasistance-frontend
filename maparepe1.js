@@ -146,38 +146,6 @@ function crearIconoCompetidorConBearing(bearing, usuarioid) {
   });
 }
 
-// 🎨 NUEVO: Función para aplicar estilo de color al icono
-function aplicarColorIcono(usuarioid, color) {
-  const className = `barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, '_')}`;
-
-  let styleSheet = document.getElementById('iconos-dinamicos-css');
-  if (!styleSheet) {
-    styleSheet = document.createElement('style');
-    styleSheet.id = 'iconos-dinamicos-css';
-    styleSheet.type = 'text/css';
-    document.head.appendChild(styleSheet);
-  }
-
-  // 🎨 CSS para colorear con el color específico del usuario:
-  const newRule = `
-    .${className} {
-      filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(10000%) hue-rotate(0deg) brightness(1) contrast(1) !important;
-      background-color: ${color};
-      mix-blend-mode: multiply;
-    }
-  `;
-
-  const existingRuleIndex = Array.from(styleSheet.sheet.cssRules).findIndex(
-    rule => rule.selectorText === `.${className}`
-  );
-
-  if (existingRuleIndex !== -1) {
-    styleSheet.sheet.deleteRule(existingRuleIndex);
-  }
-
-  styleSheet.sheet.insertRule(newRule, styleSheet.sheet.cssRules.length);
-}
-
 async function cargarNavegantesVinculados() {
   try {
     const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listarActivosEnCarrera");
@@ -223,8 +191,9 @@ async function cargarNavegantesVinculados() {
         icono = crearIconoCompetidorConBearing(bearing, n.usuarioid);
 
         // 🎨 APLICAR COLOR:
-          const colorUsuario = obtenerColorUsuario(n.usuarioid);
-          setTimeout(() => aplicarColorIcono(n.usuarioid, colorUsuario), 100);
+        const colorUsuario = obtenerColorUsuario(usuarioid);
+        const colorIndex = COLORES_USUARIOS.indexOf(colorUsuario);
+        const iconUrl = `/img/barco_bearing_icons/barco_${paddedAngle}_color${colorIndex}.png`;
       }
 
       const marcador = L.marker([lat, lng], {

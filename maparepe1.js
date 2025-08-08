@@ -220,7 +220,7 @@ async function cargarNavegantesVinculados() {
         }
       } else {
         // ✅ CORRECTO: Usar icono normal con bearing
-        icono = crearIconoCompetidorConBearing(bearing, usuarioid);
+        icono = crearIconoCompetidorConBearing(bearing, n.usuarioid);
       }
 
       const marcador = L.marker([lat, lng], {

@@ -709,6 +709,14 @@ function actualizarVelocidad(nudos) {
     setTimeout(() => velocidadElement.classList.remove('actualizado'), 400);
 }
 
+function actualizarUsuario(usuarioid, nombre) {
+    const usuarioElement = document.getElementById('usuario-value');
+    const nombreCompleto = nombre || `Usuario ${usuarioid}`;
+    usuarioElement.textContent = nombreCompleto;
+    usuarioElement.classList.add('actualizado');
+    setTimeout(() => usuarioElement.classList.remove('actualizado'), 400);
+}
+
 function mostrarSinDatos() {
     document.querySelectorAll('.metrica').forEach(metrica => {
         metrica.classList.add('sin-datos');
@@ -891,6 +899,14 @@ function iniciarActualizacionMetricas(usuarioId) {
     if (intervaloPollling) {
         clearInterval(intervaloPollling);
     }
+
+    // AGREGAR ESTAS LÍNEAS:
+    fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${usuarioId}`)
+        .then(res => res.json())
+        .then(usuario => {
+            actualizarUsuario(usuarioId, `${usuario.nombre} ${usuario.apellido}`);
+        })
+        .catch(() => actualizarUsuario(usuarioId, null));
 
     // Actualización inmediata
     actualizarDatos(usuarioId);

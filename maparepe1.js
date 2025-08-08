@@ -191,7 +191,7 @@ async function cargarNavegantesVinculados() {
         icono = crearIconoCompetidorConBearing(bearing, n.usuarioid);
 
         // 🎨 APLICAR COLOR:
-        const colorUsuario = obtenerColorUsuario(usuarioid);
+        const colorUsuario = obtenerColorUsuario(n.usuarioid);
         const colorIndex = COLORES_USUARIOS.indexOf(colorUsuario);
         const iconUrl = `/img/barco_bearing_icons/barco_${paddedAngle}_color${colorIndex}.png`;
       }

@@ -68,6 +68,7 @@ class RegatasDashboard {
         userSelector.addEventListener('change', (e) => {
             if (e.target.value) {
                 this.selectedUserId = e.target.value;
+                this.clearMap();
                 this.loadUserDetails(e.target.value);
                 this.loadUserRoute(e.target.value);
             }
@@ -129,6 +130,25 @@ class RegatasDashboard {
             console.error('Error loading user details:', error);
             this.showError('userProfileContainer', 'Error cargando datos del usuario');
         }
+    }
+
+    clearMap() {
+        // Limpiar marcador actual
+        if (this.currentMarker) {
+            this.map.removeLayer(this.currentMarker);
+            this.currentMarker = null;
+        }
+
+        // Limpiar líneas de ruta
+        if (this.routeLine) {
+            this.map.removeLayer(this.routeLine);
+            this.routeLine = null;
+        }
+
+        // Resetear datos
+        this.routeData = [];
+        this.currentIndex = 0;
+        this.resetPlayback();
     }
 
     displayUserProfile(userData, personData) {

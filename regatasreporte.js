@@ -133,16 +133,17 @@ class RegatasDashboard {
     }
 
     clearMap() {
+        // Borrar TODAS las polylines (trazas de rutas)
+        this.map.eachLayer((layer) => {
+            if (layer instanceof L.Polyline) {
+                this.map.removeLayer(layer);
+            }
+        });
+
         // Limpiar marcador actual
         if (this.currentMarker) {
             this.map.removeLayer(this.currentMarker);
             this.currentMarker = null;
-        }
-
-        // Limpiar líneas de ruta
-        if (this.routeLine) {
-            this.map.removeLayer(this.routeLine);
-            this.routeLine = null;
         }
 
         // Resetear datos

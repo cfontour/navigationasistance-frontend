@@ -184,11 +184,13 @@ class RegatasDashboard {
             console.log("🔍 INICIO - Cargando ruta para usuario:", userId);
 
             // Obtener la fecha actual para el último recorrido
-            const today = new Date().toISOString().split('T')[0];
-            console.log("🔍 Fecha calculada:", today);
+            //const today = new Date().toISOString().split('T')[0];
+            const selectedDate = document.getElementById('dateSelector').value || new Date().toISOString().split('T')[0];
+            console.log("🔍 Fecha seleccionada:", selectedDate);
 
             // Obtener último recorrido
-            const lastRouteResponse = await fetch(`${this.baseURL}/nadadorhistoricorutas/ultimorecorrido/${userId}/${today}`);
+            //const lastRouteResponse = await fetch(`${this.baseURL}/nadadorhistoricorutas/ultimorecorrido/${userId}/${today}`);
+            const lastRouteResponse = await fetch(`${this.baseURL}/nadadorhistoricorutas/ultimorecorrido/${userId}/${selectedDate}`);
             console.log("🔍 URL último recorrido:", lastRouteResponse);
 
             const lastRoute = await lastRouteResponse.json();

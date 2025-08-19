@@ -952,7 +952,7 @@ document.addEventListener("DOMContentLoaded", () => {
     //cargarRutas(idRutaSeleccionada);
   //});
 
-  await cargarRutas("52");
+  cargarRutas("52");
   cargarNavegantesVinculados();
   //cargarUsuariosEnSelector();
 

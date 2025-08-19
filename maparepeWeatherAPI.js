@@ -19,7 +19,7 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
 */
 
 // === VARIABLES PARA SISTEMA DE VIENTO ===
-const WEATHER_API_KEY = "TU_API_KEY_AQUI"; // ← CONSEGUIR KEY EN weatherapi.com
+const WEATHER_API_KEY = "75e2bce104fa4fa180e194644251908 "; // ← CONSEGUIR KEY EN weatherapi.com
 let capaViento = null;
 let vientoVisible = false;
 let intervalViento = null;

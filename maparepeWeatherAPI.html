@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>GEOTRASER - Regatas - Puntos</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        /* Estilos para el logo en esquina superior izquierda */
+        .logo {
+            position: fixed;
+            top: 20px;
+            left: 10px;
+            max-width: 200px;
+            z-index: 1000;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            padding-top: 30px;
+        }
+
+        /* Panel de métricas en tiempo real */
+        #panel-metricas {
+            position: fixed;
+            top: 120px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 180px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .metrica {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .metrica:hover {
+            background: rgba(0,123,255,0.1);
+            transform: translateX(2px);
+        }
+
+        .metrica:last-child {
+            margin-bottom: 0;
+        }
+
+        .metrica .icono {
+            font-size: 20px;
+            margin-right: 10px;
+            width: 25px;
+            text-align: center;
+        }
+
+        .metrica .valor {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-right: 8px;
+            min-width: 60px;
+            text-align: right;
+            transition: all 0.4s ease;
+        }
+
+        .metrica .valor.actualizado {
+            color: #27ae60;
+            transform: scale(1.1);
+        }
+
+        .metrica .label {
+            font-size: 11px;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        /* Indicador de bearing visual */
+        .bearing-compass {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        /* CSS base para iconos de barcos transparentes */
+            .barco-icon {
+            transition: filter 0.3s ease;
+        }
+
+        .barco-icon:hover {
+            filter: brightness(1.2) !important;
+        }
+
+        .bearing-needle {
+            display: inline-block;
+            transform-origin: center;
+            transition: transform 0.5s ease;
+            font-size: 14px;
+        }
+
+        #controles-superiores {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            align-items: center;
+        }
+
+        #controles-superiores button {
+            padding: 6px 10px;
+            font-weight: bold;
+            border: 1px solid #999;
+            background-color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #selector-usuario {
+            padding: 5px;
+        }
+
+        #map {
+            height: 90vh;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: #333;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Animación de pulso para actualizaciones */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .panel-updating {
+            animation: pulse 0.3s ease;
+        }
+
+        /* Estilos para datos sin conexión */
+        .metrica.sin-datos .valor {
+            color: #e74c3c;
+        }
+
+        .metrica.sin-datos .icono {
+            opacity: 0.5;
+        }
+
+        /* === ESTILOS PARA PANEL DE VIENTO === */
+        #panel-viento {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            min-width: 200px;
+            backdrop-filter: blur(10px);
+        }
+
+        #panel-viento h3 {
+            margin: 0 0 10px 0;
+            color: #4fc3f7;
+            font-size: 16px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .viento-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 0;
+        }
+
+        .viento-label {
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        .viento-value {
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .viento-actualizado {
+            font-size: 12px;
+            color: #4fc3f7;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* === ESTILOS PARA FLECHAS DE VIENTO === */
+        .wind-arrow {
+            font-size: 18px;
+            line-height: 18px;
+            color: #2196F3;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        .wind-arrow > div {
+            transform-origin: 50% 50%;
+            font-weight: bold;
+        }
+
+        /* === BOTÓN TOGGLE VIENTO === */
+        #toggle-viento {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            background: rgba(33, 150, 243, 0.9);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        #toggle-viento:hover {
+            background: rgba(33, 150, 243, 1);
+            transform: scale(1.05);
+        }
+
+        #toggle-viento.activo {
+            background: rgba(76, 175, 80, 0.9);
+        }
+
+        /* === INDICADOR DE CARGA === */
+        .loading-viento {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #4fc3f7;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body id="page-top" style="background-image: url('img/fondo_regata.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+
+<img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
+
+<!-- Panel de métricas en tiempo real -->
+<div id="panel-metricas">
+    <div class="metrica" id="metrica-usuario" style="background: rgba(52, 152, 219, 0.1); margin-bottom: 15px;">
+        <span class="icono">👤</span>
+        <span class="valor" id="usuario-value" style="font-size: 14px; min-width: 120px;">Sin selección</span>
+        <span class="label">Usuario</span>
+    </div>
+    <div class="metrica" id="metrica-bearing">
+        <span class="icono">🧭</span>
+        <span class="valor" id="bearing-value">---°</span>
+        <span class="label">Bearing</span>
+        <div class="bearing-compass">
+            <span class="bearing-needle" id="bearing-needle">↑</span>
+        </div>
+    </div>
+    <div class="metrica" id="metrica-distancia">
+        <span class="icono">📏</span>
+        <span class="valor" id="distancia-value">0.00</span>
+        <span class="label">Millas Náuticas</span>
+    </div>
+    <div class="metrica" id="metrica-velocidad">
+        <span class="icono">⚡</span>
+        <span class="valor" id="velocidad-value">0.0</span>
+        <span class="label">Nudos</span>
+    </div>
+</div>
+
+<h1>     </h1>
+<!--<h2 id="tituloRuta">🧭 Regatas: Ubicación de boyado de:</h2>-->
+
+<div id="controles-superiores">
+    <label style="display: none;">Ancho del Control (m): <span id="anchoLabel">10</span></label>
+    <input type="range" id="anchoCorredor" min="0" max="100" value="10" oninput="actualizarLabel('anchoLabel', this.value)" style="display: none;" />
+    <select id="select-ruta" style="display: none;">
+        <option disabled selected>Seleccione una ruta</option>
+    </select>
+    <!--
+    <select id="selector-usuario">
+      <option disabled selected>Seleccione un usuario</option>
+    </select>
+    <button id="boton-traza">Trazar Ruta</button>
+    <button id="boton-borrar-traza">Borrar Traza</button>
+    -->
+</div>
+
+<div id="map"></div>
+<!-- Panel de información de viento -->
+<div id="panel-viento">
+    <h3>🌬️ Información del Viento</h3>
+    <div class="viento-item">
+        <span class="viento-label">Dirección:</span>
+        <span class="viento-value" id="vientoDir">–</span>
+    </div>
+    <div class="viento-item">
+        <span class="viento-label">Velocidad:</span>
+        <span class="viento-value" id="vientoVel">–</span>
+    </div>
+    <div class="viento-item">
+        <span class="viento-label">Ráfagas:</span>
+        <span class="viento-value" id="vientoRafagas">–</span>
+    </div>
+    <div class="viento-actualizado" id="vientoActualizado">
+        Cargando...
+    </div>
+</div>
+
+<!-- Botón para toggle de capa de viento -->
+<button id="toggle-viento" onclick="toggleCapaViento()">
+    🌬️ Mostrar Viento
+</button>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="maparepe1.js"></script>
+
+<footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">
+    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
+</footer>
+
+</body>
+</html>

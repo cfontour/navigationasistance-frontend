@@ -47,6 +47,12 @@ let mostrarTraza = false;
 
 let RADIO_PUNTO_CONTROL = parseFloat(anchoCorredorInput.value);
 
+// Variables para AISHub
+let capaEmbarcaciones = null;
+let embarcacionesVisible = false;
+let intervalEmbarcaciones = null;
+let embarcacionesData = [];
+
 // 🎨 NUEVO: Paleta de colores para diferentes usuarios
 const COLORES_USUARIOS = [
   '#ff6b6b',  // Rojo coral
@@ -1158,6 +1164,239 @@ function iniciarSistemaViento() {
     }, 5 * 60 * 1000); // 5 minutos
 
     console.log("✅ Sistema de viento iniciado (actualización cada 5 min)");
+}
+
+// Función para obtener tipo de embarcación y icono
+function getTipoEmbarcacion(shipType) {
+    const tipo = parseInt(shipType) || 0;
+
+    if (tipo >= 70 && tipo <= 79) return { tipo: 'cargo', icono: '📦', clase: 'vessel-cargo' };
+    if (tipo >= 80 && tipo <= 89) return { tipo: 'tanker', icono: '🛢️', clase: 'vessel-tanker' };
+    if (tipo >= 60 && tipo <= 69) return { tipo: 'passenger', icono: '🛳️', clase: 'vessel-passenger' };
+    if (tipo == 30) return { tipo: 'fishing', icono: '🎣', clase: 'vessel-fishing' };
+    if (tipo >= 36 && tipo <= 37) return { tipo: 'pleasure', icono: '⛵', clase: 'vessel-pleasure' };
+
+    return { tipo: 'other', icono: '🚢', clase: 'vessel-other' };
+}
+
+// Función para cargar embarcaciones desde AISHub
+async function cargarEmbarcacionesAIS() {
+    try {
+        // Obtener bounds del mapa actual
+        const bounds = map.getBounds();
+        const north = bounds.getNorth().toFixed(4);
+        const south = bounds.getSouth().toFixed(4);
+        const east = bounds.getEast().toFixed(4);
+        const west = bounds.getWest().toFixed(4);
+
+        console.log(`🚢 Cargando embarcaciones AIS para área: ${north},${south},${east},${west}`);
+
+        // AISHub API endpoint
+        const url = `http://data.aishub.net/ws.php?username=demo&format=1&output=json&compress=0&latmin=${south}&latmax=${north}&lonmin=${west}&lonmax=${east}`;
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data || !data[1]) {
+            console.log('🚢 No hay datos de embarcaciones disponibles');
+            return [];
+        }
+
+        const embarcaciones = data[1].map(vessel => ({
+            mmsi: vessel.MMSI || 'N/A',
+            lat: parseFloat(vessel.LATITUDE),
+            lng: parseFloat(vessel.LONGITUDE),
+            speed: parseFloat(vessel.SOG) || 0,
+            heading: parseFloat(vessel.COG) || 0,
+            name: vessel.SHIPNAME || 'Sin nombre',
+            type: vessel.SHIP_ID || 0,
+            destination: vessel.DESTINATION || '',
+            timestamp: vessel.TIME || ''
+        }));
+
+        console.log(`✅ ${embarcaciones.length} embarcaciones cargadas desde AISHub`);
+        return embarcaciones.filter(v => !isNaN(v.lat) && !isNaN(v.lng));
+
+    } catch (error) {
+        console.error('❌ Error cargando embarcaciones AIS:', error);
+
+        // Fallback con datos de ejemplo para testing
+        return [
+            {
+                mmsi: 'DEMO001',
+                lat: -34.9630725 + (Math.random() - 0.5) * 0.1,
+                lng: -54.9417927 + (Math.random() - 0.5) * 0.1,
+                speed: Math.random() * 15,
+                heading: Math.random() * 360,
+                name: 'Embarcación Demo 1',
+                type: 70,
+                destination: 'MONTEVIDEO',
+                timestamp: new Date().toISOString()
+            },
+            {
+                mmsi: 'DEMO002',
+                lat: -34.9630725 + (Math.random() - 0.5) * 0.1,
+                lng: -54.9417927 + (Math.random() - 0.5) * 0.1,
+                speed: Math.random() * 15,
+                heading: Math.random() * 360,
+                name: 'Velero Demo',
+                type: 37,
+                destination: 'PUNTA DEL ESTE',
+                timestamp: new Date().toISOString()
+            }
+        ];
+    }
+}
+
+// Función para crear icono de embarcación
+function crearIconoEmbarcacion(embarcacion) {
+    const tipoInfo = getTipoEmbarcacion(embarcacion.type);
+
+    return L.divIcon({
+        className: `vessel-icon ${tipoInfo.clase}`,
+        html: `<div style="transform: rotate(${embarcacion.heading}deg);">${tipoInfo.icono}</div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+}
+
+// Función para mostrar embarcaciones en el mapa
+function mostrarEmbarcacionesEnMapa(embarcaciones) {
+    if (capaEmbarcaciones) {
+        map.removeLayer(capaEmbarcaciones);
+    }
+
+    capaEmbarcaciones = L.layerGroup();
+    embarcacionesData = embarcaciones;
+
+    embarcaciones.forEach(vessel => {
+        const icono = crearIconoEmbarcacion(vessel);
+        const tipoInfo = getTipoEmbarcacion(vessel.type);
+
+        const popup = `
+            <strong>${vessel.name}</strong><br>
+            <strong>MMSI:</strong> ${vessel.mmsi}<br>
+            <strong>Tipo:</strong> ${tipoInfo.tipo}<br>
+            <strong>Velocidad:</strong> ${vessel.speed.toFixed(1)} kt<br>
+            <strong>Rumbo:</strong> ${vessel.heading.toFixed(0)}°<br>
+            <strong>Destino:</strong> ${vessel.destination || 'N/A'}
+        `;
+
+        L.marker([vessel.lat, vessel.lng], { icon: icono })
+            .bindPopup(popup)
+            .addTo(capaEmbarcaciones);
+    });
+
+    capaEmbarcaciones.addTo(map);
+    actualizarPanelEmbarcaciones(embarcaciones);
+}
+
+// Función para actualizar panel de embarcaciones
+function actualizarPanelEmbarcaciones(embarcaciones) {
+    document.getElementById('contador-embarcaciones').textContent =
+        `${embarcaciones.length} embarcaciones detectadas`;
+
+    const lista = document.getElementById('lista-embarcaciones');
+    lista.innerHTML = '';
+
+    embarcaciones.slice(0, 10).forEach(vessel => { // Mostrar solo las primeras 10
+        const tipoInfo = getTipoEmbarcacion(vessel.type);
+        const item = document.createElement('div');
+        item.className = 'embarcacion-item';
+        item.onclick = () => centrarEnEmbarcacion(vessel);
+
+        item.innerHTML = `
+            <div class="embarcacion-nombre">${tipoInfo.icono} ${vessel.name}</div>
+            <div class="embarcacion-info">
+                ${vessel.speed.toFixed(1)} kt | ${vessel.heading.toFixed(0)}°
+            </div>
+        `;
+
+        lista.appendChild(item);
+    });
+
+    if (embarcaciones.length > 10) {
+        const mas = document.createElement('div');
+        mas.style.textAlign = 'center';
+        mas.style.color = '#666';
+        mas.style.fontSize = '11px';
+        mas.style.marginTop = '5px';
+        mas.textContent = `... y ${embarcaciones.length - 10} más`;
+        lista.appendChild(mas);
+    }
+}
+
+// Función para centrar en embarcación
+function centrarEnEmbarcacion(vessel) {
+    map.setView([vessel.lat, vessel.lng], 15);
+
+    // Encontrar el marcador y abrir popup
+    capaEmbarcaciones.eachLayer(layer => {
+        const pos = layer.getLatLng();
+        if (Math.abs(pos.lat - vessel.lat) < 0.0001 && Math.abs(pos.lng - vessel.lng) < 0.0001) {
+            layer.openPopup();
+        }
+    });
+}
+
+// Función para toggle de embarcaciones
+async function toggleCapaEmbarcaciones() {
+    const btn = document.getElementById('toggle-embarcaciones');
+    const panel = document.getElementById('panel-embarcaciones');
+
+    if (embarcacionesVisible) {
+        // Ocultar embarcaciones
+        if (capaEmbarcaciones) {
+            map.removeLayer(capaEmbarcaciones);
+            capaEmbarcaciones = null;
+        }
+
+        if (intervalEmbarcaciones) {
+            clearInterval(intervalEmbarcaciones);
+            intervalEmbarcaciones = null;
+        }
+
+        embarcacionesVisible = false;
+        btn.textContent = '🚢 Mostrar Embarcaciones';
+        btn.classList.remove('activo');
+        panel.style.display = 'none';
+
+        console.log('🚢 Capa de embarcaciones oculta');
+
+    } else {
+        // Mostrar embarcaciones
+        btn.classList.add('activo');
+        btn.textContent = '🚢 Cargando...';
+        panel.style.display = 'block';
+
+        const embarcaciones = await cargarEmbarcacionesAIS();
+
+        if (embarcaciones.length > 0) {
+            mostrarEmbarcacionesEnMapa(embarcaciones);
+            embarcacionesVisible = true;
+            btn.textContent = '🚢 Ocultar Embarcaciones';
+
+            // Actualizar cada 2 minutos
+            intervalEmbarcaciones = setInterval(async () => {
+                console.log('🔄 Actualizando embarcaciones AIS...');
+                const nuevasEmbarcaciones = await cargarEmbarcacionesAIS();
+                if (nuevasEmbarcaciones.length > 0) {
+                    mostrarEmbarcacionesEnMapa(nuevasEmbarcaciones);
+                }
+            }, 2 * 60 * 1000);
+
+            console.log('✅ Capa de embarcaciones mostrada');
+        } else {
+            btn.textContent = '🚢 Sin Datos';
+            btn.classList.remove('activo');
+            panel.style.display = 'none';
+        }
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {

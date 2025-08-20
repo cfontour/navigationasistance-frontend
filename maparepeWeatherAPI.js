@@ -1082,7 +1082,7 @@ async function toggleCapaViento() {
             capaViento = null;
         }
         vientoVisible = false;
-        btn.textContent = "🌬️ Mostrar Viento";
+        btn.textContent = "🌬️ Viento ON";
         btn.classList.remove('activo');
         console.log("🌬️ Capa de viento oculta");
 
@@ -1119,7 +1119,7 @@ async function toggleCapaViento() {
         if (capaViento) {
             capaViento.addTo(map);
             vientoVisible = true;
-            btn.textContent = "🌬️ Ocultar Viento";
+            btn.textContent = "🌬️ Viento OFF";
             console.log("✅ Capa de viento mostrada");
         } else {
             btn.textContent = "🌬️ Error Viento";
@@ -1366,7 +1366,7 @@ async function toggleCapaEmbarcaciones() {
         }
 
         embarcacionesVisible = false;
-        btn.textContent = '🚢 Mostrar Embarcaciones';
+        btn.textContent = '🚢 Embarcaciones AIS ON';
         btn.classList.remove('activo');
         panel.style.display = 'none';
 
@@ -1383,7 +1383,7 @@ async function toggleCapaEmbarcaciones() {
         if (embarcaciones.length > 0) {
             mostrarEmbarcacionesEnMapa(embarcaciones);
             embarcacionesVisible = true;
-            btn.textContent = '🚢 Ocultar Embarcaciones';
+            btn.textContent = '🚢 Embarcaciones AIS OFF';
 
             // Actualizar cada 2 minutos
             intervalEmbarcaciones = setInterval(async () => {

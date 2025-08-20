@@ -1009,7 +1009,7 @@ function iconoFlecha(deg, velocidad) {
         className: "wind-arrow",
         html: `<div style="transform: rotate(${deg}deg); color: ${color};">⇧</div>`,
         iconSize: [50, 50],
-        iconAnchor: [20, 20]
+        iconAnchor: [25, 25]
     });
 }
 

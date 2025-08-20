@@ -220,7 +220,7 @@
         /* === BOTÓN TOGGLE VIENTO === */
         #toggle-viento {
             position: absolute;
-            top: 15px;
+            top: 10px;
             Right: 10px;
             background: rgba(33, 150, 243, 0.9);
             color: white;
@@ -233,7 +233,7 @@
             backdrop-filter: blur(5px);
             transition: all 0.3s ease;
             width: 200px;      /* Ancho específico */
-            height: 80px;      /* Alto específico */
+            height: 70px;      /* Alto específico */
         }
 
         #toggle-viento:hover {
@@ -398,13 +398,13 @@
 </div>
 <!-- Botón para toggle de capa de viento -->
 <button id="toggle-viento" onclick="toggleCapaViento()">
-    🌬️ Viento
+    🌬️ Viento ON
 </button>
 <button id="toggle-embarcaciones" onclick="toggleCapaEmbarcaciones()"
-        style="position: absolute; top: 15px; right: 250px; background: rgba(255, 152, 0, 0.9);
+        style="position: absolute; top: 10px; right: 250px; background: rgba(255, 152, 0, 0.9);
                color: white; border: none; padding: 15px 25px; border-radius: 8px;
                cursor: pointer; z-index: 1000; font-size: 16px; font-weight: bold;
-               backdrop-filter: blur(5px); transition: all 0.3s ease; height: 80px;">
+               backdrop-filter: blur(5px); transition: all 0.3s ease; height: 70px;">
     🚢 Embarcaciones AIS
 </button>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>

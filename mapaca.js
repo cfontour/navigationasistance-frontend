@@ -174,7 +174,8 @@ async function cargarNavegantesVinculados() {
         }
       } else {
         // ✅ CORRECTO: Usar icono normal con bearing
-        icono = crearIconoCompetidorConBearing(bearing);
+        //icono = crearIconoCompetidorConBearing(bearing);
+        icono = crearIconoCompetidor();
       }
 
       // ✅

@@ -1192,11 +1192,7 @@ async function cargarEmbarcacionesAIS() {
         console.log(`🚢 Cargando embarcaciones AIS para área: ${north},${south},${east},${west}`);
 
         // AISHub API endpoint
-        //const url = `http://data.aishub.net/ws.php?username=demo&format=1&output=json&compress=0&latmin=${south}&latmax=${north}&lonmin=${west}&lonmax=${east}`;
-        //const url = `https://data.aishub.net/ws.php?username=demo&format=1&output=json&compress=0&latmin=${south}&latmax=${north}&lonmin=${west}&lonmax=${east}&timespan=10`;
-        // Usar un proxy CORS
-        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-        const url = `${proxyUrl}http://data.aishub.net/ws.php?username=demo&format=1&output=json&compress=0&latmin=${south}&latmax=${north}&lonmin=${west}&lonmax=${east}`;
+        const url = `http://data.aishub.net/ws.php?username=demo&format=1&output=json&compress=0&latmin=${south}&latmax=${north}&lonmin=${west}&lonmax=${east}`;
 
         const response = await fetch(url);
 
@@ -1405,7 +1401,7 @@ async function toggleCapaEmbarcaciones() {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  cargarRutas("52");
+  cargarRutas("56");
   cargarNavegantesVinculados();
   iniciarSistemaViento();
 

@@ -5,7 +5,7 @@ const RADIO_PUNTO_CONTROL = 20;
 // Capa satelital
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
   attribution: '&copy; Esri',
-  maxZoom: 19
+  maxZoom: 18
 }).addTo(map);
 
 /*

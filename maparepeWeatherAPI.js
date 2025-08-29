@@ -1091,20 +1091,20 @@ async function toggleCapaViento() {
         btn.classList.add('activo');
 
         // Definir puntos donde mostrar viento
-        const puntosViento = [
-            { lat: -34.9630725, lon: -54.9417927, nombre: "Navegante Principal" }
-        ];
+        //const puntosViento = [
+        //    { lat: -34.9630725, lon: -54.9417927, nombre: "Navegante Principal" }
+        //];
 
         // Agregar puntos de control si existen
-        if (puntosControl && puntosControl.length > 0) {
-            puntosControl.forEach(p => {
-                puntosViento.push({
-                    lat: p.latitud,
-                    lon: p.longitud,
-                    nombre: p.etiqueta
-                });
-            });
-        }
+        //if (puntosControl && puntosControl.length > 0) {
+        //    puntosControl.forEach(p => {
+        //        puntosViento.push({
+        //            lat: p.latitud,
+        //            lon: p.longitud,
+        //            nombre: p.etiqueta
+        //        });
+        //    });
+        //}
 
         // Agregar algunos puntos adicionales en el área
         puntosViento.push(

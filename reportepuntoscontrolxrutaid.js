@@ -1,5 +1,13 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  await cargarRutasDisponiblesEnSelector();
+  const selectorRuta = document.getElementById("selectorRuta");
+    cargarRutasDisponiblesEnSelector(); // <-- LLAMA A LA NUEVA FUNCIÓN AQUÍ PARA LLENAR EL SELECTOR DE RUTAS
+    // 2. **ESTO ES LO CLAVE:** Añadir el escuchador de eventos para el selector de rutas
+    selectorRuta.addEventListener('change', (event) => {
+      const idRutaSeleccionada = event.target.value;
+      // LLAMA A TU FUNCIÓN EXISTENTE 'cargarRutas' CON EL ID SELECCIONADO
+      cargarRutas(idRutaSeleccionada);
+      //cargarRutas("46");
+    });
   await cargarUsuarios();
 
   // Agregar event listeners para ambos selectores

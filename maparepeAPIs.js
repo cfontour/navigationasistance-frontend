@@ -543,7 +543,7 @@ async function cargarRutas(idRuta) {
     titulo.style.fontSize = "1.5em";
     titulo.style.textShadow = "1px 1px 3px black";
     titulo.setAttribute('data-titulo-ruta', 'true');
-    document.body.insertBefore(titulo, document.getElementById("map"));
+    document.getElementById("controles-superiores").insertAdjacentElement('afterend', titulo);
 
     const puntos = ruta.puntos;
     if (!puntos || puntos.length === 0) {

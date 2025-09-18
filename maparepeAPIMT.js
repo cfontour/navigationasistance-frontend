@@ -1100,7 +1100,9 @@ async function cargarEmbarcacionesAIS() {
 
         // URL CORREGIDA - MarineTraffic exportvessels-custom-area con parámetros correctos
         // Probar primero sin versión, luego con v=8 si es necesario
-        const url = `https://services.marinetraffic.com/api/exportvessels-custom-area/${MARINETRAFFIC_API_KEY}?minlat=${south}&maxlat=${north}&minlon=${west}&maxlon=${east}&protocol=jsono`;
+        //const url = `https://services.marinetraffic.com/api/exportvessels-custom-area/${MARINETRAFFIC_API_KEY}?minlat=${south}&maxlat=${north}&minlon=${west}&maxlon=${east}&protocol=jsono`;
+
+        const url = `https://services.marinetraffic.com/api/exportvessels-custom-area/${MARINETRAFFIC_API_KEY}?v=2&timespan=1440&protocol=jsono&limit=2000`;
 
         console.log(`🔗 URL de solicitud: ${url}`);
 

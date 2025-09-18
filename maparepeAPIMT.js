@@ -1088,89 +1088,281 @@ function getTipoEmbarcacion(shipType) {
 }
 
 // FUNCIÓN MODIFICADA PARA MARINETRAFFIC
+// FUNCIÓN CORREGIDA PARA MARINETRAFFIC
 async function cargarEmbarcacionesAIS() {
     try {
         const bounds = map.getBounds();
-        const north = bounds.getNorth().toFixed(4);
-        const south = bounds.getSouth().toFixed(4);
-        const east = bounds.getEast().toFixed(4);
-        const west = bounds.getWest().toFixed(4);
+        const north = bounds.getNorth().toFixed(6);
+        const south = bounds.getSouth().toFixed(6);
+        const east = bounds.getEast().toFixed(6);
+        const west = bounds.getWest().toFixed(6);
 
         console.log(`🚢 Cargando embarcaciones MarineTraffic para área: ${north},${south},${east},${west}`);
 
-        // Nueva URL de MarineTraffic
-        const url = `https://services.marinetraffic.com/api/exportvessels-custom-area/${MARINETRAFFIC_API_KEY}?minlat=${south}&maxlat=${north}&minlon=${west}&maxlon=${east}`;
+        // URL CORREGIDA - MarineTraffic usa PS06 con versión 8 y diferentes parámetros
+        const url = `https://services.marinetraffic.com/api/exportvessels/${MARINETRAFFIC_API_KEY}/v:8/protocol:json/min_lat:${south}/max_lat:${north}/min_lon:${west}/max_lon:${east}`;
+
+        console.log(`🔗 URL de solicitud: ${url}`);
 
         const response = await fetch(url);
 
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            console.error(`❌ HTTP Error ${response.status}: ${response.statusText}`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log(`📥 Respuesta de MarineTraffic:`, data);
 
-        // Verificar la estructura de respuesta de MarineTraffic
-        if (!data || !data.DATA || !Array.isArray(data.DATA)) {
-            console.log('🚢 No hay datos de embarcaciones disponibles');
+        // Verificar diferentes estructuras posibles de respuesta
+        let vessels = [];
+
+        if (data && Array.isArray(data)) {
+            // Respuesta directa como array
+            vessels = data;
+        } else if (data && data.DATA && Array.isArray(data.DATA)) {
+            // Estructura con propiedad DATA
+            vessels = data.DATA;
+        } else if (data && data.data && Array.isArray(data.data)) {
+            // Estructura con propiedad data (minúscula)
+            vessels = data.data;
+        } else {
+            console.log('🚢 Estructura de respuesta no reconocida o sin datos:', data);
+            return [];
+        }
+
+        if (vessels.length === 0) {
+            console.log('🚢 No hay embarcaciones en el área especificada');
             return [];
         }
 
         // Mapear datos de MarineTraffic al formato interno
-        const embarcaciones = data.DATA.map(vessel => ({
-            mmsi: vessel.MMSI || 'N/A',
-            lat: parseFloat(vessel.LAT),
-            lng: parseFloat(vessel.LON),
-            speed: parseFloat(vessel.SPEED) / 10 || 0, // MarineTraffic viene en décimas de nudo
-            heading: parseFloat(vessel.HEADING) || 0,
-            course: parseFloat(vessel.COURSE) || 0, // Campo adicional disponible
-            name: vessel.SHIPNAME || 'Sin nombre',
-            type: vessel.SHIPTYPE || 0,
-            destination: vessel.DESTINATION || '',
-            timestamp: vessel.TIMESTAMP || '',
-            // Campos adicionales disponibles en MarineTraffic
-            imo: vessel.IMO || '',
-            callsign: vessel.CALLSIGN || '',
-            flag: vessel.FLAG || '',
-            length: vessel.LENGTH || 0,
-            width: vessel.WIDTH || 0,
-            shipClass: vessel.SHIP_CLASS || '',
-            typeName: vessel.TYPE_NAME || '',
-            lastPort: vessel.LAST_PORT || '',
-            eta: vessel.ETA || '',
-            status: vessel.STATUS || 0
-        }));
+        const embarcaciones = vessels.map(vessel => {
+            // Manejar diferentes formatos de respuesta
+            const mmsi = vessel.MMSI || vessel.mmsi || 'N/A';
+            const lat = parseFloat(vessel.LAT || vessel.lat || vessel.latitude || 0);
+            const lng = parseFloat(vessel.LON || vessel.lng || vessel.longitude || 0);
 
-        console.log(`✅ ${embarcaciones.length} embarcaciones cargadas desde MarineTraffic`);
-        return embarcaciones.filter(v => !isNaN(v.lat) && !isNaN(v.lng));
+            // La velocidad puede venir en diferentes formatos
+            let speed = parseFloat(vessel.SPEED || vessel.speed || 0);
+            // Si es mayor a 100, probablemente está en décimas
+            if (speed > 100) {
+                speed = speed / 10;
+            }
+
+            const heading = parseFloat(vessel.HEADING || vessel.heading || 0);
+            const course = parseFloat(vessel.COURSE || vessel.course || heading);
+
+            return {
+                mmsi: mmsi,
+                lat: lat,
+                lng: lng,
+                speed: speed,
+                heading: heading,
+                course: course,
+                name: vessel.SHIPNAME || vessel.shipname || vessel.name || 'Sin nombre',
+                type: vessel.SHIPTYPE || vessel.shiptype || vessel.type || 0,
+                destination: vessel.DESTINATION || vessel.destination || '',
+                timestamp: vessel.TIMESTAMP || vessel.timestamp || new Date().toISOString(),
+                // Campos adicionales disponibles en MarineTraffic
+                imo: vessel.IMO || vessel.imo || '',
+                callsign: vessel.CALLSIGN || vessel.callsign || '',
+                flag: vessel.FLAG || vessel.flag || '',
+                length: vessel.LENGTH || vessel.length || 0,
+                width: vessel.WIDTH || vessel.width || 0,
+                shipClass: vessel.SHIP_CLASS || vessel.ship_class || '',
+                typeName: vessel.TYPE_NAME || vessel.type_name || '',
+                lastPort: vessel.LAST_PORT || vessel.last_port || '',
+                eta: vessel.ETA || vessel.eta || '',
+                status: vessel.STATUS || vessel.status || 0
+            };
+        });
+
+        // Filtrar embarcaciones con coordenadas válidas
+        const embarcacionesValidas = embarcaciones.filter(v =>
+            !isNaN(v.lat) && !isNaN(v.lng) &&
+            v.lat !== 0 && v.lng !== 0 &&
+            Math.abs(v.lat) <= 90 && Math.abs(v.lng) <= 180
+        );
+
+        console.log(`✅ ${embarcacionesValidas.length} embarcaciones válidas cargadas desde MarineTraffic`);
+        return embarcacionesValidas;
 
     } catch (error) {
         console.error('❌ Error cargando embarcaciones MarineTraffic:', error);
+
+        // Verificar si es un problema de CORS
+        if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+            console.error('⚠️ Error de CORS detectado. MarineTraffic puede requerir configuración de proxy.');
+        }
 
         // Datos de demostración (sin cambios)
         return [
             {
                 mmsi: 'DEMO001',
-                lat: -34.9630725 + (Math.random() - 0.5) * 0.1,
-                lng: -54.9417927 + (Math.random() - 0.5) * 0.1,
+                lat: -34.9630725 + (Math.random() - 0.5) * 0.02,
+                lng: -54.9417927 + (Math.random() - 0.5) * 0.02,
                 speed: Math.random() * 15,
                 heading: Math.random() * 360,
+                course: Math.random() * 360,
                 name: 'Embarcación Demo 1',
                 type: 70,
                 destination: 'MONTEVIDEO',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                imo: '1234567',
+                callsign: 'DEMO1',
+                flag: 'UY',
+                length: 200,
+                width: 30,
+                typeName: 'Bulk Carrier'
             },
             {
                 mmsi: 'DEMO002',
-                lat: -34.9630725 + (Math.random() - 0.5) * 0.1,
-                lng: -54.9417927 + (Math.random() - 0.5) * 0.1,
+                lat: -34.9630725 + (Math.random() - 0.5) * 0.02,
+                lng: -54.9417927 + (Math.random() - 0.5) * 0.02,
                 speed: Math.random() * 15,
                 heading: Math.random() * 360,
+                course: Math.random() * 360,
                 name: 'Velero Demo',
                 type: 37,
                 destination: 'PUNTA DEL ESTE',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                imo: '7654321',
+                callsign: 'DEMO2',
+                flag: 'UY',
+                length: 15,
+                width: 5,
+                typeName: 'Sailing Vessel'
             }
         ];
+    }
+}
+
+// FUNCIÓN AUXILIAR: Validar respuesta de API
+function validarRespuestaMarineTraffic(data) {
+    if (!data) {
+        console.warn('⚠️ Respuesta vacía de MarineTraffic');
+        return false;
+    }
+
+    // Verificar si hay mensaje de error
+    if (data.error || data.errors) {
+        console.error('❌ Error en respuesta de MarineTraffic:', data.error || data.errors);
+        return false;
+    }
+
+    return true;
+}
+
+// FUNCIÓN MEJORADA: Mostrar embarcaciones con mejor manejo de errores
+function mostrarEmbarcacionesEnMapa(embarcaciones) {
+    if (capaEmbarcaciones) {
+        map.removeLayer(capaEmbarcaciones);
+    }
+
+    capaEmbarcaciones = L.layerGroup();
+    embarcacionesData = embarcaciones;
+
+    let embarcacionesExitosas = 0;
+
+    embarcaciones.forEach(vessel => {
+        try {
+            // Validar datos antes de crear marcador
+            if (!vessel.lat || !vessel.lng || isNaN(vessel.lat) || isNaN(vessel.lng)) {
+                console.warn(`⚠️ Embarcación con coordenadas inválidas:`, vessel);
+                return;
+            }
+
+            const icono = crearIconoEmbarcacion(vessel);
+            const tipoInfo = getTipoEmbarcacion(vessel.type);
+
+            // Popup con manejo seguro de campos
+            const popup = `
+                <div style="min-width: 250px;">
+                    <strong>${vessel.name || 'Sin nombre'}</strong><br>
+                    <strong>MMSI:</strong> ${vessel.mmsi}<br>
+                    ${vessel.imo ? `<strong>IMO:</strong> ${vessel.imo}<br>` : ''}
+                    ${vessel.callsign ? `<strong>Indicativo:</strong> ${vessel.callsign}<br>` : ''}
+                    ${vessel.flag ? `<strong>Bandera:</strong> ${vessel.flag}<br>` : ''}
+                    <strong>Tipo:</strong> ${vessel.typeName || tipoInfo.tipo}<br>
+                    ${vessel.shipClass ? `<strong>Clase:</strong> ${vessel.shipClass}<br>` : ''}
+                    <strong>Velocidad:</strong> ${(vessel.speed || 0).toFixed(1)} kt<br>
+                    <strong>Rumbo:</strong> ${(vessel.heading || 0).toFixed(0)}°<br>
+                    ${(vessel.course && vessel.course !== vessel.heading) ? `<strong>Curso:</strong> ${vessel.course.toFixed(0)}°<br>` : ''}
+                    ${(vessel.length && vessel.width) ? `<strong>Dimensiones:</strong> ${vessel.length}m x ${vessel.width}m<br>` : ''}
+                    <strong>Destino:</strong> ${vessel.destination || 'N/A'}<br>
+                    ${vessel.eta ? `<strong>ETA:</strong> ${new Date(vessel.eta).toLocaleString()}<br>` : ''}
+                    ${vessel.lastPort ? `<strong>Último puerto:</strong> ${vessel.lastPort}<br>` : ''}
+                    <small><strong>Actualizado:</strong> ${new Date(vessel.timestamp).toLocaleString()}</small>
+                </div>
+            `;
+
+            L.marker([vessel.lat, vessel.lng], { icon: icono })
+                .bindPopup(popup)
+                .addTo(capaEmbarcaciones);
+
+            embarcacionesExitosas++;
+
+        } catch (error) {
+            console.warn(`⚠️ Error creando marcador para embarcación:`, vessel, error);
+        }
+    });
+
+    if (embarcacionesExitosas > 0) {
+        capaEmbarcaciones.addTo(map);
+        console.log(`✅ ${embarcacionesExitosas} embarcaciones mostradas en el mapa`);
+    }
+
+    actualizarPanelEmbarcaciones(embarcaciones);
+}
+
+// FUNCIÓN MEJORADA: Panel con manejo seguro de datos
+function actualizarPanelEmbarcaciones(embarcaciones) {
+    const contador = document.getElementById('contador-embarcaciones');
+    const lista = document.getElementById('lista-embarcaciones');
+
+    if (!contador || !lista) {
+        console.warn('⚠️ Elementos del panel de embarcaciones no encontrados');
+        return;
+    }
+
+    contador.textContent = `${embarcaciones.length} embarcaciones detectadas`;
+    lista.innerHTML = '';
+
+    embarcaciones.slice(0, 10).forEach(vessel => {
+        try {
+            const tipoInfo = getTipoEmbarcacion(vessel.type);
+            const item = document.createElement('div');
+            item.className = 'embarcacion-item';
+            item.onclick = () => centrarEnEmbarcacion(vessel);
+
+            const tipoTexto = vessel.typeName || tipoInfo.tipo;
+            const bandera = vessel.flag ? ` (${vessel.flag})` : '';
+            const velocidad = vessel.speed ? vessel.speed.toFixed(1) : '0.0';
+            const rumbo = vessel.heading ? vessel.heading.toFixed(0) : '0';
+
+            item.innerHTML = `
+                <div class="embarcacion-nombre">${tipoInfo.icono} ${vessel.name}${bandera}</div>
+                <div class="embarcacion-info">
+                    ${tipoTexto} | ${velocidad} kt | ${rumbo}°
+                </div>
+                ${vessel.destination ? `<div class="embarcacion-destino">→ ${vessel.destination}</div>` : ''}
+            `;
+
+            lista.appendChild(item);
+        } catch (error) {
+            console.warn('⚠️ Error creando item del panel para embarcación:', vessel, error);
+        }
+    });
+
+    if (embarcaciones.length > 10) {
+        const mas = document.createElement('div');
+        mas.style.textAlign = 'center';
+        mas.style.color = '#666';
+        mas.style.fontSize = '11px';
+        mas.style.marginTop = '5px';
+        mas.textContent = `... y ${embarcaciones.length - 10} más`;
+        lista.appendChild(mas);
     }
 }
 

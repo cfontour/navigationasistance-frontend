@@ -1087,7 +1087,6 @@ function getTipoEmbarcacion(shipType) {
     return { tipo: 'other', icono: '🚢', clase: 'vessel-other' };
 }
 
-// FUNCIÓN MODIFICADA PARA MARINETRAFFIC
 // FUNCIÓN CORREGIDA PARA MARINETRAFFIC
 async function cargarEmbarcacionesAIS() {
     try {
@@ -1099,8 +1098,8 @@ async function cargarEmbarcacionesAIS() {
 
         console.log(`🚢 Cargando embarcaciones MarineTraffic para área: ${north},${south},${east},${west}`);
 
-        // URL CORREGIDA - MarineTraffic usa PS06 con versión 8 y diferentes parámetros
-        const url = `https://services.marinetraffic.com/api/exportvessels/${MARINETRAFFIC_API_KEY}/v:8/protocol:json/min_lat:${south}/max_lat:${north}/min_lon:${west}/max_lon:${east}`;
+        // URL CORREGIDA - MarineTraffic exportvessels-custom-area
+        const url = `https://services.marinetraffic.com/api/exportvessels-custom-area/${MARINETRAFFIC_API_KEY}?minlat=${south}&maxlat=${north}&minlon=${west}&maxlon=${east}`;
 
         console.log(`🔗 URL de solicitud: ${url}`);
 
@@ -1235,6 +1234,134 @@ async function cargarEmbarcacionesAIS() {
                 typeName: 'Sailing Vessel'
             }
         ];
+    }
+}
+
+// FUNCIÓN AUXILIAR: Validar respuesta de API
+function validarRespuestaMarineTraffic(data) {
+    if (!data) {
+        console.warn('⚠️ Respuesta vacía de MarineTraffic');
+        return false;
+    }
+
+    // Verificar si hay mensaje de error
+    if (data.error || data.errors) {
+        console.error('❌ Error en respuesta de MarineTraffic:', data.error || data.errors);
+        return false;
+    }
+
+    return true;
+}
+
+// FUNCIÓN MEJORADA: Mostrar embarcaciones con mejor manejo de errores
+function mostrarEmbarcacionesEnMapa(embarcaciones) {
+    if (capaEmbarcaciones) {
+        map.removeLayer(capaEmbarcaciones);
+    }
+
+    capaEmbarcaciones = L.layerGroup();
+    embarcacionesData = embarcaciones;
+
+    let embarcacionesExitosas = 0;
+
+    embarcaciones.forEach(vessel => {
+        try {
+            // Validar datos antes de crear marcador
+            if (!vessel.lat || !vessel.lng || isNaN(vessel.lat) || isNaN(vessel.lng)) {
+                console.warn(`⚠️ Embarcación con coordenadas inválidas:`, vessel);
+                return;
+            }
+
+            const icono = crearIconoEmbarcacion(vessel);
+            const tipoInfo = getTipoEmbarcacion(vessel.type);
+
+            // Popup con manejo seguro de campos
+            const popup = `
+                <div style="min-width: 250px;">
+                    <strong>${vessel.name || 'Sin nombre'}</strong><br>
+                    <strong>MMSI:</strong> ${vessel.mmsi}<br>
+                    ${vessel.imo ? `<strong>IMO:</strong> ${vessel.imo}<br>` : ''}
+                    ${vessel.callsign ? `<strong>Indicativo:</strong> ${vessel.callsign}<br>` : ''}
+                    ${vessel.flag ? `<strong>Bandera:</strong> ${vessel.flag}<br>` : ''}
+                    <strong>Tipo:</strong> ${vessel.typeName || tipoInfo.tipo}<br>
+                    ${vessel.shipClass ? `<strong>Clase:</strong> ${vessel.shipClass}<br>` : ''}
+                    <strong>Velocidad:</strong> ${(vessel.speed || 0).toFixed(1)} kt<br>
+                    <strong>Rumbo:</strong> ${(vessel.heading || 0).toFixed(0)}°<br>
+                    ${(vessel.course && vessel.course !== vessel.heading) ? `<strong>Curso:</strong> ${vessel.course.toFixed(0)}°<br>` : ''}
+                    ${(vessel.length && vessel.width) ? `<strong>Dimensiones:</strong> ${vessel.length}m x ${vessel.width}m<br>` : ''}
+                    <strong>Destino:</strong> ${vessel.destination || 'N/A'}<br>
+                    ${vessel.eta ? `<strong>ETA:</strong> ${new Date(vessel.eta).toLocaleString()}<br>` : ''}
+                    ${vessel.lastPort ? `<strong>Último puerto:</strong> ${vessel.lastPort}<br>` : ''}
+                    <small><strong>Actualizado:</strong> ${new Date(vessel.timestamp).toLocaleString()}</small>
+                </div>
+            `;
+
+            L.marker([vessel.lat, vessel.lng], { icon: icono })
+                .bindPopup(popup)
+                .addTo(capaEmbarcaciones);
+
+            embarcacionesExitosas++;
+
+        } catch (error) {
+            console.warn(`⚠️ Error creando marcador para embarcación:`, vessel, error);
+        }
+    });
+
+    if (embarcacionesExitosas > 0) {
+        capaEmbarcaciones.addTo(map);
+        console.log(`✅ ${embarcacionesExitosas} embarcaciones mostradas en el mapa`);
+    }
+
+    actualizarPanelEmbarcaciones(embarcaciones);
+}
+
+// FUNCIÓN MEJORADA: Panel con manejo seguro de datos
+function actualizarPanelEmbarcaciones(embarcaciones) {
+    const contador = document.getElementById('contador-embarcaciones');
+    const lista = document.getElementById('lista-embarcaciones');
+
+    if (!contador || !lista) {
+        console.warn('⚠️ Elementos del panel de embarcaciones no encontrados');
+        return;
+    }
+
+    contador.textContent = `${embarcaciones.length} embarcaciones detectadas`;
+    lista.innerHTML = '';
+
+    embarcaciones.slice(0, 10).forEach(vessel => {
+        try {
+            const tipoInfo = getTipoEmbarcacion(vessel.type);
+            const item = document.createElement('div');
+            item.className = 'embarcacion-item';
+            item.onclick = () => centrarEnEmbarcacion(vessel);
+
+            const tipoTexto = vessel.typeName || tipoInfo.tipo;
+            const bandera = vessel.flag ? ` (${vessel.flag})` : '';
+            const velocidad = vessel.speed ? vessel.speed.toFixed(1) : '0.0';
+            const rumbo = vessel.heading ? vessel.heading.toFixed(0) : '0';
+
+            item.innerHTML = `
+                <div class="embarcacion-nombre">${tipoInfo.icono} ${vessel.name}${bandera}</div>
+                <div class="embarcacion-info">
+                    ${tipoTexto} | ${velocidad} kt | ${rumbo}°
+                </div>
+                ${vessel.destination ? `<div class="embarcacion-destino">→ ${vessel.destination}</div>` : ''}
+            `;
+
+            lista.appendChild(item);
+        } catch (error) {
+            console.warn('⚠️ Error creando item del panel para embarcación:', vessel, error);
+        }
+    });
+
+    if (embarcaciones.length > 10) {
+        const mas = document.createElement('div');
+        mas.style.textAlign = 'center';
+        mas.style.color = '#666';
+        mas.style.fontSize = '11px';
+        mas.style.marginTop = '5px';
+        mas.textContent = `... y ${embarcaciones.length - 10} más`;
+        lista.appendChild(mas);
     }
 }
 

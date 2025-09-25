@@ -436,7 +436,8 @@ async function trazarRutaUsuario() {
     const uuidList = await resUuid.json();
 
     if (!uuidList || uuidList.length === 0) {
-      alert("❌ No hay recorridos registrados hoy para este usuario.");
+      //alert("❌ No hay recorridos registrados hoy para este usuario.");
+      console.error("❌ No hay recorridos registrados hoy para este usuario");
       return;
     }
 

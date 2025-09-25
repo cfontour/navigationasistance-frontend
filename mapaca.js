@@ -423,7 +423,11 @@ async function trazarRutaUsuario() {
   mostrarTraza = true; // ✅ activar la traza manualmente
 
   const usuarioId = document.getElementById("selector-usuario").value;
-  const hoy = new Date().toISOString().split("T")[0];
+
+  // 🔹 Obtener fecha actual en zona horaria de Uruguay
+  const fechaUruguay = new Date().toLocaleDateString('sv-SE', {
+    timeZone: 'America/Montevideo'
+  });
 
   if (!usuarioId) {
     alert("❗ Debe seleccionar un usuario.");
@@ -432,11 +436,10 @@ async function trazarRutaUsuario() {
 
   try {
     // 🔹 Obtener último recorrido UUID
-    const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${hoy}`);
+    const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${fechaUruguay}`);
     const uuidList = await resUuid.json();
 
     if (!uuidList || uuidList.length === 0) {
-      //alert("❌ No hay recorridos registrados hoy para este usuario.");
       console.error("❌ No hay recorridos registrados hoy para este usuario");
       return;
     }
@@ -447,12 +450,21 @@ async function trazarRutaUsuario() {
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${ultimaRuta}`);
     let puntos = await res.json();
 
-    // ✅ ¡ESTA ES LA MODIFICACIÓN CLAVE EN EL FRONTEND!
-    // Ordenar los puntos por fecha y hora para garantizar la cronología
+    // ✅ Ordenar los puntos por fecha y hora ajustado para Uruguay
     puntos.sort((a, b) => {
-        // Combinar fecha y hora para una comparación precisa de tiempo
-        const fechaHoraA = new Date(`${a.nadadorfecha}T${a.nadadorhora.split('T')[1]}`);
-        const fechaHoraB = new Date(`${b.nadadorfecha}T${b.nadadorhora.split('T')[1]}`);
+        // Función auxiliar para crear fecha en zona horaria de Uruguay
+        const crearFechaUruguay = (fecha, hora) => {
+            // Extraer solo la parte de tiempo de la hora (sin fecha)
+            const tiempoHora = hora.includes('T') ? hora.split('T')[1] : hora;
+            const fechaHoraString = `${fecha}T${tiempoHora}`;
+
+            // Crear fecha y ajustar a Uruguay (UTC-3)
+            const fechaUTC = new Date(fechaHoraString + 'Z'); // Asume UTC
+            return new Date(fechaUTC.getTime() - (3 * 60 * 60 * 1000)); // Resta 3 horas para UTC-3
+        };
+
+        const fechaHoraA = crearFechaUruguay(a.nadadorfecha, a.nadadorhora);
+        const fechaHoraB = crearFechaUruguay(b.nadadorfecha, b.nadadorhora);
 
         if (fechaHoraA.getTime() === fechaHoraB.getTime()) {
             // Si las horas son idénticas, usa la secuencia como desempate
@@ -480,21 +492,18 @@ async function trazarRutaUsuario() {
         map.removeLayer(polylineTraza);
         console.log("polylineTraza eliminada del mapa.");
     }
-    console.log("Nuevo polylineTraza asignado:", polylineTraza); // Después de L.polyline(...)
 
     // 🔹 Dibujar nueva traza
     polylineTraza = L.polyline(latlngs, {
       color: 'red',
       weight: 5,
-
       dashArray: '10, 10'
     }).addTo(map);
 
-    //map.fitBounds(polylineTraza.getBounds());
+    console.log("Nuevo polylineTraza asignado:", polylineTraza);
 
   } catch (err) {
     console.error("❌ Error al trazar ruta:", err);
-    //alert("⚠️ Error inesperado al intentar trazar la ruta.");
   }
 }
 

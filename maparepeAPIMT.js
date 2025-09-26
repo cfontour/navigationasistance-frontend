@@ -378,10 +378,14 @@ window.toggleTrazaDesdePopup = function(usuarioid) {
 
 async function trazarRutaUsuarioEspecifico(usuarioId) {
   mostrarTraza = true;
-  const hoy = new Date().toISOString().split("T")[0];
+
+  // 🔹 Obtener fecha actual en zona horaria de Uruguay
+  const fechaUruguay = new Date().toLocaleDateString('sv-SE', {
+    timeZone: 'America/Montevideo'
+  });
 
   try {
-    const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${hoy}`);
+    const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${fechaUruguay}`);
     const uuidList = await resUuid.json();
 
     if (!uuidList || uuidList.length === 0) {
@@ -393,9 +397,22 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${ultimaRuta}`);
     let puntos = await res.json();
 
+    // 🔹 Ordenar con zona horaria de Uruguay
     puntos.sort((a, b) => {
-        const fechaHoraA = new Date(`${a.nadadorfecha}T${a.nadadorhora.split('T')[1]}`);
-        const fechaHoraB = new Date(`${b.nadadorfecha}T${b.nadadorhora.split('T')[1]}`);
+        // Función auxiliar para crear fecha en zona horaria de Uruguay
+        const crearFechaUruguay = (fecha, hora) => {
+            // Extraer solo la parte de tiempo de la hora (sin fecha)
+            const tiempoHora = hora.includes('T') ? hora.split('T')[1] : hora;
+            const fechaHoraString = `${fecha}T${tiempoHora}`;
+
+            // Crear fecha y ajustar a Uruguay (UTC-3)
+            const fechaUTC = new Date(fechaHoraString + 'Z'); // Asume UTC
+            return new Date(fechaUTC.getTime() - (3 * 60 * 60 * 1000)); // Resta 3 horas para UTC-3
+        };
+
+        const fechaHoraA = crearFechaUruguay(a.nadadorfecha, a.nadadorhora);
+        const fechaHoraB = crearFechaUruguay(b.nadadorfecha, b.nadadorhora);
+
         if (fechaHoraA.getTime() === fechaHoraB.getTime()) {
             return Number(a.secuencia) - Number(b.secuencia);
         }
@@ -706,9 +723,14 @@ function mostrarSinDatos() {
 
 async function obtenerDatosHistoricos(usuarioId) {
     try {
-        const hoy = new Date().toISOString().split("T")[0];
+        //const hoy = new Date().toISOString().split("T")[0];
 
-        const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${hoy}`);
+        // 🔹 Obtener fecha actual en zona horaria de Uruguay
+          const fechaUruguay = new Date().toLocaleDateString('sv-SE', {
+            timeZone: 'America/Montevideo'
+          });
+
+        const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${fechaUruguay}`);
 
         if (!resUuid.ok) {
             console.log(`❌ Error al obtener UUID: ${resUuid.status}`);
@@ -718,7 +740,7 @@ async function obtenerDatosHistoricos(usuarioId) {
         const uuidList = await resUuid.json();
 
         if (!uuidList || uuidList.length === 0) {
-            console.log(`❌ No hay recorridos registrados hoy para el usuario: ${usuarioId}, fecha: ${hoy}`);
+            console.log(`❌ No hay recorridos registrados hoy para el usuario: ${usuarioId}, fecha: ${fechaUruguay}`);
             return [];
         }
 

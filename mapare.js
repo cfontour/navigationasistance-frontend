@@ -462,7 +462,12 @@ async function trazarRutaUsuario() {
   mostrarTraza = true; // ✅ activar la traza manualmente
 
   const usuarioId = document.getElementById("selector-usuario").value;
-  const hoy = new Date().toISOString().split("T")[0];
+  //const hoy = new Date().toISOString().split("T")[0];
+
+  // 🔹 Obtener fecha actual en zona horaria de Uruguay
+    const fechaUruguay = new Date().toLocaleDateString('sv-SE', {
+      timeZone: 'America/Montevideo'
+    });
 
   if (!usuarioId) {
     alert("❗ Debe seleccionar un usuario.");
@@ -471,12 +476,12 @@ async function trazarRutaUsuario() {
 
   try {
     // 🔹 Obtener último recorrido UUID
-    const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${hoy}`);
+    const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${fechaUruguay}`);
     const uuidList = await resUuid.json();
 
     if (!uuidList || uuidList.length === 0) {
-      console.log("❌ No hay recorridos registrados hoy para el usuario: " + usuarioid + ", para la fecha: " + hoy);
-      alert("❌ No hay recorridos registrados hoy para el usuario: " + usuarioid + ", para la fecha: " + hoy);
+      console.log("❌ No hay recorridos registrados hoy para el usuario: " + usuarioid + ", para la fecha: " + fechaUruguay);
+      //alert("❌ No hay recorridos registrados hoy para el usuario: " + usuarioid + ", para la fecha: " + fechaUruguay);
       return;
     }
 
@@ -627,10 +632,15 @@ function mostrarSinDatos() {
 // Función para obtener datos históricos usando tus endpoints reales
 async function obtenerDatosHistoricos(usuarioId) {
     try {
-        const hoy = new Date().toISOString().split("T")[0];
+        //const hoy = new Date().toISOString().split("T")[0];
+
+        // 🔹 Obtener fecha actual en zona horaria de Uruguay
+        const fechaUruguay = new Date().toLocaleDateString('sv-SE', {
+          timeZone: 'America/Montevideo'
+        });
 
         // 🔹 Paso 1: Obtener último recorrido UUID (igual que en tu código)
-        const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${hoy}`);
+        const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${fechaUruguay}`);
 
         if (!resUuid.ok) {
             console.log(`❌ Error al obtener UUID: ${resUuid.status}`);
@@ -640,7 +650,7 @@ async function obtenerDatosHistoricos(usuarioId) {
         const uuidList = await resUuid.json();
 
         if (!uuidList || uuidList.length === 0) {
-            console.log(`❌ No hay recorridos registrados hoy para el usuario: ${usuarioId}, fecha: ${hoy}`);
+            console.log(`❌ No hay recorridos registrados hoy para el usuario: ${usuarioId}, fecha: ${fechaUruguay}`);
             return [];
         }
 

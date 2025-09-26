@@ -375,10 +375,15 @@ window.toggleTrazaDesdePopup = function(usuarioid) {
 
 async function trazarRutaUsuarioEspecifico(usuarioId) {
   mostrarTraza = true;
-  const hoy = new Date().toISOString().split("T")[0];
+  //const hoy = new Date().toISOString().split("T")[0];
+
+  // 🔹 Obtener fecha actual en zona horaria de Uruguay
+    const fechaUruguay = new Date().toLocaleDateString('sv-SE', {
+      timeZone: 'America/Montevideo'
+    });
 
   try {
-    const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${hoy}`);
+    const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${fechaUruguay}`);
     const uuidList = await resUuid.json();
 
     if (!uuidList || uuidList.length === 0) {
@@ -703,9 +708,14 @@ function mostrarSinDatos() {
 
 async function obtenerDatosHistoricos(usuarioId) {
     try {
-        const hoy = new Date().toISOString().split("T")[0];
+        //const hoy = new Date().toISOString().split("T")[0];
 
-        const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${hoy}`);
+        // 🔹 Obtener fecha actual en zona horaria de Uruguay
+          const fechaUruguay = new Date().toLocaleDateString('sv-SE', {
+            timeZone: 'America/Montevideo'
+          });
+
+        const resUuid = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${fechaUruguay}`);
 
         if (!resUuid.ok) {
             console.log(`❌ Error al obtener UUID: ${resUuid.status}`);
@@ -715,7 +725,7 @@ async function obtenerDatosHistoricos(usuarioId) {
         const uuidList = await resUuid.json();
 
         if (!uuidList || uuidList.length === 0) {
-            console.log(`❌ No hay recorridos registrados hoy para el usuario: ${usuarioId}, fecha: ${hoy}`);
+            console.log(`❌ No hay recorridos registrados hoy para el usuario: ${usuarioId}, fecha: ${fechaUruguay}`);
             return [];
         }
 

@@ -96,9 +96,9 @@ async function cargarRutas(idRuta) { // Se añade idRuta como parámetro
 
 function crearIconoCompetidor(colorIndex = 0) {
   const colores = [
-    '#FF6B35', '#F7931E', '#FFD23F', '#06FFA5',
-    '#118AB2', '#073B4C', '#8E44AD', '#E74C3C',
-    '#2ECC71', '#F39C12'
+    '#FF1744', '#FF6D00', '#FFD600', '#00BCD4',
+    '#2196F3', '#3F51B5', '#9C27B0', '#E91E63',
+    '#FF5722', '#FFC107'
   ];
 
   const color = colores[colorIndex % colores.length];

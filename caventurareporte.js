@@ -87,27 +87,33 @@ class RegatasDashboard {
         });
     }
 
-    async loadParticipants() {
-        try {
-            const response = await fetch(`${this.baseURL}/nadadorrutas/listar`);
-            const data = await response.json();
+   async loadParticipants() {
+       try {
+           const response = await fetch(`${this.baseURL}/nadadorrutas/listar`);
+           const data = await response.json();
 
-            const selector = document.getElementById('userSelector');
-            selector.innerHTML = '<option value="">Selecciona un participante...</option>';
+           console.log("🔍 Datos nadadorrutas:", data);
 
-            if (data && Array.isArray(data)) {
-                data.forEach(participant => {
-                    const option = document.createElement('option');
-                    option.value = participant.usuarioId || participant.id;
-                    option.textContent = participant.nombre || `Participante ${participant.usuarioId || participant.id}`;
-                    selector.appendChild(option);
-                });
-            }
-        } catch (error) {
-            console.error('Error loading participants:', error);
-            this.showError('userSelector', 'Error cargando participantes');
-        }
-    }
+           const selector = document.getElementById('userSelector');
+           selector.innerHTML = '<option value="">Selecciona un participante...</option>';
+
+           if (data && Array.isArray(data)) {
+               // 🔑 HACER LO MISMO QUE EL CÓDIGO QUE FUNCIONA
+               for (const u of data) {
+                   const userInfo = await fetch(`${this.baseURL}/usuarios/listarId/${u.usuarioId}`);
+                   const usuario = await userInfo.json();
+
+                   const option = document.createElement('option');
+                   option.value = u.usuarioId;
+                   option.textContent = `${usuario.nombre} ${usuario.apellido}`;
+                   selector.appendChild(option);
+               }
+           }
+       } catch (error) {
+           console.error('Error loading participants:', error);
+           this.showError('userSelector', 'Error cargando participantes');
+       }
+   }
 
     async loadUserDetails(userId) {
         try {

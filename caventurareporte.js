@@ -191,7 +191,7 @@ class RegatasDashboard {
                     <span class="info-value">${userData?.email || 'N/A'}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">Nombre Embarcación:</span>
+                    <span class="info-label">Nombre Equipo:</span>
                     <span class="info-value">${personData?.nombre || 'N/A'}</span>
                 </div>
                 ${personData?.datoExtra ? `

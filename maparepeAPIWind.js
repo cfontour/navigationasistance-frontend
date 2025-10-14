@@ -1052,42 +1052,48 @@ async function agregarCapaViento(mapa, puntos) {
         const capa = L.layerGroup();
         let puntosExitosos = 0;
 
-        for (const {lat, lon, nombre} of puntos) {
-            try {
-                const url = `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${lat},${lon}&aqi=no`;
-                const response = await fetch(url);
+        // 🌬️ NUEVO: Obtener datos de viento de UN solo punto
+        const puntoReferencia = puntos[0]; // Usar el primer punto como referencia
+        const url = `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${puntoReferencia.lat},${puntoReferencia.lon}&aqi=no`;
+        const response = await fetch(url);
 
-                if (!response.ok) continue;
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
 
-                const d = await response.json();
-                const deg = d.current.wind_degree;
-                const kts = d.current.wind_kph * 0.539957;
-                const dirTxt = d.current.wind_dir;
-                const gustKph = d.current.gust_kph || 0;
-                const gustKts = gustKph * 0.539957;
+        const d = await response.json();
+        const deg = d.current.wind_degree;
+        const kts = d.current.wind_kph * 0.539957;
+        const dirTxt = d.current.wind_dir;
+        const gustKph = d.current.gust_kph || 0;
+        const gustKts = gustKph * 0.539957;
 
-                // Usar el icono SOLO con ráfagas (sin flecha)
-                L.marker([lat, lon], {
+        // 🌬️ NUEVO: Crear una cuadrícula de puntos en toda la pantalla visible
+        const bounds = mapa.getBounds();
+        const norte = bounds.getNorth();
+        const sur = bounds.getSouth();
+        const este = bounds.getEast();
+        const oeste = bounds.getWest();
+
+        // Calcular cuántos puntos necesitamos (uno cada ~2km aprox)
+        const latStep = (norte - sur) / 8; // 8 filas
+        const lngStep = (este - oeste) / 12; // 12 columnas
+
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 12; j++) {
+                const lat = sur + (latStep * i) + (latStep * Math.random() * 0.3); // Algo de aleatoriedad
+                const lng = oeste + (lngStep * j) + (lngStep * Math.random() * 0.3);
+
+                L.marker([lat, lng], {
                     icon: iconoVientoSoloRafagas(deg, kts, gustKts)
                 })
-                .bindTooltip(
-                    `<strong>${nombre || 'Punto'}</strong><br>` +
-                    `<strong>Viento:</strong> ${kts.toFixed(1)} kt<br>` +
-                    `<strong>Ráfagas:</strong> ${gustKts.toFixed(1)} kt<br>` +
-                    `<strong>Dirección:</strong> ${deg}° (${dirTxt})`,
-                    {permanent: false, direction: 'top', offset: [0, -75]}
-                )
                 .addTo(capa);
 
                 puntosExitosos++;
-                await new Promise(resolve => setTimeout(resolve, 200));
-
-            } catch (error) {
-                console.warn(`⚠️ Error cargando viento para punto ${lat},${lon}:`, error);
             }
         }
 
-        console.log(`✅ Capa de viento creada con ${puntosExitosos} puntos (SOLO ráfagas visuales)`);
+        console.log(`✅ Capa de viento creada con ${puntosExitosos} puntos en toda la pantalla`);
         return capa;
 
     } catch (error) {
@@ -1113,11 +1119,7 @@ async function toggleCapaViento() {
         btn.classList.add('activo');
 
         const puntosViento = [
-            { lat: -34.9630725, lon: -54.9417927, nombre: "Navegante Principal" },
-            { lat: -34.95, lon: -54.95, nombre: "Norte" },
-            { lat: -34.97, lon: -54.93, nombre: "Sur" },
-            { lat: -34.96, lon: -54.92, nombre: "Este" },
-            { lat: -34.96, lon: -54.96, nombre: "Oeste" }
+            { lat: COORD_REFERENCIA.lat, lon: COORD_REFERENCIA.lng, nombre: "Punto de Referencia" }
         ];
 
         capaViento = await agregarCapaViento(map, puntosViento);

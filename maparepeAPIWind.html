@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title><!DOCTYPE html>
-      <html lang="es">
-      <head>
-      <meta charset="UTF-8" />
-      <title>Regatas Wind</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regatas Wind</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     /* Estilos para el logo en esquina superior izquierda */
@@ -94,7 +91,7 @@
     }
 
     /* CSS base para iconos de barcos transparentes */
-        .barco-icon {
+    .barco-icon {
         transition: filter 0.3s ease;
     }
 
@@ -164,13 +161,14 @@
 
     #map {
         height: 90vh;
+        position: relative;
     }
 
     h2 {
         font-size: 28px;
         color: #333;
         text-align: center;
-        margin-top: 80px;  /* Aumentar este valor */
+        margin-top: 80px;
         position: relative;
     }
 
@@ -253,7 +251,7 @@
     #toggle-viento {
         position: absolute;
         top: 10px;
-        Right: 10px;
+        right: 10px;
         background: rgba(33, 150, 243, 0.9);
         color: white;
         border: none;
@@ -264,8 +262,8 @@
         font-size: 20px;
         backdrop-filter: blur(5px);
         transition: all 0.3s ease;
-        width: 200px;      /* Ancho específico */
-        height: 70px;      /* Alto específico */
+        width: 200px;
+        height: 70px;
     }
 
     #toggle-viento:hover {
@@ -334,6 +332,28 @@
         margin-top: 2px;
     }
 
+    .embarcacion-destino {
+        color: #4fc3f7;
+        font-size: 11px;
+        margin-top: 2px;
+    }
+
+    #toggle-embarcaciones {
+        position: absolute;
+        top: 90px;
+        right: 10px;
+        background: rgba(255, 152, 0, 0.9);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        z-index: 1000;
+        font-size: 16px;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+    }
+
     #toggle-embarcaciones:hover {
         background: rgba(255, 152, 0, 1);
         transform: scale(1.05);
@@ -341,6 +361,41 @@
 
     #toggle-embarcaciones.activo {
         background: rgba(76, 175, 80, 0.9);
+    }
+
+    #panel-embarcaciones {
+        position: absolute;
+        top: 140px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 12px 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 1000;
+        min-width: 250px;
+        max-width: 300px;
+        max-height: 400px;
+        overflow-y: auto;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+        display: none;
+    }
+
+    #contador-embarcaciones {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #ff9800;
+        font-size: 14px;
+    }
+
+    /* Canvas para partículas de viento */
+    #wind-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 400;
     }
   </style>
 </head>

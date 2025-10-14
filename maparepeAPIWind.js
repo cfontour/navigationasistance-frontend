@@ -1,6 +1,9 @@
 // Variable para controlar qué usuario tiene la traza activa
 let usuarioTrazaActiva = null;
 let intervaloPollling = null;
+// 🌬️ Canvas global para viento
+let windCanvasEl = null;
+
 
 // NUEVA VARIABLE: Para almacenar la ruta seleccionada actualmente
 let rutaActualSeleccionada = null;
@@ -69,80 +72,62 @@ class WindParticle {
 
 // 🌬️ Inicializar partículas
 function initWindParticles() {
-    const canvas = document.getElementById('wind-canvas');
+  const canvas = windCanvasEl || document.getElementById('wind-canvas');
+  if (!canvas) {
+    console.error('❌ Canvas no encontrado al inicializar partículas');
+    return false;
+  }
 
-    if (!canvas) {
-        console.error('❌ Canvas no encontrado al inicializar partículas');
-        return false;
-    }
+  // dimensiones desde Leaflet si hay mapa
+  const size = map.getSize();
+  canvas.width  = size.x;
+  canvas.height = size.y;
 
-    // Asegurar que el canvas tenga dimensiones
-    const mapContainer = document.getElementById('map');
-    canvas.width = mapContainer.offsetWidth;
-    canvas.height = mapContainer.offsetHeight;
+  console.log(`🌬️ Inicializando ${PARTICLE_COUNT} partículas en canvas ${canvas.width}x${canvas.height}`);
+  console.log(`🌬️ Datos de viento al inicializar: speed=${windData.speed}kt, dir=${windData.direction}°`);
 
-    console.log(`🌬️ Inicializando ${PARTICLE_COUNT} partículas en canvas ${canvas.width}x${canvas.height}`);
-    console.log(`🌬️ Datos de viento al inicializar: speed=${windData.speed}kt, dir=${windData.direction}°`); // AGREGAR ESTA LÍNEA
-
-    windParticles = [];
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-        windParticles.push(new WindParticle(canvas));
-    }
-
-    return true;
+  windParticles = [];
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    windParticles.push(new WindParticle(canvas));
+  }
+  return true;
 }
 
 // 🌬️ Animar partículas
 function animateWindParticles() {
-    const canvas = document.getElementById('wind-canvas');
+  const canvas = windCanvasEl || document.getElementById('wind-canvas');
+  if (!canvas) {
+    console.error('❌ Canvas de viento no encontrado');
+    return;
+  }
+  const ctx = canvas.getContext('2d');
 
-    if (!canvas) {
-        console.error('❌ Canvas de viento no encontrado');
-        return;
-    }
+  // asegurar tamaño actual
+  const size = map.getSize();
+  canvas.width  = size.x;
+  canvas.height = size.y;
 
-    const ctx = canvas.getContext('2d');
+  // limpiar y dibujar
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  windParticles.forEach(p => {
+    p.update(canvas, windData.speed, windData.direction);
+    p.draw(ctx);
+  });
 
-    // Ajustar tamaño del canvas al mapa
-    const mapContainer = document.getElementById('map');
-
-    if (mapContainer) {
-      const overlayPane = map.getPanes().overlayPane;   // ⬅️ panel correcto
-      overlayPane.appendChild(windCanvas);
-      windCanvas.style.zIndex = '450';                  // debajo de markers (600), encima de tiles (200/400)
-      console.log('✅ Canvas de viento creado en overlayPane');
-    } else {
-      console.error('❌ Contenedor del mapa no encontrado');
-    }
-
-    canvas.width = mapContainer.offsetWidth;
-    canvas.height = mapContainer.offsetHeight;
-
-    console.log(`🌬️ Animando: speed=${windData.speed}kt, dir=${windData.direction}°, partículas=${windParticles.length}`); // AGREGAR ESTA LÍNEA
-
-    // Limpiar canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Actualizar y dibujar partículas
-    windParticles.forEach(particle => {
-        particle.update(canvas, windData.speed, windData.direction);
-        particle.draw(ctx);
-    });
-
-    windAnimationFrame = requestAnimationFrame(animateWindParticles);
+  windAnimationFrame = requestAnimationFrame(animateWindParticles);
 }
 
 // 🌬️ Detener animación
 function stopWindAnimation() {
-    if (windAnimationFrame) {
-        cancelAnimationFrame(windAnimationFrame);
-        windAnimationFrame = null;
-    }
-    const canvas = document.getElementById('wind-canvas');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
+  if (windAnimationFrame) {
+    cancelAnimationFrame(windAnimationFrame);
+    windAnimationFrame = null;
+  }
+  const canvas = windCanvasEl || document.getElementById('wind-canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 }
 
 // === VARIABLE PARA MARINETRAFFIC ===
@@ -1632,40 +1617,32 @@ async function toggleCapaEmbarcaciones() {
 }
 
 // ==================== INICIALIZACIÓN PRINCIPAL ====================
-
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("🚀 Iniciando aplicación de regatas...");
 
   // 🌬️ CREAR CANVAS PARA PARTÍCULAS DE VIENTO - PRIMERO DE TODO
-  const windCanvas = document.createElement('canvas');
-  windCanvas.id = 'wind-canvas';
-  windCanvas.style.position = 'absolute';
-  windCanvas.style.top = '0';
-  windCanvas.style.left = '0';
-  windCanvas.style.pointerEvents = 'none';
+  windCanvasEl = document.createElement('canvas');    // <-- referencia global
+  windCanvasEl.id = 'wind-canvas';
+  windCanvasEl.style.position = 'absolute';
+  windCanvasEl.style.top = '0';
+  windCanvasEl.style.left = '0';
+  windCanvasEl.style.pointerEvents = 'none';
 
-  // 👉 monto el canvas dentro del overlayPane de Leaflet (orden de capas correcto)
+  // montar en overlayPane para orden correcto
   const overlayPane = map.getPanes().overlayPane;
-  overlayPane.appendChild(windCanvas);
-  windCanvas.style.zIndex = '450'; // debajo de markers (~600), arriba de tiles
+  overlayPane.appendChild(windCanvasEl);
+  windCanvasEl.style.zIndex = '450';
 
-  // 👉 función de resize del canvas (siempre el tamaño del mapa)
+  // resize del canvas siguiendo el mapa
   function resizeWindCanvas() {
     const size = map.getSize();
-    windCanvas.width  = size.x;
-    windCanvas.height = size.y;
+    windCanvasEl.width  = size.x;
+    windCanvasEl.height = size.y;
   }
-  // primera dimensionada + re-dimensionar cuando el mapa cambie
   resizeWindCanvas();
-  map.on('resize zoomend moveend', () => {
-    resizeWindCanvas();
-    // opcional: si querés resembrar partículas cuando cambia la vista
-    // if (vientoVisible) initWindParticles();
-  });
+  map.on('resize zoomend moveend', resizeWindCanvas);
 
-  console.log('✅ Canvas de viento creado en overlayPane');
-
-  // 👉 engancho el botón (si existe)
+  // botón viento
   const btnViento = document.getElementById('toggle-viento');
   if (btnViento) btnViento.addEventListener('click', toggleCapaViento);
 
@@ -1675,12 +1652,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Cargar navegantes
   cargarNavegantesVinculados();
 
-  // Iniciar sistemas adicionales (esto SOLO hace polling de viento; la animación arranca con el botón)
+  // Solo polling de datos de viento (la animación arranca con el botón)
   iniciarSistemaViento();
 
   // Intervalos de actualización
   setInterval(cargarNavegantesVinculados, 5000);
-
   setInterval(() => {
     if (!mostrarTraza || !usuarioTrazaActiva) return;
     trazarRutaUsuarioEspecifico(usuarioTrazaActiva);
@@ -1688,3 +1664,4 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   console.log("✅ Aplicación iniciada correctamente");
 });
+

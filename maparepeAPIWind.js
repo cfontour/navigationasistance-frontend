@@ -1623,7 +1623,7 @@ async function toggleCapaEmbarcaciones() {
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("🚀 Iniciando aplicación de regatas...");
 
-// 🌬️ CREAR CANVAS PARA PARTÍCULAS DE VIENTO - PRIMERO DE TODO
+  // 🌬️ CREAR CANVAS PARA PARTÍCULAS DE VIENTO - PRIMERO DE TODO
   const windCanvas = document.createElement('canvas');
   windCanvas.id = 'wind-canvas';
   windCanvas.style.position = 'absolute';
@@ -1654,8 +1654,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   setInterval(() => {
     if (!mostrarTraza || !usuarioTrazaActiva) return;
-      trazarRutaUsuarioEspecifico(usuarioTrazaActiva);
+    trazarRutaUsuarioEspecifico(usuarioTrazaActiva);
   }, 5000);
 
-  console.log("✅ Aplicación de regatas iniciada correctamente con sistema de ráfagas SOLO LÍNEAS");
+  console.log("✅ Aplicación iniciada correctamente");
 });

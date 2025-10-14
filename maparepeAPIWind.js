@@ -7,6 +7,16 @@ let rutaActualSeleccionada = null;
 
 const map = L.map("map").setView([-34.9, -56.1], 13);
 
+// 🌬️ NUEVO: Canvas para partículas de viento
+const windCanvas = document.createElement('canvas');
+windCanvas.id = 'wind-canvas';
+windCanvas.style.position = 'absolute';
+windCanvas.style.top = '0';
+windCanvas.style.left = '0';
+windCanvas.style.pointerEvents = 'none';
+windCanvas.style.zIndex = '400';
+document.getElementById('map').appendChild(windCanvas);
+
 // Capa de mapa callejero (OpenStreetMap estándar)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -18,6 +28,100 @@ const WEATHER_API_KEY = "75e2bce104fa4fa180e194644251908"; // ← CONSEGUIR KEY 
 let capaViento = null;
 let vientoVisible = false;
 let intervalViento = null;
+
+// 🌬️ Variables para sistema de partículas
+let windParticles = [];
+let windAnimationFrame = null;
+let windData = { speed: 0, direction: 0 };
+const PARTICLE_COUNT = 3000;
+const PARTICLE_LIFE = 100;
+
+// 🌬️ Clase Partícula
+class WindParticle {
+    constructor(canvas) {
+        this.reset(canvas);
+        this.age = Math.random() * PARTICLE_LIFE;
+    }
+
+    reset(canvas) {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.age = 0;
+        this.speed = 0.5 + Math.random() * 1.5;
+    }
+
+    update(canvas, windSpeed, windDir) {
+        // Convertir dirección de viento a radianes
+        const rad = (windDir - 180) * Math.PI / 180;
+
+        // Velocidad basada en viento real (escala visual)
+        const visualSpeed = (windSpeed / 10) * this.speed;
+
+        this.x += Math.sin(rad) * visualSpeed;
+        this.y += Math.cos(rad) * visualSpeed;
+
+        this.age++;
+
+        // Resetear si sale de pantalla o es muy vieja
+        if (this.x < 0 || this.x > canvas.width ||
+            this.y < 0 || this.y > canvas.height ||
+            this.age > PARTICLE_LIFE) {
+            this.reset(canvas);
+        }
+    }
+
+    draw(ctx) {
+        const opacity = 1 - (this.age / PARTICLE_LIFE);
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.6})`;
+        ctx.fillRect(this.x, this.y, 1.5, 1.5);
+    }
+}
+
+// 🌬️ Inicializar partículas
+function initWindParticles() {
+    const canvas = document.getElementById('wind-canvas');
+    windParticles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+        windParticles.push(new WindParticle(canvas));
+    }
+}
+
+// 🌬️ Animar partículas
+function animateWindParticles() {
+    const canvas = document.getElementById('wind-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+
+    // Ajustar tamaño del canvas al mapa
+    const mapContainer = document.getElementById('map');
+    canvas.width = mapContainer.offsetWidth;
+    canvas.height = mapContainer.offsetHeight;
+
+    // Limpiar canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Actualizar y dibujar partículas
+    windParticles.forEach(particle => {
+        particle.update(canvas, windData.speed, windData.direction);
+        particle.draw(ctx);
+    });
+
+    windAnimationFrame = requestAnimationFrame(animateWindParticles);
+}
+
+// 🌬️ Detener animación
+function stopWindAnimation() {
+    if (windAnimationFrame) {
+        cancelAnimationFrame(windAnimationFrame);
+        windAnimationFrame = null;
+    }
+    const canvas = document.getElementById('wind-canvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+}
 
 // === VARIABLE PARA MARINETRAFFIC ===
 const MARINETRAFFIC_API_KEY = "a2bce129655604707493126125e973ca8ced2993"; // ← CONSEGUIR KEY EN marinetraffic.com
@@ -941,13 +1045,17 @@ async function cargarViento(lat, lon) {
         const gustKph = data.current.gust_kph || 0;
         const gustKn = gustKph * 0.539957;
 
+        // 🌬️ Actualizar datos de viento para las partículas
+        windData.speed = kn;
+        windData.direction = deg;
+
         document.getElementById("vientoDir").textContent = `${deg}° (${dirTxt})`;
         document.getElementById("vientoVel").textContent = `${kn.toFixed(1)} kt`;
         document.getElementById("vientoRafagas").textContent = `${gustKn.toFixed(1)} kt`;
         document.getElementById("vientoActualizado").textContent =
             `Actualizado: ${new Date().toLocaleTimeString()}`;
 
-        console.log(`🌬️ Viento cargado: ${kn.toFixed(1)} kt desde ${deg}° (${dirTxt}), ráfagas: ${gustKn.toFixed(1)} kt`);
+        console.log(`🌬️ Viento cargado: ${kn.toFixed(1)} kt desde ${deg}° (${dirTxt})`);
 
         return { velocidad: kn, direccion: deg, direccionTexto: dirTxt, rafagas: gustKn };
 
@@ -956,9 +1064,6 @@ async function cargarViento(lat, lon) {
         document.getElementById("vientoDir").textContent = "Error";
         document.getElementById("vientoVel").textContent = "Error";
         document.getElementById("vientoRafagas").textContent = "Error";
-        document.getElementById("vientoActualizado").textContent =
-            `Error: ${new Date().toLocaleTimeString()}`;
-
         return null;
     }
 }
@@ -1106,38 +1211,35 @@ async function toggleCapaViento() {
     const btn = document.getElementById("toggle-viento");
 
     if (vientoVisible) {
-        if (capaViento) {
-            map.removeLayer(capaViento);
-            capaViento = null;
-        }
+        stopWindAnimation();
         vientoVisible = false;
         btn.textContent = "🌬️ Viento ON";
         btn.classList.remove('activo');
-        console.log("🌬️ Capa de viento oculta");
+        console.log("🌬️ Partículas de viento desactivadas");
 
     } else {
         btn.classList.add('activo');
+        btn.textContent = "🌬️ Cargando...";
 
-        const puntosViento = [
-            { lat: COORD_REFERENCIA.lat, lon: COORD_REFERENCIA.lng, nombre: "Punto de Referencia" }
-        ];
+        // Cargar datos de viento
+        const coords = marcadores.size > 0
+            ? marcadores.values().next().value.getLatLng()
+            : COORD_REFERENCIA;
 
-        capaViento = await agregarCapaViento(map, puntosViento);
+        await cargarViento(coords.lat, coords.lng);
 
-        if (capaViento) {
-            capaViento.addTo(map);
-            vientoVisible = true;
-            btn.textContent = "🌬️ Viento OFF";
-            console.log("✅ Capa de viento mostrada (SOLO ráfagas visuales)");
-        } else {
-            btn.textContent = "🌬️ Error Viento";
-            btn.classList.remove('activo');
-        }
+        // Iniciar animación de partículas
+        initWindParticles();
+        animateWindParticles();
+
+        vientoVisible = true;
+        btn.textContent = "🌬️ Viento OFF";
+        console.log("✅ Partículas de viento activadas");
     }
 }
 
 function iniciarSistemaViento() {
-    console.log("🌬️ Iniciando sistema de viento con ráfagas visuales (sin flechas)...");
+    console.log("🌬️ Iniciando sistema de viento con partículas estilo Windy...");
 
     cargarViento(COORD_REFERENCIA.lat, COORD_REFERENCIA.lng);
 
@@ -1154,17 +1256,9 @@ function iniciarSistemaViento() {
 
         cargarViento(coords.lat, coords.lng);
 
-        if (vientoVisible && capaViento) {
-            console.log("🔄 Actualizando capa de viento con ráfagas...");
-            map.removeLayer(capaViento);
-            capaViento = null;
-            vientoVisible = false;
-            setTimeout(() => toggleCapaViento(), 1000);
-        }
-
     }, 5 * 60 * 1000);
 
-    console.log("✅ Sistema de viento iniciado (actualización cada 5 min, SOLO ráfagas)");
+    console.log("✅ Sistema de viento iniciado (partículas animadas, actualización cada 5 min)");
 }
 
 // ==================== SISTEMA DE EMBARCACIONES MARINETRAFFIC ====================

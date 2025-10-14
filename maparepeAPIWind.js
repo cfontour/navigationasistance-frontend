@@ -105,6 +105,16 @@ function animateWindParticles() {
 
     // Ajustar tamaño del canvas al mapa
     const mapContainer = document.getElementById('map');
+
+    if (mapContainer) {
+      const overlayPane = map.getPanes().overlayPane;   // ⬅️ panel correcto
+      overlayPane.appendChild(windCanvas);
+      windCanvas.style.zIndex = '450';                  // debajo de markers (600), encima de tiles (200/400)
+      console.log('✅ Canvas de viento creado en overlayPane');
+    } else {
+      console.error('❌ Contenedor del mapa no encontrado');
+    }
+
     canvas.width = mapContainer.offsetWidth;
     canvas.height = mapContainer.offsetHeight;
 
@@ -1633,15 +1643,31 @@ document.addEventListener("DOMContentLoaded", async () => {
   windCanvas.style.top = '0';
   windCanvas.style.left = '0';
   windCanvas.style.pointerEvents = 'none';
-  windCanvas.style.zIndex = '400';
 
-  const mapContainer = document.getElementById('map');
-  if (mapContainer) {
-    mapContainer.appendChild(windCanvas);
-    console.log('✅ Canvas de viento creado exitosamente');
-  } else {
-    console.error('❌ Contenedor del mapa no encontrado');
+  // 👉 monto el canvas dentro del overlayPane de Leaflet (orden de capas correcto)
+  const overlayPane = map.getPanes().overlayPane;
+  overlayPane.appendChild(windCanvas);
+  windCanvas.style.zIndex = '450'; // debajo de markers (~600), arriba de tiles
+
+  // 👉 función de resize del canvas (siempre el tamaño del mapa)
+  function resizeWindCanvas() {
+    const size = map.getSize();
+    windCanvas.width  = size.x;
+    windCanvas.height = size.y;
   }
+  // primera dimensionada + re-dimensionar cuando el mapa cambie
+  resizeWindCanvas();
+  map.on('resize zoomend moveend', () => {
+    resizeWindCanvas();
+    // opcional: si querés resembrar partículas cuando cambia la vista
+    // if (vientoVisible) initWindParticles();
+  });
+
+  console.log('✅ Canvas de viento creado en overlayPane');
+
+  // 👉 engancho el botón (si existe)
+  const btnViento = document.getElementById('toggle-viento');
+  if (btnViento) btnViento.addEventListener('click', toggleCapaViento);
 
   // Cargar selector de rutas PRIMERO
   await cargarRutasDisponiblesEnSelector();
@@ -1649,7 +1675,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Cargar navegantes
   cargarNavegantesVinculados();
 
-  // Iniciar sistemas adicionales
+  // Iniciar sistemas adicionales (esto SOLO hace polling de viento; la animación arranca con el botón)
   iniciarSistemaViento();
 
   // Intervalos de actualización

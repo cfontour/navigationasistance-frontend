@@ -1648,15 +1648,31 @@ document.addEventListener("DOMContentLoaded", async () => {
   function resizeWindCanvas() {
     const size = map.getSize();
     const dpr = window.devicePixelRatio || 1;
+
     windCanvasEl.width  = Math.max(1, Math.floor(size.x * dpr));
     windCanvasEl.height = Math.max(1, Math.floor(size.y * dpr));
     windCanvasEl.style.width  = size.x + 'px';
     windCanvasEl.style.height = size.y + 'px';
+
     windCtx = windCanvasEl.getContext('2d');
-    windCtx.setTransform(dpr, 0, 0, dpr, 0, 0); // coord en px CSS
+    windCtx.setTransform(dpr, 0, 0, dpr, 0, 0); // coords en px CSS
+
+    // 👈 NUEVO: si está encendido, resembrar con el nuevo tamaño
+    if (vientoVisible) {
+      windParticles = [];
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        windParticles.push(new WindParticle(windCanvasEl));
+      }
+    }
   }
+
   resizeWindCanvas();
   map.on('resize zoomend moveend', resizeWindCanvas);
+
+  // 3) ← acá va el nuevo “debajo del bind anterior”
+  map.on('zoomstart movestart', () => {
+    if (windCtx) windCtx.clearRect(0, 0, windCanvasEl.width, windCanvasEl.height);
+  });
 
   // botón viento
   const btnViento = document.getElementById('toggle-viento');

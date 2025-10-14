@@ -82,6 +82,7 @@ function initWindParticles() {
     canvas.height = mapContainer.offsetHeight;
 
     console.log(`🌬️ Inicializando ${PARTICLE_COUNT} partículas en canvas ${canvas.width}x${canvas.height}`);
+    console.log(`🌬️ Datos de viento al inicializar: speed=${windData.speed}kt, dir=${windData.direction}°`); // AGREGAR ESTA LÍNEA
 
     windParticles = [];
     for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -96,8 +97,8 @@ function animateWindParticles() {
     const canvas = document.getElementById('wind-canvas');
 
     if (!canvas) {
-            console.error('❌ Canvas de viento no encontrado');
-            return;
+        console.error('❌ Canvas de viento no encontrado');
+        return;
     }
 
     const ctx = canvas.getContext('2d');
@@ -106,6 +107,8 @@ function animateWindParticles() {
     const mapContainer = document.getElementById('map');
     canvas.width = mapContainer.offsetWidth;
     canvas.height = mapContainer.offsetHeight;
+
+    console.log(`🌬️ Animando: speed=${windData.speed}kt, dir=${windData.direction}°, partículas=${windParticles.length}`); // AGREGAR ESTA LÍNEA
 
     // Limpiar canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);

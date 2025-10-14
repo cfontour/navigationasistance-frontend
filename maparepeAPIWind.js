@@ -1623,6 +1623,23 @@ async function toggleCapaEmbarcaciones() {
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("🚀 Iniciando aplicación de regatas...");
 
+// 🌬️ CREAR CANVAS PARA PARTÍCULAS DE VIENTO - PRIMERO DE TODO
+  const windCanvas = document.createElement('canvas');
+  windCanvas.id = 'wind-canvas';
+  windCanvas.style.position = 'absolute';
+  windCanvas.style.top = '0';
+  windCanvas.style.left = '0';
+  windCanvas.style.pointerEvents = 'none';
+  windCanvas.style.zIndex = '400';
+
+  const mapContainer = document.getElementById('map');
+  if (mapContainer) {
+    mapContainer.appendChild(windCanvas);
+    console.log('✅ Canvas de viento creado exitosamente');
+  } else {
+    console.error('❌ Contenedor del mapa no encontrado');
+  }
+
   // Cargar selector de rutas PRIMERO
   await cargarRutasDisponiblesEnSelector();
 

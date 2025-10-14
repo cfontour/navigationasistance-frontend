@@ -70,10 +70,25 @@ class WindParticle {
 // 🌬️ Inicializar partículas
 function initWindParticles() {
     const canvas = document.getElementById('wind-canvas');
+
+    if (!canvas) {
+        console.error('❌ Canvas no encontrado al inicializar partículas');
+        return false;
+    }
+
+    // Asegurar que el canvas tenga dimensiones
+    const mapContainer = document.getElementById('map');
+    canvas.width = mapContainer.offsetWidth;
+    canvas.height = mapContainer.offsetHeight;
+
+    console.log(`🌬️ Inicializando ${PARTICLE_COUNT} partículas en canvas ${canvas.width}x${canvas.height}`);
+
     windParticles = [];
     for (let i = 0; i < PARTICLE_COUNT; i++) {
         windParticles.push(new WindParticle(canvas));
     }
+
+    return true;
 }
 
 // 🌬️ Animar partículas
@@ -1228,8 +1243,10 @@ async function toggleCapaViento() {
             console.log('🌬️ windData actualizado:', windData);
 
             // Iniciar animación de partículas
-            initWindParticles();
-            animateWindParticles();
+            const inicializado = initWindParticles();
+
+            if (inicializado) {
+                animateWindParticles();
 
             vientoVisible = true;
             btn.textContent = "🌬️ Viento OFF";

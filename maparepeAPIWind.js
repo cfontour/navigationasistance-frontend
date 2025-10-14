@@ -642,7 +642,7 @@ function borrarTraza() {
   setTimeout(() => actualizarTodosLosPopups(), 100);
 }
 
-// Funciones de métricas (simplificadas para mantener el código conciso)
+// Funciones de métricas
 function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
     const R = 6371000;
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -676,7 +676,7 @@ function actualizarMetricas(metricas) {
     actualizarVelocidad(metricas.velocidadNudos);
 
     console.log(`📊 Métricas actualizadas: Bearing: ${metricas.bearing}°, Distancia: ${metricas.millasNauticas.toFixed(2)} mn, Velocidad: ${metricas.velocidadNudos.toFixed(1)} nudos`);
-    }
+}
 
 function actualizarBearing(bearing) {
     const bearingElement = document.getElementById('bearing-value');
@@ -921,7 +921,7 @@ function detenerActualizacionMetricas() {
     mostrarSinDatos();
 }
 
-// ==================== SISTEMA DE VIENTO MEJORADO CON RÁFAGAS ====================
+// ==================== SISTEMA DE VIENTO CON RÁFAGAS (SOLO LÍNEAS) ====================
 
 async function cargarViento(lat, lon) {
     try {
@@ -963,50 +963,50 @@ async function cargarViento(lat, lon) {
     }
 }
 
-// 🌬️ NUEVA FUNCIÓN: Crear SVG de ráfaga con intensidad variable
-function crearSvgRafaga(velocidad, direccion, rafagaVel) {
+// 🌬️ FUNCIÓN CORREGIDA: Crear SVG de ráfaga SOLO CON LÍNEAS (sin flechas)
+function crearSvgRafagaSoloLineas(velocidad, direccion, rafagaVel) {
     // Determinar intensidad basada en velocidad del viento
     const intensidad = Math.min(velocidad / 30, 1); // Normalizar a 0-1 (30kt = intensidad máxima)
     const intensidadRafaga = Math.min(rafagaVel / 40, 1); // Ráfagas normalizadas
 
     // Calcular propiedades visuales basadas en intensidad
-    const numLineas = Math.floor(5 + intensidad * 15); // 5-20 líneas
-    const largoBase = 20 + intensidad * 60; // 20-80px de largo
-    const grosorBase = 0.5 + intensidad * 2; // 0.5-2.5px de grosor
-    const opacidadBase = 0.15 + intensidad * 0.35; // 0.15-0.5 de opacidad
+    const numLineas = Math.floor(8 + intensidad * 25); // 8-33 líneas
+    const largoBase = 30 + intensidad * 80; // 30-110px de largo
+    const grosorBase = 0.8 + intensidad * 2.5; // 0.8-3.3px de grosor
+    const opacidadBase = 0.2 + intensidad * 0.4; // 0.2-0.6 de opacidad
 
-    // Color más oscuro con mayor intensidad
-    const colorHue = 200; // Azul
-    const colorSat = 70 + intensidad * 30; // 70-100% saturación
-    const colorLight = 60 - intensidad * 20; // 60-40% brillo
+    // Color más oscuro con mayor intensidad (tonos azules)
+    const colorHue = 210; // Azul
+    const colorSat = 60 + intensidad * 40; // 60-100% saturación
+    const colorLight = 50 - intensidad * 25; // 50-25% brillo (más oscuro con más intensidad)
     const color = `hsl(${colorHue}, ${colorSat}%, ${colorLight}%)`;
 
-    let svg = `<svg width="100" height="100" style="overflow: visible;">`;
+    let svg = `<svg width="150" height="150" style="overflow: visible;">`;
 
     // Generar líneas de ráfaga
     for (let i = 0; i < numLineas; i++) {
-        const variacion = (Math.random() - 0.5) * 0.3; // Variación en longitud
+        const variacion = (Math.random() - 0.5) * 0.4; // Variación en longitud
         const largo = largoBase * (1 + variacion);
-        const grosor = grosorBase * (0.8 + Math.random() * 0.4); // Variación en grosor
-        const opacidad = opacidadBase * (0.7 + Math.random() * 0.6); // Variación en opacidad
+        const grosor = grosorBase * (0.7 + Math.random() * 0.6); // Variación en grosor
+        const opacidad = opacidadBase * (0.6 + Math.random() * 0.8); // Variación en opacidad
 
         // Espaciado irregular para mayor realismo
-        const espaciado = 8 + Math.random() * 6;
+        const espaciado = 3.5 + Math.random() * 4;
         const offsetY = i * espaciado - (numLineas * espaciado / 2);
-        const offsetX = (Math.random() - 0.5) * 15; // Desplazamiento horizontal aleatorio
+        const offsetX = (Math.random() - 0.5) * 20; // Desplazamiento horizontal aleatorio
 
-        // Algunas líneas más largas para representar ráfagas
-        const esRafaga = Math.random() < intensidadRafaga * 0.3;
-        const multiplicadorRafaga = esRafaga ? 1.3 + Math.random() * 0.4 : 1;
+        // Algunas líneas más largas y gruesas para representar ráfagas
+        const esRafaga = Math.random() < intensidadRafaga * 0.4;
+        const multiplicadorRafaga = esRafaga ? 1.4 + Math.random() * 0.6 : 1;
         const largoFinal = largo * multiplicadorRafaga;
-        const grosorFinal = esRafaga ? grosor * 1.3 : grosor;
-        const opacidadFinal = esRafaga ? opacidad * 1.2 : opacidad;
+        const grosorFinal = esRafaga ? grosor * 1.5 : grosor;
+        const opacidadFinal = Math.min(esRafaga ? opacidad * 1.3 : opacidad, 0.75);
 
         svg += `<line
-            x1="${50 + offsetX}"
-            y1="${50 + offsetY}"
-            x2="${50 + offsetX + largoFinal}"
-            y2="${50 + offsetY}"
+            x1="${75 + offsetX}"
+            y1="${75 + offsetY}"
+            x2="${75 + offsetX + largoFinal}"
+            y2="${75 + offsetY}"
             stroke="${color}"
             stroke-width="${grosorFinal}"
             opacity="${opacidadFinal}"
@@ -1019,42 +1019,28 @@ function crearSvgRafaga(velocidad, direccion, rafagaVel) {
     return svg;
 }
 
-// 🌬️ NUEVA FUNCIÓN: Crear icono de viento con ráfagas estilo imagen
-function iconoVientoConRafagas(deg, velocidad, rafagas) {
+// 🌬️ FUNCIÓN CORREGIDA: Crear icono de viento SOLO CON RÁFAGAS (sin flecha)
+function iconoVientoSoloRafagas(deg, velocidad, rafagas) {
     const rafagaVel = rafagas || velocidad;
-    const svgRafaga = crearSvgRafaga(velocidad, deg, rafagaVel);
-
-    // Determinar color de la flecha según intensidad
-    let colorFlecha = '#4A90E2'; // Azul suave (viento ligero)
-    if (velocidad > 25) colorFlecha = '#E74C3C'; // Rojo (viento fuerte)
-    else if (velocidad > 15) colorFlecha = '#F39C12'; // Naranja (viento moderado-fuerte)
-    else if (velocidad > 8) colorFlecha = '#27AE60'; // Verde (viento moderado)
+    const svgRafaga = crearSvgRafagaSoloLineas(velocidad, deg, rafagaVel);
 
     return L.divIcon({
-        className: "wind-arrow-rafagas",
+        className: "wind-rafagas-only",
         html: `
             <div style="
                 transform: rotate(${deg + 180}deg);
-                width: 100px;
-                height: 100px;
+                width: 150px;
+                height: 150px;
                 position: relative;
                 display: flex;
                 align-items: center;
                 justify-content: center;
             ">
                 ${svgRafaga}
-                <div style="
-                    position: absolute;
-                    color: ${colorFlecha};
-                    font-size: 40px;
-                    font-weight: bold;
-                    text-shadow: 0 0 3px rgba(255,255,255,0.8), 0 0 6px rgba(255,255,255,0.5);
-                    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-                ">⇧</div>
             </div>
         `,
-        iconSize: [100, 100],
-        iconAnchor: [50, 50]
+        iconSize: [150, 150],
+        iconAnchor: [75, 75]
     });
 }
 
@@ -1080,16 +1066,16 @@ async function agregarCapaViento(mapa, puntos) {
                 const gustKph = d.current.gust_kph || 0;
                 const gustKts = gustKph * 0.539957;
 
-                // Usar el nuevo icono con ráfagas
+                // Usar el icono SOLO con ráfagas (sin flecha)
                 L.marker([lat, lon], {
-                    icon: iconoVientoConRafagas(deg, kts, gustKts)
+                    icon: iconoVientoSoloRafagas(deg, kts, gustKts)
                 })
                 .bindTooltip(
                     `<strong>${nombre || 'Punto'}</strong><br>` +
                     `<strong>Viento:</strong> ${kts.toFixed(1)} kt<br>` +
                     `<strong>Ráfagas:</strong> ${gustKts.toFixed(1)} kt<br>` +
                     `<strong>Dirección:</strong> ${deg}° (${dirTxt})`,
-                    {permanent: false, direction: 'top', offset: [0, -50]}
+                    {permanent: false, direction: 'top', offset: [0, -75]}
                 )
                 .addTo(capa);
 
@@ -1101,7 +1087,7 @@ async function agregarCapaViento(mapa, puntos) {
             }
         }
 
-        console.log(`✅ Capa de viento creada con ${puntosExitosos} puntos (con ráfagas visuales)`);
+        console.log(`✅ Capa de viento creada con ${puntosExitosos} puntos (SOLO ráfagas visuales)`);
         return capa;
 
     } catch (error) {
@@ -1140,7 +1126,7 @@ async function toggleCapaViento() {
             capaViento.addTo(map);
             vientoVisible = true;
             btn.textContent = "🌬️ Viento OFF";
-            console.log("✅ Capa de viento mostrada (con ráfagas visuales)");
+            console.log("✅ Capa de viento mostrada (SOLO ráfagas visuales)");
         } else {
             btn.textContent = "🌬️ Error Viento";
             btn.classList.remove('activo');
@@ -1149,7 +1135,7 @@ async function toggleCapaViento() {
 }
 
 function iniciarSistemaViento() {
-    console.log("🌬️ Iniciando sistema de viento con ráfagas visuales...");
+    console.log("🌬️ Iniciando sistema de viento con ráfagas visuales (sin flechas)...");
 
     cargarViento(COORD_REFERENCIA.lat, COORD_REFERENCIA.lng);
 
@@ -1176,7 +1162,7 @@ function iniciarSistemaViento() {
 
     }, 5 * 60 * 1000);
 
-    console.log("✅ Sistema de viento iniciado (actualización cada 5 min con ráfagas visuales)");
+    console.log("✅ Sistema de viento iniciado (actualización cada 5 min, SOLO ráfagas)");
 }
 
 // ==================== SISTEMA DE EMBARCACIONES MARINETRAFFIC ====================
@@ -1358,7 +1344,7 @@ function mostrarEmbarcacionesEnMapa(embarcaciones) {
             }
 
             const icono = crearIconoEmbarcacion(vessel);
-            const tipoInfo = getTipoReintentarCContinuarjavascriptEmbarcacion(vessel.type);
+            const tipoInfo = getTipoEmbarcacion(vessel.type);
 
             const popup = `
                 <div style="min-width: 250px;">
@@ -1397,7 +1383,6 @@ function mostrarEmbarcacionesEnMapa(embarcaciones) {
     }
 
     actualizarPanelEmbarcaciones(embarcaciones);
-
 }
 
 function actualizarPanelEmbarcaciones(embarcaciones) {
@@ -1533,5 +1518,5 @@ document.addEventListener("DOMContentLoaded", async () => {
       trazarRutaUsuarioEspecifico(usuarioTrazaActiva);
   }, 5000);
 
-  console.log("✅ Aplicación de regatas iniciada correctamente con sistema de ráfagas visuales");
+  console.log("✅ Aplicación de regatas iniciada correctamente con sistema de ráfagas SOLO LÍNEAS");
 });

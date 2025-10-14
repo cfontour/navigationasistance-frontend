@@ -1248,9 +1248,14 @@ async function toggleCapaViento() {
             if (inicializado) {
                 animateWindParticles();
 
-            vientoVisible = true;
-            btn.textContent = "🌬️ Viento OFF";
-            console.log("✅ Partículas de viento activadas");
+                vientoVisible = true;
+                btn.textContent = "🌬️ Viento OFF";
+                console.log("✅ Partículas de viento activadas");
+            } else {
+                btn.textContent = "🌬️ Error Canvas";
+                btn.classList.remove('activo');
+                console.error("❌ No se pudo inicializar el canvas");
+            }
         } else {
             btn.textContent = "🌬️ Error Viento";
             btn.classList.remove('activo');

@@ -7,16 +7,6 @@ let rutaActualSeleccionada = null;
 
 const map = L.map("map").setView([-34.9, -56.1], 13);
 
-// 🌬️ NUEVO: Canvas para partículas de viento
-const windCanvas = document.createElement('canvas');
-windCanvas.id = 'wind-canvas';
-windCanvas.style.position = 'absolute';
-windCanvas.style.top = '0';
-windCanvas.style.left = '0';
-windCanvas.style.pointerEvents = 'none';
-windCanvas.style.zIndex = '400';
-document.getElementById('map').appendChild(windCanvas);
-
 // Capa de mapa callejero (OpenStreetMap estándar)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',

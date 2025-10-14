@@ -27,93 +27,83 @@ let windParticles = [];
 let windAnimationFrame = null;
 let windData = { speed: 0, direction: 0 };
 const PARTICLE_COUNT = 3000;
-const PARTICLE_LIFE = 100;
+const PARTICLE_LIFE = 120;
 
-// 🌬️ Clase Partícula
+// 🌬️ Clase Partícula (con cola visible)
 class WindParticle {
-    constructor(canvas) {
-        this.reset(canvas);
-        this.age = Math.random() * PARTICLE_LIFE;
+  constructor(canvas) {
+    this.reset(canvas);
+    this.age = Math.random() * PARTICLE_LIFE;
+  }
+  reset(canvas) {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.px = this.x; // posición previa (para trazo)
+    this.py = this.y;
+    this.age = 0;
+    this.speed = 0.7 + Math.random() * 1.6; // un poco más rápidas
+  }
+  update(canvas, windSpeed, windDir) {
+    const rad = (windDir - 180) * Math.PI / 180;
+    const visualSpeed = (windSpeed / 8) * this.speed; // ↑ escala más visible
+    this.px = this.x;
+    this.py = this.y;
+    this.x += Math.sin(rad) * visualSpeed;
+    this.y += Math.cos(rad) * visualSpeed;
+    this.age++;
+    if (
+      this.x < -10 || this.x > canvas.width + 10 ||
+      this.y < -10 || this.y > canvas.height + 10 ||
+      this.age > PARTICLE_LIFE
+    ) {
+      this.reset(canvas);
     }
-
-    reset(canvas) {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.age = 0;
-        this.speed = 0.5 + Math.random() * 1.5;
-    }
-
-    update(canvas, windSpeed, windDir) {
-        // Convertir dirección de viento a radianes
-        const rad = (windDir - 180) * Math.PI / 180;
-
-        // Velocidad basada en viento real (escala visual)
-        const visualSpeed = (windSpeed / 10) * this.speed;
-
-        this.x += Math.sin(rad) * visualSpeed;
-        this.y += Math.cos(rad) * visualSpeed;
-
-        this.age++;
-
-        // Resetear si sale de pantalla o es muy vieja
-        if (this.x < 0 || this.x > canvas.width ||
-            this.y < 0 || this.y > canvas.height ||
-            this.age > PARTICLE_LIFE) {
-            this.reset(canvas);
-        }
-    }
-
-    draw(ctx) {
-        const opacity = 1 - (this.age / PARTICLE_LIFE);
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.6})`;
-        ctx.fillRect(this.x, this.y, 1.5, 1.5);
-    }
+  }
+  draw(ctx) {
+    // cola de 6–12 px aprox según “edad”
+    const t = Math.max(0.2, 1 - this.age / PARTICLE_LIFE);
+    const lw = 1.2 + 1.3 * t;      // grosor 1.2–2.5
+    const alpha = 0.65 + 0.25 * t; // alfa 0.65–0.9
+    ctx.lineWidth = lw;
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.moveTo(this.px, this.py);
+    ctx.lineTo(this.x, this.y);
+    ctx.stroke();
+  }
 }
 
 // 🌬️ Inicializar partículas
 function initWindParticles() {
   const canvas = windCanvasEl || document.getElementById('wind-canvas');
-  if (!canvas) {
-    console.error('❌ Canvas no encontrado al inicializar partículas');
-    return false;
-  }
-
-  // dimensiones desde Leaflet si hay mapa
+  if (!canvas) { console.error('❌ Canvas no encontrado'); return false; }
   const size = map.getSize();
-  canvas.width  = size.x;
-  canvas.height = size.y;
-
-  console.log(`🌬️ Inicializando ${PARTICLE_COUNT} partículas en canvas ${canvas.width}x${canvas.height}`);
-  console.log(`🌬️ Datos de viento al inicializar: speed=${windData.speed}kt, dir=${windData.direction}°`);
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = Math.max(1, Math.floor(size.x * dpr));
+  canvas.height = Math.max(1, Math.floor(size.y * dpr));
+  canvas.style.width  = size.x + 'px';
+  canvas.style.height = size.y + 'px';
+  windCtx = canvas.getContext('2d');
+  windCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   windParticles = [];
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    windParticles.push(new WindParticle(canvas));
-  }
+  for (let i = 0; i < PARTICLE_COUNT; i++) windParticles.push(new WindParticle(canvas));
   return true;
 }
 
-// 🌬️ Animar partículas
 function animateWindParticles() {
   const canvas = windCanvasEl || document.getElementById('wind-canvas');
-  if (!canvas) {
-    console.error('❌ Canvas de viento no encontrado');
-    return;
-  }
-  const ctx = canvas.getContext('2d');
+  if (!canvas) return;
+  const ctx = windCtx || canvas.getContext('2d');
 
-  // asegurar tamaño actual
-  const size = map.getSize();
-  canvas.width  = size.x;
-  canvas.height = size.y;
-
-  // limpiar y dibujar
+  // limpiar
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  windParticles.forEach(p => {
+
+  // dibujar
+  for (const p of windParticles) {
     p.update(canvas, windData.speed, windData.direction);
     p.draw(ctx);
-  });
-
+  }
   windAnimationFrame = requestAnimationFrame(animateWindParticles);
 }
 

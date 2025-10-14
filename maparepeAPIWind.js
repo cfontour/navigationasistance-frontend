@@ -3,6 +3,8 @@ let usuarioTrazaActiva = null;
 let intervaloPollling = null;
 // 🌬️ Canvas global para viento
 let windCanvasEl = null;
+// 🌬️ contexto 2D global
+let windCtx = null;
 
 
 // NUEVA VARIABLE: Para almacenar la ruta seleccionada actualmente
@@ -77,14 +79,18 @@ class WindParticle {
 function initWindParticles() {
   const canvas = windCanvasEl || document.getElementById('wind-canvas');
   if (!canvas) { console.error('❌ Canvas no encontrado'); return false; }
-  const size = map.getSize();
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width  = Math.max(1, Math.floor(size.x * dpr));
-  canvas.height = Math.max(1, Math.floor(size.y * dpr));
-  canvas.style.width  = size.x + 'px';
-  canvas.style.height = size.y + 'px';
-  windCtx = canvas.getContext('2d');
-  windCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // asegurar que windCtx exista y esté escalado (por si entrás directo desde el botón)
+  if (!windCtx) {
+    const size = map.getSize();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width  = Math.max(1, Math.floor(size.x * dpr));
+    canvas.height = Math.max(1, Math.floor(size.y * dpr));
+    canvas.style.width  = size.x + 'px';
+    canvas.style.height = size.y + 'px';
+    windCtx = canvas.getContext('2d');
+    windCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
 
   windParticles = [];
   for (let i = 0; i < PARTICLE_COUNT; i++) windParticles.push(new WindParticle(canvas));
@@ -99,13 +105,22 @@ function animateWindParticles() {
   // limpiar
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // estilo de trazo visible
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#ffffff'; // ← blanco (se ve en el mar)
+
   // dibujar
   for (const p of windParticles) {
     p.update(canvas, windData.speed, windData.direction);
     p.draw(ctx);
   }
+
+  // restaurar alpha por las dudas
+  ctx.globalAlpha = 1;
+
   windAnimationFrame = requestAnimationFrame(animateWindParticles);
 }
+
 
 // 🌬️ Detener animación
 function stopWindAnimation() {
@@ -1623,11 +1638,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   overlayPane.appendChild(windCanvasEl);
   windCanvasEl.style.zIndex = '450';
 
-  // resize del canvas siguiendo el mapa
+  // Pane dedicado por encima de markers/overlays
+  const windPane = map.createPane('windPane');
+  windPane.style.zIndex = '650';
+  windPane.style.pointerEvents = 'none';
+  windPane.appendChild(windCanvasEl);
+
+  // Resize con DPR (nítido)
   function resizeWindCanvas() {
     const size = map.getSize();
-    windCanvasEl.width  = size.x;
-    windCanvasEl.height = size.y;
+    const dpr = window.devicePixelRatio || 1;
+    windCanvasEl.width  = Math.max(1, Math.floor(size.x * dpr));
+    windCanvasEl.height = Math.max(1, Math.floor(size.y * dpr));
+    windCanvasEl.style.width  = size.x + 'px';
+    windCanvasEl.style.height = size.y + 'px';
+    windCtx = windCanvasEl.getContext('2d');
+    windCtx.setTransform(dpr, 0, 0, dpr, 0, 0); // coord en px CSS
   }
   resizeWindCanvas();
   map.on('resize zoomend moveend', resizeWindCanvas);

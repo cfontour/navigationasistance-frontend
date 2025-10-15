@@ -14,13 +14,20 @@ let rutaActualSeleccionada = null;
 const map = L.map("map").setView([-34.9, -56.1], 13);
 
 // === BATIMETRÍA (GEBCO) + SONDA (GMRT) ===============================
-const gebcoLayer = L.tileLayer.wms('https://wms.gebco.net/mapserv?', {
-  layers: 'GEBCO_2024_Grid',   // si GEBCO cambia el nombre, ajusta este valor
-  format: 'image/png',
-  transparent: true,
-  opacity: 0.75,
-  attribution: 'Bathymetry: GEBCO'
-});
+const gebcoLayer = L.tileLayer.wms(
+  'https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/mapserv?',
+  {
+    layers: 'GEBCO_2024_Grid',
+    format: 'image/png',
+    transparent: true,
+    opacity: 0.75,
+    version: '1.3.0',
+    crs: L.CRS.EPSG4326,        // ← clave: pedir en 4326
+    attribution: 'Bathymetry: GEBCO'
+  }
+);
+// opcional, pero ayuda a que quede por encima del base
+gebcoLayer.setZIndex(350);
 
 let bathyOn = false;
 let sondaActiva = false;

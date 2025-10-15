@@ -11,19 +11,50 @@ let vientoBusy = false;
 // NUEVA VARIABLE: Para almacenar la ruta seleccionada actualmente
 let rutaActualSeleccionada = null;
 
+// ✅ NUEVO: Sonda en hover con tooltip y throttling
+let sondaTooltip = null;
+let depthFetchBusy = false;
+let depthFetchLast = 0;
+
 const map = L.map("map").setView([-34.9, -56.1], 13);
 
-// === BATIMETRÍA (GEBCO) + SONDA (GMRT) ===============================
+// === BATIMETRÍA (GEBCO + GMRT) =====================================
 const gebcoLayer = L.tileLayer.wms('https://wms.gebco.net/mapserv?', {
-  layers: 'GEBCO_LATEST',        // o 'GEBCO_2024_Grid' si querés fijar 2024
-  version: '1.3.0',
+  layers: 'GEBCO_2024_Grid',
   format: 'image/png',
   transparent: true,
   opacity: 0.75,
-  crs: L.CRS.EPSG4326,           // ← clave para que se vea
-  crossOrigin: true,             // evita warnings CORS en algunos navegadores
-  styles: ''                     // explícito (algunos WMS lo requieren)
+  attribution: 'Bathymetry: GEBCO'
 });
+
+// ✅ NUEVO: GMRT WMS (más detalle costero)
+const gmrtLayer = L.tileLayer.wms('https://www.gmrt.org/services/mapserver/wms_merc?', {
+  layers: 'topo',
+  format: 'image/png',
+  transparent: true,
+  opacity: 0.85,
+  attribution: 'GMRT / LDEO'
+});
+
+let bathyOn = false;
+let sondaActiva = false;
+
+// ✅ NUEVO: control de capa activa y conmutación por zoom
+let activeBathyLayer = null;
+const GMRT_PREFER_ZOOM = 12; // a partir de este zoom, usar GMRT
+
+function switchBathymetryLayer() {
+  if (!bathyOn) return;
+  const z = map.getZoom();
+  const target = (z >= GMRT_PREFER_ZOOM) ? gmrtLayer : gebcoLayer;
+  const other  = (target === gmrtLayer) ? gebcoLayer : gmrtLayer;
+
+  if (activeBathyLayer !== target) {
+    if (map.hasLayer(other)) map.removeLayer(other);
+    target.addTo(map);
+    activeBathyLayer = target;
+  }
+}
 
 // opcional, pero ayuda a que quede por encima del base
 gebcoLayer.setZIndex(350);
@@ -59,28 +90,90 @@ async function handleSondaClick(e) {
   }
 }
 
+async function handleSondaHover(e) {
+  const now = Date.now();
+  if (depthFetchBusy || (now - depthFetchLast < 400)) return; // throttle ~400ms
+  depthFetchLast = now;
+  depthFetchBusy = true;
+
+  try {
+    const elev = await fetchDepthGMRT(e.latlng.lat, e.latlng.lng);
+    const profundidad = elev < 0 ? (-elev).toFixed(1) + ' m' : 'tierra/0 m';
+
+    if (!sondaTooltip) {
+      sondaTooltip = L.tooltip({
+        permanent: false,
+        direction: 'top',
+        className: 'sonda-tooltip'
+      })
+      .setLatLng(e.latlng)
+      .setContent(profundidad)
+      .addTo(map);
+    } else {
+      sondaTooltip.setLatLng(e.latlng).setContent(profundidad);
+    }
+  } catch (err) {
+    // silencioso para no ensuciar consola
+  } finally {
+    depthFetchBusy = false;
+  }
+}
+
+function enableHoverProbe() {
+  map.on('mousemove', handleSondaHover);
+}
+
+function disableHoverProbe() {
+  map.off('mousemove', handleSondaHover);
+  if (sondaTooltip) {
+    map.removeLayer(sondaTooltip);
+    sondaTooltip = null;
+  }
+}
+
+// ✅ REEMPLAZAR
 function toggleCapaBatimetria() {
   bathyOn = !bathyOn;
   const btn = document.getElementById('toggle-batimetria');
 
   if (bathyOn) {
-    gebcoLayer.addTo(map);
+    // prender: elegir capa según zoom y escuchar cambios de zoom
+    switchBathymetryLayer();
+    map.on('zoomend', switchBathymetryLayer);
+
     btn.textContent = '🌊 Batimetría ON';
     btn.classList.add('activo');
+
+    // activar sonda por click si no estaba
     if (!sondaActiva) {
       map.on('click', handleSondaClick);
       sondaActiva = true;
     }
+
+    // ✅ NUEVO: sonda en hover (tooltip con throttling)
+    enableHoverProbe();
+
   } else {
-    map.removeLayer(gebcoLayer);
+    // apagar: remover ambas capas y listeners
+    if (map.hasLayer(gebcoLayer)) map.removeLayer(gebcoLayer);
+    if (map.hasLayer(gmrtLayer))  map.removeLayer(gmrtLayer);
+    activeBathyLayer = null;
+
+    map.off('zoomend', switchBathymetryLayer);
+
     btn.textContent = '🌊 Batimetría';
     btn.classList.remove('activo');
+
     if (sondaActiva) {
       map.off('click', handleSondaClick);
       sondaActiva = false;
     }
+
+    // ✅ NUEVO: desactivar hover probe
+    disableHoverProbe();
   }
 }
+
 // =====================================================================
 
 // Capa de mapa callejero (OpenStreetMap estándar)

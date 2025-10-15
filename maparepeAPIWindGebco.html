@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Regatas Wind</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <style>
+        .logo{position:fixed;top:20px;left:10px;max-width:200px;z-index:1000;filter:drop-shadow(2px 2px 4px rgba(0,0,0,0.3))}
+        body{margin:0;padding:0;padding-top:30px}
+
+        #panel-metricas{position:fixed;top:120px;right:10px;z-index:1000;background:rgba(255,255,255,0.95);border-radius:10px;padding:15px;
+            box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:180px;backdrop-filter:blur(5px);border:1px solid rgba(255,255,255,0.3)}
+        .metrica{display:flex;align-items:center;margin-bottom:12px;padding:8px;border-radius:6px;transition:all .3s ease}
+        .metrica:hover{background:rgba(0,123,255,0.1);transform:translateX(2px)}
+        .metrica:last-child{margin-bottom:0}
+        .metrica .icono{font-size:20px;margin-right:10px;width:25px;text-align:center}
+        .metrica .valor{font-weight:bold;font-size:16px;color:#2c3e50;margin-right:8px;min-width:60px;text-align:right;transition:all .4s ease}
+        .metrica .valor.actualizado{color:#27ae60;transform:scale(1.1)}
+        .metrica .label{font-size:11px;color:#7f8c8d;font-weight:500}
+
+        .bearing-compass{position:relative;display:inline-block;margin-left:5px}
+        .barco-icon{transition:filter .3s ease}
+        .barco-icon:hover{filter:brightness(1.2)!important}
+        .bearing-needle{display:inline-block;transform-origin:center;transition:transform .5s ease;font-size:14px}
+
+        #controles-superiores{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;gap:10px;background:rgba(255,255,255,.9);
+            padding:10px;border-radius:5px;align-items:center}
+        #controles-superiores button{padding:6px 10px;font-weight:bold;border:1px solid #999;background-color:#fff;border-radius:5px;cursor:pointer}
+        #selector-usuario{padding:5px}
+
+        #select-ruta{padding:8px 12px;font-size:14px;border:2px solid #3498db;border-radius:8px;background:#fff;color:#2c3e50;font-weight:500;min-width:200px;
+            cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.1);transition:all .3s ease}
+        #select-ruta:hover{border-color:#2980b9;box-shadow:0 4px 8px rgba(0,0,0,0.15)}
+        #select-ruta:focus{outline:none;border-color:#e74c3c;box-shadow:0 0 0 3px rgba(231,76,60,0.2)}
+
+        #map{height:90vh;position:relative}
+        h2{font-size:28px;color:#333;text-align:center;margin-top:80px;position:relative}
+
+        @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+        .panel-updating{animation:pulse .3s ease}
+        .metrica.sin-datos .valor{color:#e74c3c}
+        .metrica.sin-datos .icono{opacity:.5}
+
+        #panel-viento{position:absolute;top:380px;right:10px;background:rgba(0,0,0,.85);color:#fff;padding:12px 15px;border-radius:10px;
+            box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:1000;min-width:180px;max-width:220px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1)}
+        .viento-item{display:flex;justify-content:space-between;margin:8px 0;padding:5px 0}
+        .viento-label{color:#bbb;font-size:14px}
+        .viento-value{color:#fff;font-weight:bold;font-size:14px}
+        .viento-actualizado{font-size:12px;color:#4fc3f7;text-align:center;margin-top:10px}
+        .wind-arrow{font-size:32px;line-height:32px;color:#2196F3;text-shadow:1px 1px 2px rgba(0,0,0,.7)}
+        .wind-arrow>div{transform-origin:50% 50%;font-weight:bold}
+
+        #toggle-viento{position:absolute;top:10px;right:10px;background:rgba(33,150,243,.9);color:#fff;border:none;padding:10px 15px;border-radius:8px;cursor:pointer;
+            z-index:1000;font-size:20px;backdrop-filter:blur(5px);transition:all .3s ease;width:200px;height:70px}
+        #toggle-viento:hover{background:rgba(33,150,243,1);transform:scale(1.05)}
+        #toggle-viento.activo{background:rgba(76,175,80,.9)}
+
+        .loading-viento{display:inline-block;width:12px;height:12px;border:2px solid #4fc3f7;border-radius:50%;border-top-color:transparent;animation:spin 1s infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        .vessel-icon{background:transparent;border:none;font-size:16px;line-height:16px;text-shadow:1px 1px 3px rgba(0,0,0,.8)}
+        .vessel-icon>div{transform-origin:50% 50%;transition:all .3s ease}
+        .vessel-cargo{color:#f44336}.vessel-tanker{color:#9c27b0}.vessel-passenger{color:#2196f3}.vessel-fishing{color:#4caf50}
+        .vessel-pleasure{color:#ff9800}.vessel-other{color:#607d8b}
+
+        .embarcacion-item{padding:5px 0;border-bottom:1px solid #444;font-size:12px;cursor:pointer}
+        .embarcacion-item:hover{background:rgba(255,255,255,.1);border-radius:3px}
+        .embarcacion-nombre{font-weight:bold;color:#ff9800}
+        .embarcacion-info{color:#bbb;margin-top:2px}
+        .embarcacion-destino{color:#4fc3f7;font-size:11px;margin-top:2px}
+
+        #toggle-embarcaciones{position:absolute;top:10px;right:250px;background:rgba(255,152,0,.9);color:#fff;border:none;padding:15px 25px;border-radius:8px;
+            cursor:pointer;z-index:1000;font-size:16px;font-weight:bold;backdrop-filter:blur(5px);transition:all .3s ease;height:70px}
+        #toggle-embarcaciones:hover{background:rgba(255,152,0,1);transform:scale(1.05)}
+        #toggle-embarcaciones.activo{background:rgba(76,175,80,.9)}
+
+        #panel-embarcaciones{position:absolute;top:140px;right:10px;background:rgba(0,0,0,.85);color:#fff;padding:12px 15px;border-radius:10px;
+            box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:1000;min-width:250px;max-width:300px;max-height:400px;overflow-y:auto;backdrop-filter:blur(10px);
+            border:1px solid rgba(255,255,255,.1);display:none}
+
+        #contador-embarcaciones{font-weight:bold;margin-bottom:10px;color:#ff9800;font-size:14px}
+
+        #wind-canvas{position:absolute;top:0;left:0;pointer-events:none;z-index:400}
+
+        /* === NUEVO: botón Batimetría === */
+        #toggle-batimetria{
+            position:absolute; top:10px; right:480px;
+            background: rgba(0,0,0,0.75); color:#fff; border:none;
+            padding: 15px 20px; border-radius:8px; cursor:pointer; z-index:1000;
+            font-size:16px; font-weight:bold; backdrop-filter: blur(5px); transition: all .3s ease; height:70px
+        }
+        #toggle-batimetria:hover{transform:scale(1.05)}
+        #toggle-batimetria.activo{background:rgba(76,175,80,.9)}
+    </style>
+</head>
+
+<body id="page-top" style="background-image:url('img/fondo_regata.png');background-size:cover;background-position:center;background-repeat:no-repeat;">
+<img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo"/>
+
+<!-- Panel de métricas -->
+<div id="panel-metricas">
+    <div class="metrica" id="metrica-usuario" style="background: rgba(52,152,219,0.1); margin-bottom:15px;">
+        <span class="icono">👤</span>
+        <span class="valor" id="usuario-value" style="font-size:14px;min-width:120px;">Sin selección</span>
+        <span class="label">Usuario</span>
+    </div>
+    <div class="metrica" id="metrica-bearing">
+        <span class="icono">🧭</span>
+        <span class="valor" id="bearing-value">---°</span>
+        <span class="label">Bearing</span>
+        <div class="bearing-compass"><span class="bearing-needle" id="bearing-needle">↑</span></div>
+    </div>
+    <div class="metrica" id="metrica-distancia">
+        <span class="icono">📏</span>
+        <span class="valor" id="distancia-value">0.00</span>
+        <span class="label">Millas Náuticas</span>
+    </div>
+    <div class="metrica" id="metrica-velocidad">
+        <span class="icono">⚡</span>
+        <span class="valor" id="velocidad-value">0.0</span>
+        <span class="label">Nudos</span>
+    </div>
+</div>
+
+<h1> </h1>
+
+<div id="controles-superiores">
+    <label style="display:none;">Ancho del Control (m): <span id="anchoLabel">10</span></label>
+    <input type="range" id="anchoCorredor" min="0" max="100" value="10" oninput="actualizarLabel('anchoLabel', this.value)" style="display:none;"/>
+    <select id="select-ruta">
+        <option disabled selected>Seleccione una ruta</option>
+    </select>
+</div>
+
+<div id="map"></div>
+
+<!-- Panel viento -->
+<div id="panel-viento">
+    <h3>🌬️ Información del Viento</h3>
+    <div class="viento-item"><span class="viento-label">Dirección:</span><span class="viento-value" id="vientoDir">–</span></div>
+    <div class="viento-item"><span class="viento-label">Velocidad:</span><span class="viento-value" id="vientoVel">–</span></div>
+    <div class="viento-item"><span class="viento-label">Ráfagas:</span><span class="viento-value" id="vientoRafagas">–</span></div>
+    <div class="viento-actualizado" id="vientoActualizado">Cargando...</div>
+</div>
+
+<div id="panel-embarcaciones">
+    <h3 style="margin:0 0 10px 0;color:#ff9800;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px;">🚢 Embarcaciones AIS</h3>
+    <div id="contador-embarcaciones" style="text-align:center;font-size:14px;color:#bbb;">Cargando...</div>
+    <div id="lista-embarcaciones" style="max-height:200px;overflow-y:auto;margin-top:10px;"></div>
+</div>
+
+<!-- Botones -->
+<button id="toggle-viento" onclick="toggleCapaViento()">🌬️ Viento ON</button>
+<button id="toggle-embarcaciones" onclick="toggleCapaEmbarcaciones()">🚢 Embarcaciones AIS</button>
+
+<!-- NUEVO: botón batimetría (capa + sonda click) -->
+<button id="toggle-batimetria" title="Mostrar capa GEBCO y habilitar clic para medir profundidad">🌊 Batimetría</button>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- Tu JS principal del mapa (debe crear `map`) -->
+<script src="maparepeAPIWindGebco.js"></script>
+
+<!-- === NUEVO BLOQUE: BATIMETRÍA GEBCO + SONDA GMRT === -->
+<script>
+    (function(){
+        // Referencias
+        const btnBathy = document.getElementById('toggle-batimetria');
+
+        // 1) Capa WMS GEBCO (solo imagen)
+        const gebcoLayer = L.tileLayer.wms('https://wms.gebco.net/mapserv?', {
+            layers: 'GEBCO_2024_Grid', // si cambia el nombre de capa en el futuro, revisar GetCapabilities
+            format: 'image/png',
+            transparent: true,
+            opacity: 0.75,
+            attribution: 'Bathymetry: GEBCO'
+        });
+
+        let bathyOn = false;
+        let clickHandlerActive = false;
+
+        // 2) Función para consultar profundidad puntual (GMRT PointServer)
+        async function fetchDepthGMRT(lat, lon){
+            const url = `https://www.gmrt.org/services/PointServer?latitude=${lat}&longitude=${lon}&format=json`;
+            const res = await fetch(url, { cache: 'no-store' });
+            if(!res.ok) throw new Error('GMRT error');
+            const data = await res.json();
+            // data.elevation en metros (negativo = bajo el nivel del mar)
+            return data.elevation;
+        }
+
+        // 3) Manejador CLICK (sonda)
+        async function handleMapClick(e){
+            const { lat, lng } = e.latlng;
+            const popup = L.popup({ maxWidth: 260 })
+                .setLatLng(e.latlng)
+                .setContent('⏳ Consultando profundidad...')
+                .openOn(map);
+
+            try{
+                const elev = await fetchDepthGMRT(lat, lng); // m, negativo = profundidad
+                const profundidad = (elev < 0) ? (-elev).toFixed(1) + ' m' : 'tierra/0 m';
+                const html = `
+                    <b>Lat:</b> ${lat.toFixed(5)}<br>
+                    <b>Lon:</b> ${lng.toFixed(5)}<br>
+                    <b>Profundidad:</b> ${profundidad}
+                `;
+                popup.setContent(html);
+            }catch(err){
+                popup.setContent('❌ No se pudo obtener la profundidad.');
+            }
+        }
+
+        // 4) Toggle: agrega/quita capa y activa/desactiva la sonda por clic
+        function toggleBathymetry(){
+            bathyOn = !bathyOn;
+
+            if(bathyOn){
+                gebcoLayer.addTo(map);
+                btnBathy.classList.add('activo');
+                btnBathy.textContent = '🌊 Batimetría ON';
+
+                if(!clickHandlerActive){
+                    map.on('click', handleMapClick);
+                    clickHandlerActive = true;
+                }
+            }else{
+                map.removeLayer(gebcoLayer);
+                btnBathy.classList.remove('activo');
+                btnBathy.textContent = '🌊 Batimetría';
+
+                if(clickHandlerActive){
+                    map.off('click', handleMapClick);
+                    clickHandlerActive = false;
+                }
+            }
+        }
+
+        btnBathy.addEventListener('click', toggleBathymetry);
+
+        // (Opcional) Si querés que aparezca encendida al cargar:
+        // toggleBathymetry();
+    })();
+</script>
+<!-- === FIN BLOQUE NUEVO === -->
+
+<footer style="background-color:#fff;padding:1rem;border-radius:10px;box-shadow:0 0 6px rgba(0,0,0,.3);">
+    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width:300px;display:block;margin:0 auto;">
+</footer>
+</body>
+</html>

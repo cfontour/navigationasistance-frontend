@@ -251,12 +251,14 @@ class WindParticle {
     this.speed = 0.7 + Math.random() * 1.6; // un poco más rápidas
   }
   update(canvas, windSpeed, windDir) {
-    const rad = (windDir - 180) * Math.PI / 180;
-    const visualSpeed = (windSpeed / 8) * this.speed; // ↑ escala más visible
+    // WeatherAPI: dirección desde donde VIENE el viento
+    const rad = ((windDir || 0) * Math.PI) / 180;
+    const visualSpeed = (windSpeed / 8) * this.speed; // escala visible
     this.px = this.x;
     this.py = this.y;
-    this.x += Math.sin(rad) * visualSpeed;
-    this.y += Math.cos(rad) * visualSpeed;
+    // mover HACIA donde SOPLA: invertimos X, Y positiva es hacia abajo en canvas
+    this.x += -Math.sin(rad) * visualSpeed;
+    this.y +=  Math.cos(rad) * visualSpeed;
     this.age++;
     if (
       this.x < -10 || this.x > canvas.width + 10 ||

@@ -6,6 +6,7 @@ let windCanvasEl = null;
 // 🌬️ contexto 2D global
 let windCtx = null;
 
+let vientoBusy = false;
 
 // NUEVA VARIABLE: Para almacenar la ruta seleccionada actualmente
 let rutaActualSeleccionada = null;
@@ -1220,51 +1221,53 @@ async function agregarCapaViento(mapa, puntos) {
 }
 
 async function toggleCapaViento() {
-    const btn = document.getElementById("toggle-viento");
+  const btn = document.getElementById("toggle-viento");
+  if (vientoBusy) return;          // ← evita reentradas
+  vientoBusy = true;
 
+  try {
     if (vientoVisible) {
-        // Detener partículas
-        stopWindAnimation();
-        vientoVisible = false;
-        btn.textContent = "🌬️ Viento ON";
-        btn.classList.remove('activo');
-        console.log("🌬️ Partículas de viento desactivadas");
-
-    } else {
-        btn.classList.add('activo');
-        btn.textContent = "🌬️ Cargando...";
-
-        // Cargar datos de viento
-        const coords = marcadores.size > 0
-            ? marcadores.values().next().value.getLatLng()
-            : COORD_REFERENCIA;
-
-        const datosViento = await cargarViento(coords.lat, coords.lng);
-
-        if (datosViento) {
-            // Verificar que windData se actualizó
-            console.log('🌬️ windData actualizado:', windData);
-
-            // Iniciar animación de partículas
-            const inicializado = initWindParticles();
-
-            if (inicializado) {
-                animateWindParticles();
-
-                vientoVisible = true;
-                btn.textContent = "🌬️ Viento OFF";
-                console.log("✅ Partículas de viento activadas");
-            } else {
-                btn.textContent = "🌬️ Error Canvas";
-                btn.classList.remove('activo');
-                console.error("❌ No se pudo inicializar el canvas");
-            }
-        } else {
-            btn.textContent = "🌬️ Error Viento";
-            btn.classList.remove('activo');
-            console.error("❌ No se pudieron cargar datos de viento");
-        }
+      // apagar
+      stopWindAnimation();
+      vientoVisible = false;
+      btn.classList.remove('activo');
+      btn.disabled = false;
+      btn.textContent = "🌬️ Viento ON";
+      return;
     }
+
+    // prender
+    btn.classList.add('activo');
+    btn.disabled = true;
+    btn.textContent = "🌬️ Cargando...";
+
+    const coords = marcadores.size > 0
+      ? marcadores.values().next().value.getLatLng()
+      : COORD_REFERENCIA;
+
+    const datosViento = await cargarViento(coords.lat, coords.lng);
+    if (!datosViento) {
+      btn.classList.remove('activo');
+      btn.disabled = false;
+      btn.textContent = "🌬️ Error Viento";
+      return;
+    }
+
+    const ok = initWindParticles();
+    if (!ok) {
+      btn.classList.remove('activo');
+      btn.disabled = false;
+      btn.textContent = "🌬️ Error Canvas";
+      return;
+    }
+
+    animateWindParticles();
+    vientoVisible = true;
+    btn.disabled = false;
+    btn.textContent = "🌬️ Viento OFF";
+  } finally {
+    vientoBusy = false;            // ← se libere o falle, el botón no queda “colgado”
+  }
 }
 
 function iniciarSistemaViento() {

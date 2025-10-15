@@ -25,15 +25,33 @@
         .barco-icon:hover{filter:brightness(1.2)!important}
         .bearing-needle{display:inline-block;transform-origin:center;transition:transform .5s ease;font-size:14px}
 
-        #controles-superiores{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;gap:10px;background:rgba(255,255,255,.9);
-            padding:10px;border-radius:5px;align-items:center}
+        /* === Barra superior centrada (un poco más a la izquierda) === */
+        #controles-superiores{
+            position:absolute;top:10px;left:45%;transform:translateX(-50%);
+            z-index:1000;display:flex;gap:10px;background:rgba(255,255,255,.9);
+            padding:10px;border-radius:5px;align-items:center
+        }
         #controles-superiores button{padding:6px 10px;font-weight:bold;border:1px solid #999;background-color:#fff;border-radius:5px;cursor:pointer}
         #selector-usuario{padding:5px}
 
-        #select-ruta{padding:8px 12px;font-size:14px;border:2px solid #3498db;border-radius:8px;background:#fff;color:#2c3e50;font-weight:500;min-width:200px;
-            cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.1);transition:all .3s ease}
+        #select-ruta{
+            padding:8px 12px;font-size:14px;border:2px solid #3498db;border-radius:8px;background:#fff;color:#2c3e50;font-weight:500;min-width:200px;
+            cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.1);transition:all .3s ease;height:44px
+        }
         #select-ruta:hover{border-color:#2980b9;box-shadow:0 4px 8px rgba(0,0,0,0.15)}
         #select-ruta:focus{outline:none;border-color:#e74c3c;box-shadow:0 0 0 3px rgba(231,76,60,0.2)}
+
+        /* === Botones de la barra (reemplaza estilos absolutos anteriores) === */
+        .top-btn{
+            height:44px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;
+            border:none;border-radius:8px;font-weight:700;cursor:pointer;
+            box-shadow:0 3px 8px rgba(0,0,0,.12);transition:transform .15s ease
+        }
+        #toggle-batimetria.top-btn{ background:rgba(0,0,0,.75); color:#fff; }
+        #toggle-embarcaciones.top-btn{ background:rgba(255,152,0,.9); color:#fff; }
+        #toggle-viento.top-btn{ background:rgba(33,150,243,.9); color:#fff; }
+        .top-btn:hover{ transform:translateY(-1px); }
+        .top-btn.activo{ background:rgba(76,175,80,.9) !important; }
 
         #map{height:90vh;position:relative}
         h2{font-size:28px;color:#333;text-align:center;margin-top:80px;position:relative}
@@ -52,13 +70,7 @@
         .wind-arrow{font-size:32px;line-height:32px;color:#2196F3;text-shadow:1px 1px 2px rgba(0,0,0,.7)}
         .wind-arrow>div{transform-origin:50% 50%;font-weight:bold}
 
-        #toggle-viento{position:absolute;top:10px;right:10px;background:rgba(33,150,243,.9);color:#fff;border:none;padding:10px 15px;border-radius:8px;cursor:pointer;
-            z-index:1000;font-size:20px;backdrop-filter:blur(5px);transition:all .3s ease;width:200px;height:70px}
-        #toggle-viento:hover{background:rgba(33,150,243,1);transform:scale(1.05)}
-        #toggle-viento.activo{background:rgba(76,175,80,.9)}
-
-        .loading-viento{display:inline-block;width:12px;height:12px;border:2px solid #4fc3f7;border-radius:50%;border-top-color:transparent;animation:spin 1s infinite}
-        @keyframes spin{to{transform:rotate(360deg)}}
+        /* (Eliminados estilos absolutos antiguos de botones) */
 
         .vessel-icon{background:transparent;border:none;font-size:16px;line-height:16px;text-shadow:1px 1px 3px rgba(0,0,0,.8)}
         .vessel-icon>div{transform-origin:50% 50%;transition:all .3s ease}
@@ -71,11 +83,6 @@
         .embarcacion-info{color:#bbb;margin-top:2px}
         .embarcacion-destino{color:#4fc3f7;font-size:11px;margin-top:2px}
 
-        #toggle-embarcaciones{position:absolute;top:10px;right:250px;background:rgba(255,152,0,.9);color:#fff;border:none;padding:15px 25px;border-radius:8px;
-            cursor:pointer;z-index:1000;font-size:16px;font-weight:bold;backdrop-filter:blur(5px);transition:all .3s ease;height:70px}
-        #toggle-embarcaciones:hover{background:rgba(255,152,0,1);transform:scale(1.05)}
-        #toggle-embarcaciones.activo{background:rgba(76,175,80,.9)}
-
         #panel-embarcaciones{position:absolute;top:140px;right:10px;background:rgba(0,0,0,.85);color:#fff;padding:12px 15px;border-radius:10px;
             box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:1000;min-width:250px;max-width:300px;max-height:400px;overflow-y:auto;backdrop-filter:blur(10px);
             border:1px solid rgba(255,255,255,.1);display:none}
@@ -83,16 +90,6 @@
         #contador-embarcaciones{font-weight:bold;margin-bottom:10px;color:#ff9800;font-size:14px}
 
         #wind-canvas{position:absolute;top:0;left:0;pointer-events:none;z-index:400}
-
-        /* === NUEVO: botón Batimetría === */
-        #toggle-batimetria{
-            position:absolute; top:10px; right:480px;
-            background: rgba(0,0,0,0.75); color:#fff; border:none;
-            padding: 15px 20px; border-radius:8px; cursor:pointer; z-index:1000;
-            font-size:16px; font-weight:bold; backdrop-filter: blur(5px); transition: all .3s ease; height:70px
-        }
-        #toggle-batimetria:hover{transform:scale(1.05)}
-        #toggle-batimetria.activo{background:rgba(76,175,80,.9)}
 
         .leaflet-tooltip.sonda-tooltip {
          background: rgba(0,0,0,.85);
@@ -103,7 +100,6 @@
          box-shadow: 0 2px 6px rgba(0,0,0,.25);
          font-size: 12px;
         }
-
     </style>
 </head>
 
@@ -137,12 +133,18 @@
 
 <h1> </h1>
 
+<!-- === BARRA SUPERIOR con select + botones === -->
 <div id="controles-superiores">
     <label style="display:none;">Ancho del Control (m): <span id="anchoLabel">10</span></label>
     <input type="range" id="anchoCorredor" min="0" max="100" value="10" oninput="actualizarLabel('anchoLabel', this.value)" style="display:none;"/>
+
     <select id="select-ruta">
         <option disabled selected>Seleccione una ruta</option>
     </select>
+
+    <button id="toggle-batimetria" class="top-btn">🌊 Batimetría</button>
+    <button id="toggle-embarcaciones" class="top-btn" onclick="toggleCapaEmbarcaciones()">🚢 Embarcaciones AIS</button>
+    <button id="toggle-viento" class="top-btn">🌬️ Viento ON</button>
 </div>
 
 <div id="map"></div>
@@ -161,21 +163,6 @@
     <div id="contador-embarcaciones" style="text-align:center;font-size:14px;color:#bbb;">Cargando...</div>
     <div id="lista-embarcaciones" style="max-height:200px;overflow-y:auto;margin-top:10px;"></div>
 </div>
-
-<!-- Botones -->
-<button id="toggle-viento">🌬️ Viento ON</button>
-
-<button id="toggle-embarcaciones" onclick="toggleCapaEmbarcaciones()">🚢 Embarcaciones AIS</button>
-
-<!-- Botón batimetría (GEBCO + sonda GMRT) -->
-<button id="toggle-batimetria"
-        style="position: absolute; top: 10px; right: 480px;
-               background: rgba(0,0,0,0.75); color: white; border: none;
-               padding: 15px 20px; border-radius: 8px; cursor: pointer;
-               z-index: 1000; font-size: 16px; font-weight: bold;
-               backdrop-filter: blur(5px); transition: all 0.3s ease; height: 70px;">
-    🌊 Batimetría
-</button>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <!-- Tu JS principal del mapa (debe crear `map`) -->

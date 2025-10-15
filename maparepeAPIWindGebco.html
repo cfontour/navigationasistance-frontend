@@ -10,8 +10,13 @@
         .logo{position:fixed;top:20px;left:10px;max-width:200px;z-index:1000;filter:drop-shadow(2px 2px 4px rgba(0,0,0,0.3))}
         body{margin:0;padding:0;padding-top:30px}
 
-        #panel-metricas{position:fixed;top:120px;right:10px;z-index:1000;background:rgba(255,255,255,0.95);border-radius:10px;padding:15px;
-            box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:180px;backdrop-filter:blur(5px);border:1px solid rgba(255,255,255,0.3)}
+        /* 👈 Muevo el panel de métricas a la IZQUIERDA para que no pise la sidebar */
+        #panel-metricas{
+          position:fixed; top:120px; left:10px; right:auto;
+          z-index:1000; background:rgba(255,255,255,0.95); border-radius:10px; padding:15px;
+          box-shadow:0 4px 12px rgba(0,0,0,0.15); min-width:180px; backdrop-filter:blur(5px);
+          border:1px solid rgba(255,255,255,0.3)
+        }
         .metrica{display:flex;align-items:center;margin-bottom:12px;padding:8px;border-radius:6px;transition:all .3s ease}
         .metrica:hover{background:rgba(0,123,255,0.1);transform:translateX(2px)}
         .metrica:last-child{margin-bottom:0}
@@ -25,27 +30,27 @@
         .barco-icon:hover{filter:brightness(1.2)!important}
         .bearing-needle{display:inline-block;transform-origin:center;transition:transform .5s ease;font-size:14px}
 
-        /* === Barra superior centrada (un poco más a la izquierda) === */
+        /* === Barra superior un poco más a la izquierda === */
         #controles-superiores{
-            position:absolute;top:10px;left:45%;transform:translateX(-50%);
-            z-index:1000;display:flex;gap:10px;background:rgba(255,255,255,.9);
-            padding:10px;border-radius:5px;align-items:center
+          position:absolute; top:10px; left:45%; transform:translateX(-50%);
+          z-index:1000; display:flex; gap:10px; background:rgba(255,255,255,.9);
+          padding:10px; border-radius:5px; align-items:center
         }
         #controles-superiores button{padding:6px 10px;font-weight:bold;border:1px solid #999;background-color:#fff;border-radius:5px;cursor:pointer}
         #selector-usuario{padding:5px}
 
         #select-ruta{
-            padding:8px 12px;font-size:14px;border:2px solid #3498db;border-radius:8px;background:#fff;color:#2c3e50;font-weight:500;min-width:200px;
-            cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.1);transition:all .3s ease;height:44px
+          padding:8px 12px;font-size:14px;border:2px solid #3498db;border-radius:8px;background:#fff;color:#2c3e50;font-weight:500;min-width:200px;
+          cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.1);transition:all .3s ease;height:44px
         }
         #select-ruta:hover{border-color:#2980b9;box-shadow:0 4px 8px rgba(0,0,0,0.15)}
         #select-ruta:focus{outline:none;border-color:#e74c3c;box-shadow:0 0 0 3px rgba(231,76,60,0.2)}
 
-        /* === Botones de la barra (reemplaza estilos absolutos anteriores) === */
+        /* === Botones de la barra === */
         .top-btn{
-            height:44px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;
-            border:none;border-radius:8px;font-weight:700;cursor:pointer;
-            box-shadow:0 3px 8px rgba(0,0,0,.12);transition:transform .15s ease
+          height:44px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;
+          border:none;border-radius:8px;font-weight:700;cursor:pointer;
+          box-shadow:0 3px 8px rgba(0,0,0,.12);transition:transform .15s ease
         }
         #toggle-batimetria.top-btn{ background:rgba(0,0,0,.75); color:#fff; }
         #toggle-embarcaciones.top-btn{ background:rgba(255,152,0,.9); color:#fff; }
@@ -61,16 +66,12 @@
         .metrica.sin-datos .valor{color:#e74c3c}
         .metrica.sin-datos .icono{opacity:.5}
 
-        #panel-viento{position:absolute;top:380px;right:10px;background:rgba(0,0,0,.85);color:#fff;padding:12px 15px;border-radius:10px;
-            box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:1000;min-width:180px;max-width:220px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1)}
         .viento-item{display:flex;justify-content:space-between;margin:8px 0;padding:5px 0}
         .viento-label{color:#bbb;font-size:14px}
         .viento-value{color:#fff;font-weight:bold;font-size:14px}
         .viento-actualizado{font-size:12px;color:#4fc3f7;text-align:center;margin-top:10px}
         .wind-arrow{font-size:32px;line-height:32px;color:#2196F3;text-shadow:1px 1px 2px rgba(0,0,0,.7)}
         .wind-arrow>div{transform-origin:50% 50%;font-weight:bold}
-
-        /* (Eliminados estilos absolutos antiguos de botones) */
 
         .vessel-icon{background:transparent;border:none;font-size:16px;line-height:16px;text-shadow:1px 1px 3px rgba(0,0,0,.8)}
         .vessel-icon>div{transform-origin:50% 50%;transition:all .3s ease}
@@ -83,44 +84,34 @@
         .embarcacion-info{color:#bbb;margin-top:2px}
         .embarcacion-destino{color:#4fc3f7;font-size:11px;margin-top:2px}
 
-        #panel-embarcaciones{position:absolute;top:140px;right:10px;background:rgba(0,0,0,.85);color:#fff;padding:12px 15px;border-radius:10px;
-            box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:1000;min-width:250px;max-width:300px;max-height:400px;overflow-y:auto;backdrop-filter:blur(10px);
-            border:1px solid rgba(255,255,255,.1);display:none}
-
-        #contador-embarcaciones{font-weight:bold;margin-bottom:10px;color:#ff9800;font-size:14px}
+        /* === Columna derecha apilada para AIS + Viento === */
+        #sidebar-derecha{
+          position:absolute; top:140px; right:10px; z-index:1000;
+          display:flex; flex-direction:column; gap:14px; width:320px;
+        }
+        /* Los dos paneles pasan a flujo normal dentro de la columna */
+        #panel-embarcaciones, #panel-viento{
+          position:static !important; width:100%;
+          background:rgba(0,0,0,.85); color:#fff; padding:12px 15px; border-radius:10px;
+          box-shadow:0 4px 12px rgba(0,0,0,.3); backdrop-filter:blur(10px);
+          border:1px solid rgba(255,255,255,.1);
+        }
+        #panel-embarcaciones{max-height:400px; overflow-y:auto;}
+        #panel-viento h3{margin:0 0 6px 0}
+        #contador-embarcaciones{font-weight:bold;margin-bottom:10px;color:#ff9800;font-size:14px;text-align:center}
+        .leaflet-tooltip.sonda-tooltip{
+          background: rgba(0,0,0,.85); color:#fff; border:1px solid rgba(255,255,255,.2);
+          border-radius:6px; padding:4px 8px; box-shadow:0 2px 6px rgba(0,0,0,.25); font-size:12px;
+        }
 
         #wind-canvas{position:absolute;top:0;left:0;pointer-events:none;z-index:400}
-
-        .leaflet-tooltip.sonda-tooltip {
-         background: rgba(0,0,0,.85);
-         color: #fff;
-         border: 1px solid rgba(255,255,255,.2);
-         border-radius: 6px;
-         padding: 4px 8px;
-         box-shadow: 0 2px 6px rgba(0,0,0,.25);
-         font-size: 12px;
-        }
-
-        /* Apilar AIS + Viento en una columna derecha */
-        #sidebar-derecha{
-         position:absolute; top:140px; right:10px; z-index:1000;
-         display:flex; flex-direction:column; gap:14px; /* separación entre paneles */
-         width: 320px;                 /* ajustá si querés más angosto/ancho */
-        }
-
-        /* Los dos paneles dejan de ser absolutos y ocupan el ancho del contenedor */
-        #panel-embarcaciones, #panel-viento{
-         position: static !important;  /* anula el 'absolute' anterior */
-         width: 100%;
-        }
-
     </style>
 </head>
 
 <body id="page-top" style="background-image:url('img/fondo_regata.png');background-size:cover;background-position:center;background-repeat:no-repeat;">
 <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo"/>
 
-<!-- Panel de métricas -->
+<!-- Panel de métricas (ahora a la izquierda) -->
 <div id="panel-metricas">
     <div class="metrica" id="metrica-usuario" style="background: rgba(52,152,219,0.1); margin-bottom:15px;">
         <span class="icono">👤</span>
@@ -145,9 +136,7 @@
     </div>
 </div>
 
-<h1> </h1>
-
-<!-- === BARRA SUPERIOR con select + botones === -->
+<!-- === Barra superior === -->
 <div id="controles-superiores">
     <label style="display:none;">Ancho del Control (m): <span id="anchoLabel">10</span></label>
     <input type="range" id="anchoCorredor" min="0" max="100" value="10" oninput="actualizarLabel('anchoLabel', this.value)" style="display:none;"/>
@@ -163,8 +152,14 @@
 
 <div id="map"></div>
 
+<!-- === Sidebar derecha apilada (NO se solapan) === -->
 <div id="sidebar-derecha">
-    <!-- Panel viento -->
+    <div id="panel-embarcaciones">
+        <h3 style="margin:0 0 10px 0;color:#ff9800;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px;">🚢 Embarcaciones AIS</h3>
+        <div id="contador-embarcaciones">Cargando...</div>
+        <div id="lista-embarcaciones" style="max-height:200px;overflow-y:auto;margin-top:10px;"></div>
+    </div>
+
     <div id="panel-viento">
         <h3>🌬️ Información del Viento</h3>
         <div class="viento-item"><span class="viento-label">Dirección:</span><span class="viento-value" id="vientoDir">–</span></div>
@@ -172,16 +167,9 @@
         <div class="viento-item"><span class="viento-label">Ráfagas:</span><span class="viento-value" id="vientoRafagas">–</span></div>
         <div class="viento-actualizado" id="vientoActualizado">Cargando...</div>
     </div>
-
-    <div id="panel-embarcaciones">
-        <h3 style="margin:0 0 10px 0;color:#ff9800;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px;">🚢 Embarcaciones AIS</h3>
-        <div id="contador-embarcaciones" style="text-align:center;font-size:14px;color:#bbb;">Cargando...</div>
-        <div id="lista-embarcaciones" style="max-height:200px;overflow-y:auto;margin-top:10px;"></div>
-    </div>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<!-- Tu JS principal del mapa (debe crear `map`) -->
 <script src="maparepeAPIWindGebco.js"></script>
 
 <footer style="background-color:#fff;padding:1rem;border-radius:10px;box-shadow:0 0 6px rgba(0,0,0,.3);">

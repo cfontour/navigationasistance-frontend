@@ -100,6 +100,20 @@
          box-shadow: 0 2px 6px rgba(0,0,0,.25);
          font-size: 12px;
         }
+
+        /* Apilar AIS + Viento en una columna derecha */
+        #sidebar-derecha{
+         position:absolute; top:140px; right:10px; z-index:1000;
+         display:flex; flex-direction:column; gap:14px; /* separación entre paneles */
+         width: 320px;                 /* ajustá si querés más angosto/ancho */
+        }
+
+        /* Los dos paneles dejan de ser absolutos y ocupan el ancho del contenedor */
+        #panel-embarcaciones, #panel-viento{
+         position: static !important;  /* anula el 'absolute' anterior */
+         width: 100%;
+        }
+
     </style>
 </head>
 
@@ -149,19 +163,21 @@
 
 <div id="map"></div>
 
-<!-- Panel viento -->
-<div id="panel-viento">
-    <h3>🌬️ Información del Viento</h3>
-    <div class="viento-item"><span class="viento-label">Dirección:</span><span class="viento-value" id="vientoDir">–</span></div>
-    <div class="viento-item"><span class="viento-label">Velocidad:</span><span class="viento-value" id="vientoVel">–</span></div>
-    <div class="viento-item"><span class="viento-label">Ráfagas:</span><span class="viento-value" id="vientoRafagas">–</span></div>
-    <div class="viento-actualizado" id="vientoActualizado">Cargando...</div>
-</div>
+<div id="sidebar-derecha">
+    <!-- Panel viento -->
+    <div id="panel-viento">
+        <h3>🌬️ Información del Viento</h3>
+        <div class="viento-item"><span class="viento-label">Dirección:</span><span class="viento-value" id="vientoDir">–</span></div>
+        <div class="viento-item"><span class="viento-label">Velocidad:</span><span class="viento-value" id="vientoVel">–</span></div>
+        <div class="viento-item"><span class="viento-label">Ráfagas:</span><span class="viento-value" id="vientoRafagas">–</span></div>
+        <div class="viento-actualizado" id="vientoActualizado">Cargando...</div>
+    </div>
 
-<div id="panel-embarcaciones">
-    <h3 style="margin:0 0 10px 0;color:#ff9800;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px;">🚢 Embarcaciones AIS</h3>
-    <div id="contador-embarcaciones" style="text-align:center;font-size:14px;color:#bbb;">Cargando...</div>
-    <div id="lista-embarcaciones" style="max-height:200px;overflow-y:auto;margin-top:10px;"></div>
+    <div id="panel-embarcaciones">
+        <h3 style="margin:0 0 10px 0;color:#ff9800;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px;">🚢 Embarcaciones AIS</h3>
+        <div id="contador-embarcaciones" style="text-align:center;font-size:14px;color:#bbb;">Cargando...</div>
+        <div id="lista-embarcaciones" style="max-height:200px;overflow-y:auto;margin-top:10px;"></div>
+    </div>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>

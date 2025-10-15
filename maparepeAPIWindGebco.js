@@ -13,6 +13,70 @@ let rutaActualSeleccionada = null;
 
 const map = L.map("map").setView([-34.9, -56.1], 13);
 
+// === BATIMETRÍA (GEBCO) + SONDA (GMRT) ===============================
+const gebcoLayer = L.tileLayer.wms('https://wms.gebco.net/mapserv?', {
+  layers: 'GEBCO_2024_Grid',   // si GEBCO cambia el nombre, ajusta este valor
+  format: 'image/png',
+  transparent: true,
+  opacity: 0.75,
+  attribution: 'Bathymetry: GEBCO'
+});
+
+let bathyOn = false;
+let sondaActiva = false;
+
+async function fetchDepthGMRT(lat, lon) {
+  const url = `https://www.gmrt.org/services/PointServer?latitude=${lat}&longitude=${lon}&format=json`;
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error('GMRT error');
+  const data = await res.json();
+  return data.elevation; // m (negativo = profundidad)
+}
+
+async function handleSondaClick(e) {
+  const { lat, lng } = e.latlng;
+  const popup = L.popup({ maxWidth: 260 })
+    .setLatLng(e.latlng)
+    .setContent('⏳ Consultando profundidad...')
+    .openOn(map);
+
+  try {
+    const elev = await fetchDepthGMRT(lat, lng);           // elev en metros (negativo = bajo el mar)
+    const profundidad = elev < 0 ? `${(-elev).toFixed(1)} m` : 'tierra/0 m';
+    popup.setContent(`
+      <b>Lat:</b> ${lat.toFixed(5)}<br>
+      <b>Lon:</b> ${lng.toFixed(5)}<br>
+      <b>Profundidad:</b> ${profundidad}
+    `);
+  } catch {
+    popup.setContent('❌ No se pudo obtener la profundidad.');
+  }
+}
+
+function toggleCapaBatimetria() {
+  bathyOn = !bathyOn;
+  const btn = document.getElementById('toggle-batimetria');
+
+  if (bathyOn) {
+    gebcoLayer.addTo(map);
+    btn.textContent = '🌊 Batimetría ON';
+    btn.classList.add('activo');
+    if (!sondaActiva) {
+      map.on('click', handleSondaClick);
+      sondaActiva = true;
+    }
+  } else {
+    map.removeLayer(gebcoLayer);
+    btn.textContent = '🌊 Batimetría';
+    btn.classList.remove('activo');
+    if (sondaActiva) {
+      map.off('click', handleSondaClick);
+      sondaActiva = false;
+    }
+  }
+}
+// =====================================================================
+
 // Capa de mapa callejero (OpenStreetMap estándar)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -1691,6 +1755,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     btnViento.addEventListener('click', (e) => {
       e.preventDefault();
       toggleCapaViento();
+    });
+  }
+
+  // 🔘 botón batimetría — sin onclick inline
+  const btnBathy = document.getElementById('toggle-batimetria');
+  if (btnBathy) {
+    btnBathy.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleCapaBatimetria();
     });
   }
 

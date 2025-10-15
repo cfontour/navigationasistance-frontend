@@ -11,37 +11,38 @@ let vientoBusy = false;
 // NUEVA VARIABLE: Para almacenar la ruta seleccionada actualmente
 let rutaActualSeleccionada = null;
 
-// ✅ NUEVO: Sonda en hover con tooltip y throttling
-let sondaTooltip = null;
-let depthFetchBusy = false;
-let depthFetchLast = 0;
-
 const map = L.map("map").setView([-34.9, -56.1], 13);
 
+// ⬇️ AÑADIR ESTO
+let bathyOn = false;
+let sondaActiva = false;
+
+
 // === BATIMETRÍA (GEBCO + GMRT) =====================================
-const gebcoLayer = L.tileLayer.wms('https://wms.gebco.net/mapserv?', {
+const gebcoLayer = L.tileLayer.wms('https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/wms?', {
   layers: 'GEBCO_2024_Grid',
   format: 'image/png',
   transparent: true,
   opacity: 0.75,
+  tileSize: 512,          // ← tiles más grandes = mejor detalle en retina
+  detectRetina: true,
   attribution: 'Bathymetry: GEBCO'
 });
 
-// ✅ NUEVO: GMRT WMS (más detalle costero)
+// === NUEVO: GMRT WMS (más detalle costero)
 const gmrtLayer = L.tileLayer.wms('https://www.gmrt.org/services/mapserver/wms_merc?', {
   layers: 'topo',
   format: 'image/png',
   transparent: true,
   opacity: 0.85,
+  tileSize: 512,          // ← igual ajuste
+  detectRetina: true,
   attribution: 'GMRT / LDEO'
 });
 
-let bathyOn = false;
-let sondaActiva = false;
-
-// ✅ NUEVO: control de capa activa y conmutación por zoom
+// Control de capa activa y conmutación por zoom
 let activeBathyLayer = null;
-const GMRT_PREFER_ZOOM = 12; // a partir de este zoom, usar GMRT
+const GMRT_PREFER_ZOOM = 12; // a partir de este zoom usar GMRT
 
 function switchBathymetryLayer() {
   if (!bathyOn) return;
@@ -58,6 +59,7 @@ function switchBathymetryLayer() {
 
 // opcional, pero ayuda a que quede por encima del base
 gebcoLayer.setZIndex(350);
+gmrtLayer.setZIndex(360);
 
 async function fetchDepthGMRT(lat, lon) {
   const url = `https://www.gmrt.org/services/PointServer?latitude=${lat}&longitude=${lon}&format=json`;
@@ -67,53 +69,94 @@ async function fetchDepthGMRT(lat, lon) {
   return data.elevation; // m (negativo = profundidad)
 }
 
-async function handleSondaClick(e) {
-  const { lat, lng } = e.latlng;
-  const popup = L.popup({ maxWidth: 260 })
-    .setLatLng(e.latlng)
-    .setContent('⏳ Consultando profundidad...')
-    .openOn(map);
+// ===== Sonda en hover: abort + cache + umbral de movimiento + idle =====
+let sondaTooltip = null;
 
-  try {
-    const elev = await fetchDepthGMRT(lat, lng);           // elev en metros (negativo = bajo el mar)
-    const profundidad = elev < 0 ? `${(-elev).toFixed(1)} m` : 'tierra/0 m';
-    popup.setContent(`
-      <b>Lat:</b> ${lat.toFixed(5)}<br>
-      <b>Lon:</b> ${lng.toFixed(5)}<br>
-      <b>Profundidad:</b> ${profundidad}
-    `);
-  } catch {
-    popup.setContent('❌ No se pudo obtener la profundidad.');
+// cache por celda (lat/lon redondeados) con TTL
+const depthCache = new Map(); // key -> {depth, ts}
+const DEPTH_TTL_MS = 2 * 60 * 1000; // 2 min
+
+// control de requests
+let currentDepthAbort = null;
+
+// throttling/idle
+let hoverIdleTimer = null;
+const HOVER_IDLE_MS = 250;     // espera a que el mouse se "asiente"
+const MIN_MOVE_PX = 25;        // no consultes si no se movió suficiente
+
+let lastQueryPoint = null;     // L.Point de la última consulta
+
+function cacheKeyFromLatLng(latlng) {
+  const qLat = Math.round(latlng.lat * 100) / 100; // ~0.01°
+  const qLng = Math.round(latlng.lng * 100) / 100;
+  return `${qLat},${qLng}`;
+}
+
+function getCachedDepth(latlng) {
+  const key = cacheKeyFromLatLng(latlng);
+  const hit = depthCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.ts > DEPTH_TTL_MS) {
+    depthCache.delete(key);
+    return null;
+  }
+  return hit.depth;
+}
+
+function setCachedDepth(latlng, depth) {
+  const key = cacheKeyFromLatLng(latlng);
+  depthCache.set(key, { depth, ts: Date.now() });
+}
+
+async function fetchDepthWithAbort(lat, lng) {
+  if (currentDepthAbort) currentDepthAbort.abort();
+  currentDepthAbort = new AbortController();
+
+  const url = `https://www.gmrt.org/services/PointServer?latitude=${lat}&longitude=${lng}&format=json`;
+  const res = await fetch(url, { cache: 'no-store', signal: currentDepthAbort.signal });
+  if (!res.ok) throw new Error('GMRT error');
+  const data = await res.json();
+  return data.elevation; // m (negativo = profundidad)
+}
+
+function showDepthTooltip(latlng, elev) {
+  const profundidad = elev < 0 ? `${(-elev).toFixed(1)} m` : 'tierra/0 m';
+  if (!sondaTooltip) {
+    sondaTooltip = L.tooltip({
+      permanent: false,
+      direction: 'top',
+      className: 'sonda-tooltip'
+    }).setLatLng(latlng).setContent(profundidad).addTo(map);
+  } else {
+    sondaTooltip.setLatLng(latlng).setContent(profundidad);
   }
 }
 
-async function handleSondaHover(e) {
-  const now = Date.now();
-  if (depthFetchBusy || (now - depthFetchLast < 400)) return; // throttle ~400ms
-  depthFetchLast = now;
-  depthFetchBusy = true;
+function handleSondaHoverRaw(e) {
+  // Umbral de movimiento en px para no spamear
+  const p = map.latLngToContainerPoint(e.latlng);
+  if (lastQueryPoint && p.distanceTo(lastQueryPoint) < MIN_MOVE_PX) return;
+  lastQueryPoint = p;
 
-  try {
-    const elev = await fetchDepthGMRT(e.latlng.lat, e.latlng.lng);
-    const profundidad = elev < 0 ? (-elev).toFixed(1) + ' m' : 'tierra/0 m';
-
-    if (!sondaTooltip) {
-      sondaTooltip = L.tooltip({
-        permanent: false,
-        direction: 'top',
-        className: 'sonda-tooltip'
-      })
-      .setLatLng(e.latlng)
-      .setContent(profundidad)
-      .addTo(map);
-    } else {
-      sondaTooltip.setLatLng(e.latlng).setContent(profundidad);
-    }
-  } catch (err) {
-    // silencioso para no ensuciar consola
-  } finally {
-    depthFetchBusy = false;
+  // cache primero
+  const cached = getCachedDepth(e.latlng);
+  if (cached !== null && cached !== undefined) {
+    showDepthTooltip(e.latlng, cached);
+    return;
   }
+
+  // consulta con abort
+  fetchDepthWithAbort(e.latlng.lat, e.latlng.lng)
+    .then(elev => {
+      setCachedDepth(e.latlng, elev);
+      showDepthTooltip(e.latlng, elev);
+    })
+    .catch(() => {});
+}
+
+function handleSondaHover(e) {
+  if (hoverIdleTimer) clearTimeout(hoverIdleTimer);
+  hoverIdleTimer = setTimeout(() => handleSondaHoverRaw(e), HOVER_IDLE_MS);
 }
 
 function enableHoverProbe() {
@@ -122,36 +165,40 @@ function enableHoverProbe() {
 
 function disableHoverProbe() {
   map.off('mousemove', handleSondaHover);
+  if (hoverIdleTimer) {
+    clearTimeout(hoverIdleTimer);
+    hoverIdleTimer = null;
+  }
+  if (currentDepthAbort) {
+    currentDepthAbort.abort();
+    currentDepthAbort = null;
+  }
+  lastQueryPoint = null;
   if (sondaTooltip) {
     map.removeLayer(sondaTooltip);
     sondaTooltip = null;
   }
 }
 
-// ✅ REEMPLAZAR
 function toggleCapaBatimetria() {
   bathyOn = !bathyOn;
   const btn = document.getElementById('toggle-batimetria');
 
   if (bathyOn) {
-    // prender: elegir capa según zoom y escuchar cambios de zoom
+    // elegir capa según zoom y escuchar cambios de zoom
     switchBathymetryLayer();
     map.on('zoomend', switchBathymetryLayer);
 
     btn.textContent = '🌊 Batimetría ON';
     btn.classList.add('activo');
 
-    // activar sonda por click si no estaba
     if (!sondaActiva) {
-      map.on('click', handleSondaClick);
+      enableHoverProbe();
       sondaActiva = true;
     }
 
-    // ✅ NUEVO: sonda en hover (tooltip con throttling)
-    enableHoverProbe();
-
   } else {
-    // apagar: remover ambas capas y listeners
+    // apagar capas
     if (map.hasLayer(gebcoLayer)) map.removeLayer(gebcoLayer);
     if (map.hasLayer(gmrtLayer))  map.removeLayer(gmrtLayer);
     activeBathyLayer = null;
@@ -162,12 +209,9 @@ function toggleCapaBatimetria() {
     btn.classList.remove('activo');
 
     if (sondaActiva) {
-      map.off('click', handleSondaClick);
+      disableHoverProbe();
       sondaActiva = false;
     }
-
-    // ✅ NUEVO: desactivar hover probe
-    disableHoverProbe();
   }
 }
 

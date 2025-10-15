@@ -93,6 +93,17 @@
         }
         #toggle-batimetria:hover{transform:scale(1.05)}
         #toggle-batimetria.activo{background:rgba(76,175,80,.9)}
+
+        .leaflet-tooltip.sonda-tooltip {
+         background: rgba(0,0,0,.85);
+         color: #fff;
+         border: 1px solid rgba(255,255,255,.2);
+         border-radius: 6px;
+         padding: 4px 8px;
+         box-shadow: 0 2px 6px rgba(0,0,0,.25);
+         font-size: 12px;
+        }
+
     </style>
 </head>
 
@@ -152,7 +163,8 @@
 </div>
 
 <!-- Botones -->
-<button id="toggle-viento" onclick="toggleCapaViento()">🌬️ Viento ON</button>
+<button id="toggle-viento">🌬️ Viento ON</button>
+
 <button id="toggle-embarcaciones" onclick="toggleCapaEmbarcaciones()">🚢 Embarcaciones AIS</button>
 
 <!-- Botón batimetría (GEBCO + sonda GMRT) -->

@@ -59,9 +59,6 @@ function switchBathymetryLayer() {
 // opcional, pero ayuda a que quede por encima del base
 gebcoLayer.setZIndex(350);
 
-let bathyOn = false;
-let sondaActiva = false;
-
 async function fetchDepthGMRT(lat, lon) {
   const url = `https://www.gmrt.org/services/PointServer?latitude=${lat}&longitude=${lon}&format=json`;
   const res = await fetch(url, { cache: 'no-store' });

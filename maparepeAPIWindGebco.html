@@ -12,10 +12,9 @@
 
         /* 👈 Muevo el panel de métricas a la IZQUIERDA para que no pise la sidebar */
         #panel-metricas{
-          position:fixed; top:120px; left:10px; right:auto;
-          z-index:1000; background:rgba(255,255,255,0.95); border-radius:10px; padding:15px;
-          box-shadow:0 4px 12px rgba(0,0,0,0.15); min-width:180px; backdrop-filter:blur(5px);
-          border:1px solid rgba(255,255,255,0.3)
+         position:static !important;   /* <- antes era fixed */
+         width:100%;
+         margin:0;
         }
         .metrica{display:flex;align-items:center;margin-bottom:12px;padding:8px;border-radius:6px;transition:all .3s ease}
         .metrica:hover{background:rgba(0,123,255,0.1);transform:translateX(2px)}
@@ -86,8 +85,8 @@
 
         /* === Columna derecha apilada para AIS + Viento === */
         #sidebar-derecha{
-          position:absolute; top:140px; right:15px; z-index:1000;
-          display:flex; flex-direction:column; gap:14px; width:320px;
+          position:absolute; top:140px; right:32px; z-index:1000;
+          display:flex; flex-direction:column; gap:14px; width:clamp(280px, 22vw, 360px);   /* ancho flexible sin salirse */;
         }
         /* Los dos paneles pasan a flujo normal dentro de la columna */
         #panel-embarcaciones, #panel-viento{
@@ -111,31 +110,6 @@
 <body id="page-top" style="background-image:url('img/fondo_regata.png');background-size:cover;background-position:center;background-repeat:no-repeat;">
 <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo"/>
 
-<!-- Panel de métricas (ahora a la izquierda) -->
-<div id="panel-metricas">
-    <div class="metrica" id="metrica-usuario" style="background: rgba(52,152,219,0.1); margin-bottom:15px;">
-        <span class="icono">👤</span>
-        <span class="valor" id="usuario-value" style="font-size:14px;min-width:120px;">Sin selección</span>
-        <span class="label">Usuario</span>
-    </div>
-    <div class="metrica" id="metrica-bearing">
-        <span class="icono">🧭</span>
-        <span class="valor" id="bearing-value">---°</span>
-        <span class="label">Bearing</span>
-        <div class="bearing-compass"><span class="bearing-needle" id="bearing-needle">↑</span></div>
-    </div>
-    <div class="metrica" id="metrica-distancia">
-        <span class="icono">📏</span>
-        <span class="valor" id="distancia-value">0.00</span>
-        <span class="label">Millas Náuticas</span>
-    </div>
-    <div class="metrica" id="metrica-velocidad">
-        <span class="icono">⚡</span>
-        <span class="valor" id="velocidad-value">0.0</span>
-        <span class="label">Nudos</span>
-    </div>
-</div>
-
 <!-- === Barra superior === -->
 <div id="controles-superiores">
     <label style="display:none;">Ancho del Control (m): <span id="anchoLabel">10</span></label>
@@ -154,6 +128,32 @@
 
 <!-- === Sidebar derecha apilada (NO se solapan) === -->
 <div id="sidebar-derecha">
+
+    <!-- Panel de métricas (ahora a la izquierda) -->
+    <div id="panel-metricas">
+        <div class="metrica" id="metrica-usuario" style="background: rgba(52,152,219,0.1); margin-bottom:15px;">
+            <span class="icono">👤</span>
+            <span class="valor" id="usuario-value" style="font-size:14px;min-width:120px;">Sin selección</span>
+            <span class="label">Usuario</span>
+        </div>
+        <div class="metrica" id="metrica-bearing">
+            <span class="icono">🧭</span>
+            <span class="valor" id="bearing-value">---°</span>
+            <span class="label">Bearing</span>
+            <div class="bearing-compass"><span class="bearing-needle" id="bearing-needle">↑</span></div>
+        </div>
+        <div class="metrica" id="metrica-distancia">
+            <span class="icono">📏</span>
+            <span class="valor" id="distancia-value">0.00</span>
+            <span class="label">Millas Náuticas</span>
+        </div>
+        <div class="metrica" id="metrica-velocidad">
+            <span class="icono">⚡</span>
+            <span class="valor" id="velocidad-value">0.0</span>
+            <span class="label">Nudos</span>
+        </div>
+    </div>
+
     <div id="panel-embarcaciones">
         <h3 style="margin:0 0 10px 0;color:#ff9800;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px;">🚢 Embarcaciones AIS</h3>
         <div id="contador-embarcaciones">Cargando...</div>

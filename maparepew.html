@@ -33,9 +33,10 @@
         }
         .subrow{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; justify-content:center; }
 
+        /* Evitar que herede el translateY del desktop */
         .topbar-right{
-          position:absolute; right:10px; top:50%; transform:translateY(-50%);
-          display:flex; align-items:center; gap:12px;
+            position: static;
+            transform: none;
         }
 
         /* Botón viento */
@@ -44,6 +45,7 @@
           padding:10px 14px; font-size:16px; cursor:pointer;
           transition:transform .15s ease, filter .15s ease, background .15s;
         }
+
         #toggle-viento.activo{ background:rgba(76,175,80,.95); }
         #toggle-viento:hover{ transform:translateY(-1px); filter:brightness(1.05); }
 
@@ -85,12 +87,25 @@
             left: 10px; top: 50%; transform: translateY(-50%);
           }
 
-          #toggle-viento {
-            position: absolute; right: 8px; top: 10px;
-            width: 52px; height: 52px; padding:0; border-radius:12px; font-size:0;
+          /* Botón cuadrado centrado verticalmente respecto al FARO */
+          #toggle-viento{
+               position: fixed;           /* relativo a la ventana, no al contenedor */
+               right: 8px;
+               top: 29px;                 /* (110px header - 52px botón) / 2 = centrado */
+               width: 52px;
+               height: 52px;
+               padding: 0;
+               border-radius: 12px;
+               font-size: 0;
+               z-index: 1300;             /* arriba de la barra */
           }
-          #toggle-viento::before {
-            content: "🌬️"; display:block; font-size:22px; line-height:52px; text-align:center;
+
+          #toggle-viento::before{
+               content: "🌬️";
+               display: block;
+               font-size: 22px;
+               line-height: 52px;
+               text-align: center;
           }
 
           /* dos filas de chips, centradas, sin scroll lateral */

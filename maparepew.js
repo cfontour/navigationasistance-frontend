@@ -151,8 +151,17 @@ const iconoInicio = L.icon({ iconUrl: 'img/start_flag.png', iconSize: [32, 32] }
 const iconoIntermedio = L.icon({ iconUrl: 'img/white_flag.png', iconSize: [24, 24] });
 const iconoFinal = L.icon({ iconUrl: 'img/finish_flag.png', iconSize: [32, 32] });
 
-const anchoCorredorInput = document.getElementById('anchoCorredor');
-const anchoLabelSpan = document.getElementById('anchoLabel');
+// Antes: const anchoCorredorInput = document.getElementById('anchoCorredor');
+//        const anchoLabelSpan     = document.getElementById('anchoLabel');
+//        let RADIO_PUNTO_CONTROL  = parseFloat(anchoCorredorInput.value);
+
+const anchoCorredorInput = document.getElementById('anchoCorredor') || null;
+const anchoLabelSpan     = document.getElementById('anchoLabel')   || null;
+
+// default 10 m si el input no existe
+let RADIO_PUNTO_CONTROL = parseFloat(
+  (anchoCorredorInput && anchoCorredorInput.value) || '10'
+);
 
 const sirenaAudio = new Audio('img/sirena.mp3');
 sirenaAudio.loop = false;
@@ -161,8 +170,6 @@ let marcadores = new Map();
 let puntosControl = [];
 let registrosHechos = new Set();
 let mostrarTraza = false;
-
-let RADIO_PUNTO_CONTROL = parseFloat(anchoCorredorInput.value);
 
 // Variables para MarineTraffic (anteriormente AISHub)
 let capaEmbarcaciones = null;
@@ -246,11 +253,13 @@ function actualizarLabel(labelId, value) {
     document.getElementById(labelId).innerText = value;
 }
 
-anchoCorredorInput.addEventListener('input', (event) => {
-    RADIO_PUNTO_CONTROL = parseFloat(event.target.value);
-    actualizarLabel('anchoLabel', event.target.value);
-    console.log("Nuevo RADIO_PUNTO_CONTROL:", RADIO_PUNTO_CONTROL);
-});
+if (anchoCorredorInput) {
+  anchoCorredorInput.addEventListener('input', (event) => {
+      RADIO_PUNTO_CONTROL = parseFloat(event.target.value);
+      actualizarLabel('anchoLabel', event.target.value);
+      console.log("Nuevo RADIO_PUNTO_CONTROL:", RADIO_PUNTO_CONTROL);
+  });
+}
 
 // NUEVA FUNCIÓN: Manejar cambio de ruta
 async function onCambioRuta() {
@@ -1023,11 +1032,21 @@ async function cargarViento(lat, lon) {
         windData.speed = kn;
         windData.direction = deg;
 
-        document.getElementById("vientoDir").textContent = `${deg}° (${dirTxt})`;
-        document.getElementById("vientoVel").textContent = `${kn.toFixed(1)} kt`;
-        document.getElementById("vientoRafagas").textContent = `${gustKn.toFixed(1)} kt`;
-        document.getElementById("vientoActualizado").textContent =
-            `Actualizado: ${new Date().toLocaleTimeString()}`;
+        //document.getElementById("vientoDir").textContent = `${deg}° (${dirTxt})`;
+        //document.getElementById("vientoVel").textContent = `${kn.toFixed(1)} kt`;
+        //document.getElementById("vientoRafagas").textContent = `${gustKn.toFixed(1)} kt`;
+        //document.getElementById("vientoActualizado").textContent =
+        //    `Actualizado: ${new Date().toLocaleTimeString()}`;
+
+        const setTxt = (id, txt) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = txt;
+        };
+
+        setTxt("vientoDir",        `${deg}° (${dirTxt})`);
+        setTxt("vientoVel",        `${kn.toFixed(1)} kt`);
+        setTxt("vientoRafagas",    `${gustKn.toFixed(1)} kt`);
+        setTxt("vientoActualizado",`Actualizado: ${new Date().toLocaleTimeString()}`);
 
         console.log(`🌬️ Viento cargado: ${kn.toFixed(1)} kt desde ${deg}° (${dirTxt})`);
 
@@ -1035,9 +1054,14 @@ async function cargarViento(lat, lon) {
 
     } catch (error) {
         console.error('❌ Error cargando viento:', error);
-        document.getElementById("vientoDir").textContent = "Error";
-        document.getElementById("vientoVel").textContent = "Error";
-        document.getElementById("vientoRafagas").textContent = "Error";
+        //document.getElementById("vientoDir").textContent = "Error";
+        //document.getElementById("vientoVel").textContent = "Error";
+        //document.getElementById("vientoRafagas").textContent = "Error";
+
+        setTxt("vientoDir", "Error");
+        setTxt("vientoVel", "Error");
+        setTxt("vientoRafagas", "Error");
+
         return null;
     }
 }

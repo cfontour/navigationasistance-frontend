@@ -15,7 +15,7 @@
           background:linear-gradient(180deg, rgba(20,105,150,.95), rgba(20,105,150,.82));
           backdrop-filter:blur(4px);
           pointer-events:auto;
-          padding:0 12px;
+          padding:0 12px;                             /* padding base (mobile ajusta más abajo) */
         }
         .logo{
           position:absolute; left:10px; top:50%; transform:translateY(-50%);
@@ -33,7 +33,7 @@
         }
         .subrow{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; justify-content:center; }
 
-        /* Evitar que herede el translateY del desktop */
+        /* Evitar que herede el translateY del desktop: base neutra */
         .topbar-right{
             position: static;
             transform: none;
@@ -45,7 +45,6 @@
           padding:10px 14px; font-size:16px; cursor:pointer;
           transition:transform .15s ease, filter .15s ease, background .15s;
         }
-
         #toggle-viento.activo{ background:rgba(76,175,80,.95); }
         #toggle-viento:hover{ transform:translateY(-1px); filter:brightness(1.05); }
 
@@ -75,6 +74,22 @@
         #wind-canvas{ position:absolute; top:0; left:0; pointer-events:none; z-index:300; }
 
         #controles-superiores{ display:none; }
+
+        /* ====== Desktop (pantallas anchas): botón pegado al margen derecho ====== */
+        @media (min-width: 641px){
+          /* Reservo espacio a la derecha para que el título no se pegue al botón */
+          .topbar{ padding-right: 120px; } /* ancho botón + respiro */
+
+          .topbar-right{
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);   /* centrado vertical en la franja */
+            z-index: 1200;
+          }
+
+          #toggle-viento{ margin: 0; }
+        }
 
         /* ====== MODO COMPACTO (celular) ====== */
         @media (max-width: 640px) {

@@ -82,6 +82,43 @@
 
         /* Ocultamos controles viejos si tu JS aún los toca */
         #controles-superiores{ display:none; }
+
+        /* ====== MODO COMPACTO (celular) ====== */
+        @media (max-width: 640px) {
+            /* Franja más baja y map sin solape */
+            .topbar { height: 72px; }
+            body { padding-top: 82px; }
+
+            /* Mostrar solo el FARO del logo (recorte a la izquierda) */
+            .logo {
+                width: 52px;            /* cuadrado chico */
+                height: 52px;
+                max-height: none;       /* anulamos la regla desktop */
+                object-fit: cover;      /* recorta */
+                object-position: left center; /* toma el lado del faro */
+            }
+
+            /* Ocultar título y chips (viento + métricas) para evitar solapado */
+            .topbar-center { display: none; }
+
+            /* Botón de viento cuadrado con solo el ícono */
+            .topbar-right { right: 8px; }
+            #toggle-viento {
+                width: 52px;
+                height: 52px;
+                padding: 0;
+                border-radius: 12px;
+                font-size: 0;          /* oculto el texto “Viento ON” */
+            }
+            #toggle-viento::before {
+                content: "🌬️";
+                display: block;
+                font-size: 22px;
+                line-height: 52px;
+                text-align: center;
+            }
+        }
+
     </style>
 </head>
 <body id="page-top" style="background-image:url('img/fondo_regata.png'); background-size:cover; background-position:center; background-repeat:no-repeat;">

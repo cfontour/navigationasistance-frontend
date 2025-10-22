@@ -44,22 +44,15 @@
         /* Ajustá el padding-top del body al alto del header */
         body {
             margin: 0;
-            padding: 120px 0 0 0;       
+            padding: 120px 0 0 0;
         }
 
-        /* Panel de métricas en tiempo real */
-        #panel-metricas {
-            position: fixed;
-            top: 120px;
-            right: 10px;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            min-width: 180px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.3);
+        /* ya no se usan estilos flotantes de paneles */
+        #panel-metricas, #panel-viento{ display:none; }  /* por si los olvidaste en el HTML */
+
+        /* botón anterior en absoluto: neutralizar por si quedó */
+        #toggle-viento{
+            top: auto; right: auto; border-radius: 10px; backdrop-filter: none;
         }
 
         .metrica {
@@ -234,34 +227,6 @@
             font-weight: bold;
         }
 
-        /* === BOTÓN TOGGLE VIENTO === */
-        #toggle-viento {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(33, 150, 243, 0.9);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            z-index: 1000;
-            font-size: 20px;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-            width: 200px;
-            height: 70px;
-        }
-
-        #toggle-viento:hover {
-            background: rgba(33, 150, 243, 1);
-            transform: scale(1.05);
-        }
-
-        #toggle-viento.activo {
-            background: rgba(76, 175, 80, 0.9);
-        }
-
         /* === INDICADOR DE CARGA === */
         .loading-viento {
             display: inline-block;
@@ -285,6 +250,27 @@
             pointer-events: none;
             z-index: 400;
         }
+
+        .info-row{ display: flex; gap: 8px; }
+        .chip{
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 10px; border-radius: 999px;
+            background: rgba(255,255,255,.14); color: #fff; font-weight: 600; font-size: 14px;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
+        }
+        .chip .chip-label{ opacity: .85; font-weight: 500; }
+
+        .btn-viento, #toggle-viento{
+            position: static; width: auto; height: auto;
+            background: rgba(76,175,80,.95); color: #fff;
+            border: none; border-radius: 10px; padding: 10px 14px; font-size: 16px;
+            cursor: pointer; transition: transform .15s ease, filter .15s ease;
+        }
+        #toggle-viento:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+        #toggle-viento.activo{ background: rgba(76,175,80,.95); }
+        #toggle-viento:not(.activo){ background: rgba(33,150,243,.95); } /* ON azul / OFF verde si preferís, invertí clases */
+
+
     </style>
 </head>
 <body id="page-top" style="background-image: url('img/fondo_regata.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
@@ -364,11 +350,6 @@
 </div>
 
 <div id="map"></div>
-
-<!-- Botón para toggle de capa de viento -->
-<button id="toggle-viento" onclick="toggleCapaViento()">
-    🌬️ Viento ON
-</button>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="maparepew.js"></script>

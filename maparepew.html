@@ -5,32 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Regatas Wind</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
     <style>
-        /* ===== Vars para alturas (sin scroll) ===== */
-        :root{
-          --headerH: 160px;     /* desktop: header alto (título + chips) */
-          --infoH: 0px;         /* desktop: no tira separada */
-          --gapH: 0px;          /* respiración */
-          --top-offset: calc(var(--headerH) + var(--infoH) + var(--gapH));
-        }
-
-        @media (max-width: 640px){
-          :root{
-            --headerH: 72px;    /* mobile header compacto */
-            --infoH: 44px;      /* tira horizontal de chips */
-            --gapH: 10px;       /* respiro */
-            --top-offset: calc(var(--headerH) + var(--infoH) + var(--gapH));
-          }
-        }
-
-        html, body { height: 100%; margin: 0; }
-        body { overflow: hidden; background: #0b3c55 url('img/fondo_regata.png') center/cover no-repeat; }
-
         /* ====== TOPBAR (franja azul) ====== */
         .topbar{
           position:fixed; top:0; left:0; right:0;
-          height: var(--headerH);
+          height:160px;                               /* más alta para 2 filas */
           display:flex; align-items:center; justify-content:center;
           z-index:1100;
           background:linear-gradient(180deg, rgba(20,105,150,.95), rgba(20,105,150,.82));
@@ -38,37 +17,33 @@
           pointer-events:auto;
           padding:0 12px;
         }
-
         .logo{
           position:absolute; left:10px; top:50%; transform:translateY(-50%);
-          height:64px; width:auto;
+          max-height:64px; width:auto;
           filter:drop-shadow(2px 2px 4px rgba(0,0,0,.3));
         }
-
-        /* Centro: título + chips (desktop) */
+        /* contenedor central (título + chips) */
         .topbar-center{
           display:flex; flex-direction:column; align-items:center; gap:10px;
           max-width:80%;
         }
-
         .site-title{
           margin:0;
           font-size:34px; letter-spacing:2px; color:#fff;
           text-shadow:1px 1px 3px rgba(0,0,0,.5);
           text-align:center; line-height:1;
         }
-
         .subrow{
           display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;
         }
 
-        /* Lado derecho: botón viento */
+        /* Lado derecho */
         .topbar-right{
           position:absolute; right:10px; top:50%; transform:translateY(-50%);
           display:flex; align-items:center; gap:12px;
         }
 
-        /* Botón viento (desktop) */
+        /* Botón viento */
         #toggle-viento{
           background:rgba(33,150,243,.95); color:#fff; border:none; border-radius:10px;
           padding:10px 14px; font-size:16px; cursor:pointer;
@@ -94,86 +69,69 @@
           color:#fff;
         }
 
-        /* Aguja del bearing (la rota tu JS) */
+        /* Bearing: valor + “aguja” para que el JS pueda rotarla */
         .bearing-needle{ display:inline-block; transform-origin:center; transition:transform .5s ease; }
 
-        /* ====== Tira de chips fija bajo el header (solo mobile) ====== */
-        .chips-strip{
-          position: fixed;
-          left: 0; right: 0;
-          top: var(--headerH);
-          height: var(--infoH);
-          display: none;                 /* desktop: oculta */
-          align-items: center;
-          gap: 8px;
-          padding: 6px 60px 6px 8px;      /* respiro + lugar para botón */
-          background: linear-gradient(180deg, rgba(20,105,150,.92), rgba(20,105,150,.80));
-          overflow-x: auto;               /* scroll horizontal si no entra */
-          -webkit-overflow-scrolling: touch;
-          z-index: 1100;
-        }
+        /* Que el mapa no quede debajo del header */
+        body{ margin:0; padding:170px 0 0 0; }
 
-        /* ====== MAPA: ocupa lo que queda (sin scroll) ====== */
-        #map{
-          position: absolute;
-          top: var(--top-offset);
-          left: 0; right: 0; bottom: 0;
-          height: calc(100vh - var(--top-offset));
-        }
+        #map{ height:90vh; position:relative; }
 
         /* Canvas partículas (si lo usás) */
         #wind-canvas{ position:absolute; top:0; left:0; pointer-events:none; z-index:400; }
 
-        /* Evita errores de JS si tocan el control escondido */
+        /* Ocultamos controles viejos si tu JS aún los toca */
         #controles-superiores{ display:none; }
 
-        /* ====== Mobile ====== */
-        @media (max-width: 640px){
-          /* Ocultar título en mobile */
-          #site-title { display:none; }
+        /* ====== MODO COMPACTO (celular) ====== */
+        @media (max-width: 640px) {
+            /* Franja más baja y map sin solape */
+            .topbar { height: 72px; }
+            body { padding-top: 82px; }
 
-          /* Sólo FARO (recortado) */
-          .logo{
-            width: 52px; height: 52px;
-            object-fit: cover;
-            object-position: left center;
-          }
+            /* Mostrar solo el FARO del logo (recorte a la izquierda) */
+            .logo {
+                width: 52px;            /* cuadrado chico */
+                height: 52px;
+                max-height: none;       /* anulamos la regla desktop */
+                object-fit: cover;      /* recorta */
+                object-position: left center; /* toma el lado del faro */
+            }
 
-          /* Botón viento cuadrado e **a la misma altura que el faro** */
-          #toggle-viento{
-            position: fixed;
-            top: 10px; right: 8px;
-            width: 52px; height: 52px;
-            padding: 0; border-radius: 12px;
-            font-size: 0;             /* oculto texto */
-          }
-          #toggle-viento::before{
-            content: "🌬️";
-            display:block; font-size:22px; line-height:52px; text-align:center;
-          }
+            /* Ocultar título y chips (viento + métricas) para evitar solapado */
+            .topbar-center { display: none; }
 
-          /* Los chips bajan a la tira fija */
-          .chips-strip{ display:flex; }
-          /* En mobile, ya no mostramos chips en el centro del header */
-          .topbar-center .subrow{ display:none; }
-
-          /* Footer fuera para no generar scroll */
-          footer { display:none; }
+            /* Botón de viento cuadrado con solo el ícono */
+            .topbar-right { right: 8px; }
+            #toggle-viento {
+                width: 52px;
+                height: 52px;
+                padding: 0;
+                border-radius: 12px;
+                font-size: 0;          /* oculto el texto “Viento ON” */
+            }
+            #toggle-viento::before {
+                content: "🌬️";
+                display: block;
+                font-size: 22px;
+                line-height: 52px;
+                text-align: center;
+            }
         }
+
     </style>
 </head>
+<body id="page-top" style="background-image:url('img/fondo_regata.png'); background-size:cover; background-position:center; background-repeat:no-repeat;">
 
-<body>
-
-<!-- HEADER -->
+<!-- HEADER FIJO -->
 <div class="topbar">
     <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
 
     <div class="topbar-center">
-        <!-- título dinámico (tu JS setea innerText) -->
+        <!-- Título dinámico (lo completa tu JS con ruta.nombre) -->
         <h1 id="site-title" class="site-title"></h1>
 
-        <!-- fila debajo del título (sólo desktop) -->
+        <!-- fila debajo del título: viento + métricas -->
         <div class="subrow">
             <!-- Viento -->
             <div id="panel-viento">
@@ -182,7 +140,7 @@
                 <div class="chip"><span class="chip-label">Ráf</span><span id="vientoRafagas">–</span></div>
             </div>
 
-            <!-- Métricas -->
+            <!-- Métricas: mantiene los mismos IDs que usa tu JS -->
             <div id="panel-metricas">
                 <div class="chip">
                     <span class="chip-label">Bearing</span>
@@ -195,45 +153,25 @@
         </div>
     </div>
 
-    <!-- Botón -->
+    <!-- Botón a la derecha -->
     <div class="topbar-right">
         <button id="toggle-viento" onclick="toggleCapaViento()">🌬️ Viento ON</button>
     </div>
 </div>
 
-<!-- Tira de chips (sólo mobile, mismo contenido para que el JS funcione igual) -->
-<div class="chips-strip">
-    <div id="panel-viento">
-        <div class="chip"><span class="chip-label">Dir</span><span id="vientoDir">–</span></div>
-        <div class="chip"><span class="chip-label">Vel</span><span id="vientoVel">–</span></div>
-        <div class="chip"><span class="chip-label">Ráf</span><span id="vientoRafagas">–</span></div>
-    </div>
-    <div id="panel-metricas">
-        <div class="chip">
-            <span class="chip-label">Bearing</span>
-            <span id="bearing-value">---°</span>
-            <span id="bearing-needle" class="bearing-needle">↑</span>
-        </div>
-        <div class="chip"><span class="chip-label">Dist</span><span id="distancia-value">0.00</span></div>
-        <div class="chip"><span class="chip-label">Veloc</span><span id="velocidad-value">0.0</span></div>
-    </div>
-</div>
-
-<!-- Control oculto (evita error de tu JS) -->
-<div id="controles-superiores">
+<!-- Input oculto para evitar el error en maparepew.js:165 -->
+<div id="controles-superiores" style="display:none;">
     <label>Ancho del Control (m): <span id="anchoLabel">10</span></label>
     <input type="range" id="anchoCorredor" min="0" max="100" value="10" />
 </div>
 
-<!-- MAPA -->
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="maparepew.js"></script>
 
-<!-- Footer se oculta en mobile para no generar scroll -->
-<footer style="background-color:white; padding:1rem; border-radius:10px; box-shadow:0 0 6px rgba(0,0,0,0.3); text-align:center;">
-    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width:300px;">
+<footer style="background-color:white; padding:1rem; border-radius:10px; box-shadow:0 0 6px rgba(0,0,0,0.3);">
+    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width:300px; display:block; margin:0 auto;">
 </footer>
 </body>
 </html>

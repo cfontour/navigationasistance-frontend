@@ -1,300 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Regatas Wind</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        /* Barra superior fija con logo + título */
-        .topbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 120px;                 /* alto del header */
-            display: flex;
-            align-items: center;
-            justify-content: center;      /* centra el título */
-            z-index: 1100;                /* por encima de todo */
-            pointer-events: none;         /* que no tape clics del mapa; */
+        /* ====== TOPBAR (franja azul) ====== */
+        .topbar{
+          position: fixed; top:0; left:0; right:0; height:120px;
+          display:flex; align-items:center; justify-content:center;
+          z-index:1100;
+          background: linear-gradient(180deg, rgba(20,105,150,.95), rgba(20,105,150,.82));
+          backdrop-filter: blur(4px);
+          /* IMPORTANTE: permitir clics en contenidos (botón, etc.) */
+          pointer-events:auto;
+          padding: 0 12px;
+        }
+        .logo{
+          position:absolute; left:10px; top:50%; transform:translateY(-50%);
+          max-height:64px; width:auto;
+          filter: drop-shadow(2px 2px 4px rgba(0,0,0,.3));
+        }
+        .site-title{
+          margin:0; font-size:32px; letter-spacing:2px; color:#fff;
+          text-shadow:1px 1px 3px rgba(0,0,0,.5);
+          text-align:center;
+        }
+        /* Lado derecho del header */
+        .topbar-right{
+          position:absolute; right:10px; top:50%; transform:translateY(-50%);
+          display:flex; align-items:center; gap:12px;
         }
 
-        /* el logo se ubica a la izquierda dentro de la topbar */
-        .logo {
-            position: absolute;           /* ancla dentro de .topbar */
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            max-height: 48px;
-            width: auto;
-            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
-            pointer-events: auto;         /* si querés que sea clickeable */
+        /* ====== Botón viento dentro del header ====== */
+        #toggle-viento{
+          position:static;  /* <- deja de ser absoluto */
+          background: rgba(33,150,243,.95);
+          color:#fff; border:none; border-radius:10px;
+          padding:10px 14px; font-size:16px; cursor:pointer;
+          backdrop-filter: none; width:auto; height:auto;
+          transition: transform .15s ease, filter .15s ease, background .15s;
         }
+        #toggle-viento.activo{ background: rgba(76,175,80,.95); }
+        #toggle-viento:hover{ transform: translateY(-1px); filter: brightness(1.05); }
 
-        /* Título centrado en la misma línea del logo */
-        .site-title {
-            margin: 0;
-            font-size: 28px;
-            letter-spacing: 1px;
-            color: #fff;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-        }
-
-        /* Ajustá el padding-top del body al alto del header */
-        body {
-            margin: 0;
-            padding: 120px 0 0 0;
-        }
-
-        /* Panel de métricas en tiempo real */
-        #panel-metricas {
-            position: fixed;
-            top: 120px;
-            right: 10px;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            min-width: 180px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-
-        .metrica {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            padding: 8px;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
-
-        .metrica:hover {
-            background: rgba(0,123,255,0.1);
-            transform: translateX(2px);
-        }
-
-        .metrica:last-child {
-            margin-bottom: 0;
-        }
-
-        .metrica .icono {
-            font-size: 20px;
-            margin-right: 10px;
-            width: 25px;
-            text-align: center;
-        }
-
-        .metrica .valor {
-            font-weight: bold;
-            font-size: 16px;
-            color: #2c3e50;
-            margin-right: 8px;
-            min-width: 60px;
-            text-align: right;
-            transition: all 0.4s ease;
-        }
-
-        .metrica .valor.actualizado {
-            color: #27ae60;
-            transform: scale(1.1);
-        }
-
-        .metrica .label {
-            font-size: 11px;
-            color: #7f8c8d;
-            font-weight: 500;
-        }
-
-        /* Indicador de bearing visual */
-        .bearing-compass {
-            position: relative;
-            display: inline-block;
-            margin-left: 5px;
-        }
-
-        /* CSS base para iconos de barcos transparentes */
-        .barco-icon {
-            transition: filter 0.3s ease;
-        }
-
-        .barco-icon:hover {
-            filter: brightness(1.2) !important;
-        }
-
-        .bearing-needle {
-            display: inline-block;
-            transform-origin: center;
-            transition: transform 0.5s ease;
-            font-size: 14px;
-        }
-
-        #controles-superiores{ display:none; }
-
-        #controles-superiores button {
-            padding: 6px 10px;
-            font-weight: bold;
-            border: 1px solid #999;
-            background-color: white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #selector-usuario {
-            padding: 5px;
-        }
-
-        #map {
-            height: 90vh;
-            position: relative;
-        }
-
-        h2 {
-            font-size: 28px;
-            color: #333;
-            text-align: center;
-            margin-top: 80px;
-            position: relative;
-        }
-
-        /* Animación de pulso para actualizaciones */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-
-        .panel-updating {
-            animation: pulse 0.3s ease;
-        }
-
-        /* Estilos para datos sin conexión */
-        .metrica.sin-datos .valor {
-            color: #e74c3c;
-        }
-
-        .metrica.sin-datos .icono {
-            opacity: 0.5;
-        }
-
-        /* === ESTILOS PARA PANEL DE VIENTO === */
-        #panel-viento {
-            position: absolute;
-            top: 380px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.85);
-            color: white;
-            padding: 12px 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 1000;
-            min-width: 180px;
-            max-width: 220px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .viento-item {
-            display: flex;
-            justify-content: space-between;
-            margin: 8px 0;
-            padding: 5px 0;
-        }
-
-        .viento-label {
-            color: #bbb;
-            font-size: 14px;
-        }
-
-        .viento-value {
-            color: #fff;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .viento-actualizado {
-            font-size: 12px;
-            color: #4fc3f7;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        /* === ESTILOS PARA FLECHAS DE VIENTO === */
-        .wind-arrow {
-            font-size: 32px;
-            line-height: 32px;
-            color: #2196F3;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-        }
-
-        .wind-arrow > div {
-            transform-origin: 50% 50%;
-            font-weight: bold;
-        }
-
-        /* === BOTÓN TOGGLE VIENTO === */
-        #toggle-viento {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(33, 150, 243, 0.9);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            z-index: 1000;
-            font-size: 20px;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-            width: 200px;
-            height: 70px;
-        }
-
-        #toggle-viento:hover {
-            background: rgba(33, 150, 243, 1);
-            transform: scale(1.05);
-        }
-
-        #toggle-viento.activo {
-            background: rgba(76, 175, 80, 0.9);
-        }
-
-        /* === INDICADOR DE CARGA === */
-        .loading-viento {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid #4fc3f7;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Canvas para partículas de viento */
-        #wind-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 400;
-        }
-
-        .info-row{ display: flex; gap: 8px; }
+        /* ====== Paneles convertidos a chips horizontales ====== */
+        /* Estilo base de “chip” compacto */
         .chip{
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 6px 10px; border-radius: 999px;
-            background: rgba(255,255,255,.14); color: #fff; font-weight: 600; font-size: 14px;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
+          display:inline-flex; align-items:center; gap:6px;
+          padding:6px 10px; border-radius:999px;
+          background: rgba(255,255,255,.14); color:#fff; font-weight:600; font-size:14px;
+          box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
+          white-space: nowrap;
         }
-        .chip .chip-label{ opacity: .85; font-weight: 500; }
+        .chip .chip-label{ opacity:.85; font-weight:500; }
 
+        /* Reemplazamos paneles por contenedores flex, sin cajas grandes */
+        #panel-metricas, #panel-viento{
+          position:static;          /* <- quita fixed/absolute */
+          background: transparent;  /* sin fondo caja */
+          border:none; box-shadow:none; backdrop-filter:none;
+          padding:0; margin:0;
+          display:flex; align-items:center; gap:8px; /* horizontal */
+          min-width:auto; max-width:none; color:#fff;
+        }
+
+        /* Reescalamos cada metrica como chip */
+        .metrica{
+          margin:0; padding:0; border-radius:999px; background:transparent;
+        }
+        /* ocultamos textos auxiliares de cada metrica y dejamos solo valores en chip */
+        #panel-metricas .metrica{ display:none; } /* oculta los bloques largos... */
+        /* ...pero reconstruimos las tres métricas como chips usando los mismos IDs */
+        /* contenedor extra para nuestras tres métricas */
+        .metricas-chips{ display:flex; gap:8px; }
+        /* truco: mostramos solo los spans con IDs existentes dentro de chips “nuevos” */
+        .chip span[id$="-value"], .chip #bearing-value { font-weight:700; }
+
+        /* Para que el mapa no quede debajo del header */
+        body{ margin:0; padding:130px 0 0 0; }
+
+        /* Map */
+        #map{ height:90vh; position:relative; }
+
+        /* (Mantengo tus clases de partículas/canvas por si las usás) */
+        #wind-canvas{ position:absolute; top:0; left:0; pointer-events:none; z-index:400; }
+
+        /* Quitamos el panel vertical de viento viejo/estilos no usados */
+        .viento-item,.viento-label,.viento-value,.viento-actualizado,
+        .bearing-compass,#controles-superiores{ display:none; }
     </style>
 </head>
 <body id="page-top" style="background-image: url('img/fondo_regata.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
@@ -302,75 +97,28 @@
 <!-- HEADER FIJO -->
 <div class="topbar">
     <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
-
+    <!-- Título dinámico (lo completa tu JS con ruta.nombre) -->
     <h1 id="site-title" class="site-title"></h1>
 
+    <!-- lado derecho: viento + métricas + botón -->
     <div class="topbar-right">
-        <button id="toggle-viento" onclick="toggleCapaViento()">🌬️ Viento ON</button>
-
-        <!-- Panel de métricas en tiempo real -->
-        <div id="panel-metricas">
-            <div class="metrica" id="metrica-usuario" style="background: rgba(52, 152, 219, 0.1); margin-bottom: 15px;">
-                <span class="icono">👤</span>
-                <span class="valor" id="usuario-value" style="font-size: 14px; min-width: 120px;">Sin selección</span>
-                <span class="label">Usuario</span>
-            </div>
-            <div class="metrica" id="metrica-bearing">
-                <span class="icono">🧭</span>
-                <span class="valor" id="bearing-value">---°</span>
-                <span class="label">Bearing</span>
-                <div class="bearing-compass">
-                    <span class="bearing-needle" id="bearing-needle">↑</span>
-                </div>
-            </div>
-            <div class="metrica" id="metrica-distancia">
-                <span class="icono">📏</span>
-                <span class="valor" id="distancia-value">0.00</span>
-                <span class="label">Millas Náuticas</span>
-            </div>
-            <div class="metrica" id="metrica-velocidad">
-                <span class="icono">⚡</span>
-                <span class="valor" id="velocidad-value">0.0</span>
-                <span class="label">Nudos</span>
-            </div>
-        </div>
-
-        <!-- Panel de información de viento -->
+        <!-- Viento como chips -->
         <div id="panel-viento">
-            <h3>🌬️ Información del Viento</h3>
-            <div class="viento-item">
-                <span class="viento-label">Dirección:</span>
-                <span class="viento-value" id="vientoDir">–</span>
-            </div>
-            <div class="viento-item">
-                <span class="viento-label">Velocidad:</span>
-                <span class="viento-value" id="vientoVel">–</span>
-            </div>
-            <div class="viento-item">
-                <span class="viento-label">Ráfagas:</span>
-                <span class="viento-value" id="vientoRafagas">–</span>
-            </div>
-            <div class="viento-actualizado" id="vientoActualizado">
-                Cargando...
-            </div>
+            <div class="chip"><span class="chip-label">Dir</span><span id="vientoDir">–</span></div>
+            <div class="chip"><span class="chip-label">Vel</span><span id="vientoVel">–</span></div>
+            <div class="chip"><span class="chip-label">Ráf</span><span id="vientoRafagas">–</span></div>
         </div>
 
+        <!-- Métricas como chips (reutiliza tus IDs para que el JS actualice igual) -->
+        <div class="metricas-chips" id="panel-metricas">
+            <div class="chip"><span class="chip-label">Bearing</span><span id="bearing-value">---°</span></div>
+            <div class="chip"><span class="chip-label">Dist</span><span id="distancia-value">0.00</span></div>
+            <div class="chip"><span class="chip-label">Veloc</span><span id="velocidad-value">0.0</span></div>
+        </div>
+
+        <!-- Botón toggle viento -->
+        <button id="toggle-viento" onclick="toggleCapaViento()">🌬️ Viento ON</button>
     </div>
-</div>
-
-
-
-<div id="controles-superiores">
-    <label style="display: none;">Ancho del Control (m): <span id="anchoLabel">10</span></label>
-    <input type="range" id="anchoCorredor" min="0" max="100" value="10" oninput="actualizarLabel('anchoLabel', this.value)" style="display: none;" />
-
-    <!--
-    <select id="selector-usuario">
-      <option disabled selected>Seleccione un usuario</option>
-    </select>
-    <button id="boton-traza">Trazar Ruta</button>
-    <button id="boton-borrar-traza">Borrar Traza</button>
-    -->
 </div>
 
 <div id="map"></div>
@@ -381,6 +129,5 @@
 <footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">
     <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
 </footer>
-
 </body>
 </html>

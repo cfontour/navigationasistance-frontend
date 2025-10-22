@@ -12,7 +12,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 70px;                 /* alto del header */
+            height: 120px;                 /* alto del header */
             display: flex;
             align-items: center;
             justify-content: center;      /* centra el título */
@@ -44,13 +44,7 @@
         /* Ajustá el padding-top del body al alto del header */
         body {
             margin: 0;
-            padding: 80px 0 0 0;          /* antes tenías 30px; subilo a despegar el mapa del header */
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            padding-top: 30px;
+            padding: 120px 0 0 0;       
         }
 
         /* Panel de métricas en tiempo real */
@@ -298,35 +292,63 @@
 <!-- HEADER FIJO -->
 <div class="topbar">
     <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
+
     <h1 id="site-title" class="site-title"></h1>
+
+    <div class="topbar-right">
+        <button id="toggle-viento" onclick="toggleCapaViento()">🌬️ Viento ON</button>
+
+        <!-- Panel de métricas en tiempo real -->
+        <div id="panel-metricas">
+            <div class="metrica" id="metrica-usuario" style="background: rgba(52, 152, 219, 0.1); margin-bottom: 15px;">
+                <span class="icono">👤</span>
+                <span class="valor" id="usuario-value" style="font-size: 14px; min-width: 120px;">Sin selección</span>
+                <span class="label">Usuario</span>
+            </div>
+            <div class="metrica" id="metrica-bearing">
+                <span class="icono">🧭</span>
+                <span class="valor" id="bearing-value">---°</span>
+                <span class="label">Bearing</span>
+                <div class="bearing-compass">
+                    <span class="bearing-needle" id="bearing-needle">↑</span>
+                </div>
+            </div>
+            <div class="metrica" id="metrica-distancia">
+                <span class="icono">📏</span>
+                <span class="valor" id="distancia-value">0.00</span>
+                <span class="label">Millas Náuticas</span>
+            </div>
+            <div class="metrica" id="metrica-velocidad">
+                <span class="icono">⚡</span>
+                <span class="valor" id="velocidad-value">0.0</span>
+                <span class="label">Nudos</span>
+            </div>
+        </div>
+
+        <!-- Panel de información de viento -->
+        <div id="panel-viento">
+            <h3>🌬️ Información del Viento</h3>
+            <div class="viento-item">
+                <span class="viento-label">Dirección:</span>
+                <span class="viento-value" id="vientoDir">–</span>
+            </div>
+            <div class="viento-item">
+                <span class="viento-label">Velocidad:</span>
+                <span class="viento-value" id="vientoVel">–</span>
+            </div>
+            <div class="viento-item">
+                <span class="viento-label">Ráfagas:</span>
+                <span class="viento-value" id="vientoRafagas">–</span>
+            </div>
+            <div class="viento-actualizado" id="vientoActualizado">
+                Cargando...
+            </div>
+        </div>
+
+    </div>
 </div>
 
-<!-- Panel de métricas en tiempo real -->
-<div id="panel-metricas">
-    <div class="metrica" id="metrica-usuario" style="background: rgba(52, 152, 219, 0.1); margin-bottom: 15px;">
-        <span class="icono">👤</span>
-        <span class="valor" id="usuario-value" style="font-size: 14px; min-width: 120px;">Sin selección</span>
-        <span class="label">Usuario</span>
-    </div>
-    <div class="metrica" id="metrica-bearing">
-        <span class="icono">🧭</span>
-        <span class="valor" id="bearing-value">---°</span>
-        <span class="label">Bearing</span>
-        <div class="bearing-compass">
-            <span class="bearing-needle" id="bearing-needle">↑</span>
-        </div>
-    </div>
-    <div class="metrica" id="metrica-distancia">
-        <span class="icono">📏</span>
-        <span class="valor" id="distancia-value">0.00</span>
-        <span class="label">Millas Náuticas</span>
-    </div>
-    <div class="metrica" id="metrica-velocidad">
-        <span class="icono">⚡</span>
-        <span class="valor" id="velocidad-value">0.0</span>
-        <span class="label">Nudos</span>
-    </div>
-</div>
+
 
 <div id="controles-superiores">
     <label style="display: none;">Ancho del Control (m): <span id="anchoLabel">10</span></label>
@@ -342,25 +364,6 @@
 </div>
 
 <div id="map"></div>
-<!-- Panel de información de viento -->
-<div id="panel-viento">
-    <h3>🌬️ Información del Viento</h3>
-    <div class="viento-item">
-        <span class="viento-label">Dirección:</span>
-        <span class="viento-value" id="vientoDir">–</span>
-    </div>
-    <div class="viento-item">
-        <span class="viento-label">Velocidad:</span>
-        <span class="viento-value" id="vientoVel">–</span>
-    </div>
-    <div class="viento-item">
-        <span class="viento-label">Ráfagas:</span>
-        <span class="viento-value" id="vientoRafagas">–</span>
-    </div>
-    <div class="viento-actualizado" id="vientoActualizado">
-        Cargando...
-    </div>
-</div>
 
 <!-- Botón para toggle de capa de viento -->
 <button id="toggle-viento" onclick="toggleCapaViento()">

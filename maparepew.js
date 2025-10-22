@@ -527,6 +527,8 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
       dashArray: '10, 10'
     }).addTo(map);
 
+    polylineTraza.bringToFront(); // <- asegura la traza arriba
+
   } catch (err) {
     console.error("❌ Error al trazar ruta:", err);
   }
@@ -1613,29 +1615,22 @@ async function toggleCapaEmbarcaciones() {
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("🚀 Iniciando aplicación de regatas...");
 
-  // 🌬️ CREAR CANVAS PARA PARTÍCULAS DE VIENTO - PRIMERO DE TODO
-  windCanvasEl = document.createElement('canvas');    // <-- referencia global
+  // === Canvas para partículas en su propio pane (z-index 300)
+  const windPane = map.createPane('windPane');
+  windPane.style.zIndex = '300';               // debajo de overlayPane/polylines
+  windPane.style.pointerEvents = 'none';
+
+  windCanvasEl = document.createElement('canvas');
   windCanvasEl.id = 'wind-canvas';
   windCanvasEl.style.position = 'absolute';
   windCanvasEl.style.top = '0';
   windCanvasEl.style.left = '0';
   windCanvasEl.style.pointerEvents = 'none';
+  windPane.appendChild(windCanvasEl);          // <-- SOLO acá (no overlayPane)
 
-  // montar en overlayPane para orden correcto
-  const overlayPane = map.getPanes().overlayPane;
-  overlayPane.appendChild(windCanvasEl);
-  windCanvasEl.style.zIndex = '450';
-
-  // Pane dedicado por encima de markers/overlays
-  const windPane = map.createPane('windPane');
-  windPane.style.zIndex = '650';
-  windPane.style.pointerEvents = 'none';
-  windPane.appendChild(windCanvasEl);
-
-  // Resize con DPR (nítido)
   function resizeWindCanvas() {
     const size = map.getSize();
-    const dpr = window.devicePixelRatio || 1;
+    const dpr  = window.devicePixelRatio || 1;
 
     windCanvasEl.width  = Math.max(1, Math.floor(size.x * dpr));
     windCanvasEl.height = Math.max(1, Math.floor(size.y * dpr));
@@ -1643,52 +1638,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     windCanvasEl.style.height = size.y + 'px';
 
     windCtx = windCanvasEl.getContext('2d');
-    windCtx.setTransform(dpr, 0, 0, dpr, 0, 0); // coords en px CSS
+    windCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // 👈 resembrar si está encendido
     if (vientoVisible) {
       windParticles = [];
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        windParticles.push(new WindParticle(windCanvasEl));
-      }
+      for (let i = 0; i < PARTICLE_COUNT; i++) windParticles.push(new WindParticle(windCanvasEl));
     }
   }
 
   resizeWindCanvas();
   map.on('resize zoomend moveend', resizeWindCanvas);
-
-  // limpiar canvas mientras se mueve/zoomea
   map.on('zoomstart movestart', () => {
     if (windCtx) windCtx.clearRect(0, 0, windCanvasEl.width, windCanvasEl.height);
   });
 
-  // 🔘 botón viento — evitar doble disparo
-  let btnViento = document.getElementById('toggle-viento');
+  // Botón viento sin inline handler (CSP friendly)
+  const btnViento = document.getElementById('toggle-viento');
   if (btnViento) {
-    // elimina cualquier onclick inline del HTML (si lo hubiera)
-    btnViento.removeAttribute('onclick');
-
-    // (opcional) si sospechás listeners duplicados previos, clonar el nodo:
-    // const limpio = btnViento.cloneNode(true);
-    // btnViento.parentNode.replaceChild(limpio, btnViento);
-    // btnViento = limpio;
-
+    btnViento.onclick = null;
     btnViento.addEventListener('click', (e) => {
       e.preventDefault();
       toggleCapaViento();
     });
   }
 
-  // Cargar rutas Punta del Este
+  // Ruta / nadadores / viento / timers
   cargarRutas("52");
-
-  // Cargar navegantes
   cargarNavegantesVinculados();
-
-  // Solo polling de datos de viento (la animación arranca con el botón)
   iniciarSistemaViento();
 
-  // Intervalos de actualización
   setInterval(cargarNavegantesVinculados, 5000);
   setInterval(() => {
     if (!mostrarTraza || !usuarioTrazaActiva) return;

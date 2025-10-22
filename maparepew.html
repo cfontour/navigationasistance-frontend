@@ -9,7 +9,7 @@
         /* ====== TOPBAR (franja azul) ====== */
         .topbar{
           position:fixed; top:0; left:0; right:0;
-          height:160px;                               /* más alta para 2 filas */
+          height:160px;                               /* 2 filas */
           display:flex; align-items:center; justify-content:center;
           z-index:1100;
           background:linear-gradient(180deg, rgba(20,105,150,.95), rgba(20,105,150,.82));
@@ -22,22 +22,17 @@
           max-height:64px; width:auto;
           filter:drop-shadow(2px 2px 4px rgba(0,0,0,.3));
         }
-        /* contenedor central (título + chips) */
         .topbar-center{
           display:flex; flex-direction:column; align-items:center; gap:10px;
           max-width:80%;
         }
         .site-title{
-          margin:0;
-          font-size:34px; letter-spacing:2px; color:#fff;
+          margin:0; font-size:34px; letter-spacing:2px; color:#fff;
           text-shadow:1px 1px 3px rgba(0,0,0,.5);
           text-align:center; line-height:1;
         }
-        .subrow{
-          display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;
-        }
+        .subrow{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; justify-content:center; }
 
-        /* Lado derecho */
         .topbar-right{
           position:absolute; right:10px; top:50%; transform:translateY(-50%);
           display:flex; align-items:center; gap:12px;
@@ -62,116 +57,55 @@
         }
         .chip .chip-label{ opacity:.85; font-weight:500; }
 
-        /* Contenedores de viento y métricas (horizontal) */
         #panel-viento, #panel-metricas{
           display:flex; align-items:center; gap:10px;
           background:transparent; border:none; box-shadow:none; padding:0; margin:0;
           color:#fff;
         }
 
-        /* Bearing: valor + “aguja” para que el JS pueda rotarla */
         .bearing-needle{ display:inline-block; transform-origin:center; transition:transform .5s ease; }
 
-        /* Que el mapa no quede debajo del header */
+        /* Mapa debajo del header */
         body{ margin:0; padding:170px 0 0 0; }
-
         #map{ height:90vh; position:relative; }
 
-        /* Canvas partículas (si lo usás) */
-        #wind-canvas{ position:absolute; top:0; left:0; pointer-events:none; z-index:400; }
+        /* Canvas partículas — más bajo que polilíneas */
+        #wind-canvas{ position:absolute; top:0; left:0; pointer-events:none; z-index:300; }
 
-        /* Ocultamos controles viejos si tu JS aún los toca */
         #controles-superiores{ display:none; }
 
         /* ====== MODO COMPACTO (celular) ====== */
         @media (max-width: 640px) {
-            /* Header compacto: solo faro + botón */
-            .topbar {
-                height: 72px;
-                padding-right: 64px; /* espacio para el botón fijo */
-            }
-            /* El título no se muestra en mobile para evitar solape */
-            #site-title { display: none; }
+          .topbar { height: 110px; }
+          #site-title { display:none; }
 
-            /* Mostrar solo el FARO (recorte a la izquierda) */
-            .logo {
-                width: 52px;
-                height: 52px;
-                max-height: none;
-                object-fit: cover;
-                object-position: left center;
-                left: 10px; top: 50%; transform: translateY(-50%);
-            }
+          .logo {
+            width: 52px; height: 52px; max-height:none;
+            object-fit:cover; object-position:left center;
+            left: 10px; top: 50%; transform: translateY(-50%);
+          }
 
-            /* Botón de viento cuadrado, fijo arriba a la derecha */
-            #toggle-viento {
-                position: fixed;
-                top: 10px;
-                right: 8px;
-                width: 52px;
-                height: 52px;
-                padding: 0;
-                border-radius: 12px;
-                font-size: 0; /* oculta texto "Viento ON" */
-            }
-            #toggle-viento::before {
-                content: "🌬️";
-                display: block;
-                font-size: 22px;
-                line-height: 52px;
-                text-align: center;
-            }
+          #toggle-viento {
+            position: absolute; right: 8px; top: 10px;
+            width: 52px; height: 52px; padding:0; border-radius:12px; font-size:0;
+          }
+          #toggle-viento::before {
+            content: "🌬️"; display:block; font-size:22px; line-height:52px; text-align:center;
+          }
 
-            /* ====== NUEVA FRANJA DE INFO (chips) BAJO EL HEADER ====== */
-            /* Usamos tu contenedor .topbar-right como tira fija bajo el header */
-            .topbar-right {
-                position: fixed;
-                left: 0;
-                right: 0;
-                top: 72px;             /* justo debajo del header */
-                height: 44px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                padding: 6px 60px 6px 8px;  /* margen derecho para que no tape el botón */
-                background: linear-gradient(180deg, rgba(20,105,150,.92), rgba(20,105,150,.80));
-                overflow-x: auto;           /* scroll horizontal si no entra */
-                -webkit-overflow-scrolling: touch;
-                z-index: 1100;
-            }
+          /* dos filas de chips, centradas, sin scroll lateral */
+          .subrow{
+            display:grid;
+            grid-template-columns: 1fr;
+            row-gap:6px;
+            justify-items:center;
+          }
+          #panel-viento{ order:1; }
+          #panel-metricas{ order:2; }
 
-            /* Aseguramos que los dos paneles sigan visibles en línea */
-            #panel-viento,
-            #panel-metricas {
-                position: static;
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                background: transparent;
-                border: none;
-                box-shadow: none;
-                padding: 0;
-                margin: 0;
-                min-width: max-content;   /* que no se achiquen en exceso */
-            }
-
-            /* Chips compactos */
-            .chip {
-                font-size: 13px;
-                padding: 6px 10px;
-                border-radius: 999px;
-                background: rgba(255,255,255,.14);
-                box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
-                white-space: nowrap;
-            }
-            .chip .chip-label { opacity: .85; }
-
-            /* El mapa baja lo necesario para no quedar tapado */
-            body {
-                padding-top: 126px; /* 72 (header) + 44 (tira info) + ~10px respiro */
-            }
+          .chip{ font-size:13px; padding:6px 10px; }
+          body{ padding-top: 120px; } /* 110 header + respirito */
         }
-
     </style>
 </head>
 <body id="page-top" style="background-image:url('img/fondo_regata.png'); background-size:cover; background-position:center; background-repeat:no-repeat;">
@@ -181,19 +115,16 @@
     <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
 
     <div class="topbar-center">
-        <!-- Título dinámico (lo completa tu JS con ruta.nombre) -->
         <h1 id="site-title" class="site-title"></h1>
 
-        <!-- fila debajo del título: viento + métricas -->
+        <!-- fila de chips -->
         <div class="subrow">
-            <!-- Viento -->
             <div id="panel-viento">
                 <div class="chip"><span class="chip-label">Dir</span><span id="vientoDir">–</span></div>
                 <div class="chip"><span class="chip-label">Vel</span><span id="vientoVel">–</span></div>
                 <div class="chip"><span class="chip-label">Ráf</span><span id="vientoRafagas">–</span></div>
             </div>
 
-            <!-- Métricas: mantiene los mismos IDs que usa tu JS -->
             <div id="panel-metricas">
                 <div class="chip">
                     <span class="chip-label">Bearing</span>
@@ -206,13 +137,12 @@
         </div>
     </div>
 
-    <!-- Botón a la derecha -->
     <div class="topbar-right">
-        <button id="toggle-viento" onclick="toggleCapaViento()">🌬️ Viento ON</button>
+        <button id="toggle-viento">🌬️ Viento ON</button>
     </div>
 </div>
 
-<!-- Input oculto para evitar el error en maparepew.js:165 -->
+<!-- input oculto que tu JS lee -->
 <div id="controles-superiores" style="display:none;">
     <label>Ancho del Control (m): <span id="anchoLabel">10</span></label>
     <input type="range" id="anchoCorredor" min="0" max="100" value="10" />

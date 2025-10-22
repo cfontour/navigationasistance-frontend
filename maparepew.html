@@ -6,14 +6,45 @@
     <title>Regatas Wind</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        /* Estilos para el logo en esquina superior izquierda */
-        .logo {
+        /* Barra superior fija con logo + título */
+        .topbar {
             position: fixed;
-            top: 20px;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;                 /* alto del header */
+            display: flex;
+            align-items: center;
+            justify-content: center;      /* centra el título */
+            z-index: 1100;                /* por encima de todo */
+            pointer-events: none;         /* que no tape clics del mapa; */
+        }
+
+        /* el logo se ubica a la izquierda dentro de la topbar */
+        .logo {
+            position: absolute;           /* ancla dentro de .topbar */
             left: 10px;
-            max-width: 200px;
-            z-index: 1000;
+            top: 50%;
+            transform: translateY(-50%);
+            max-height: 48px;
+            width: auto;
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+            pointer-events: auto;         /* si querés que sea clickeable */
+        }
+
+        /* Título centrado en la misma línea del logo */
+        .site-title {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 1px;
+            color: #fff;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+
+        /* Ajustá el padding-top del body al alto del header */
+        body {
+            margin: 0;
+            padding: 80px 0 0 0;          /* antes tenías 30px; subilo a despegar el mapa del header */
         }
 
         body {
@@ -276,7 +307,11 @@
 </head>
 <body id="page-top" style="background-image: url('img/fondo_regata.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
 
-<img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
+<!-- HEADER FIJO -->
+<div class="topbar">
+    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
+    <h1 class="site-title">PUNTA DEL ESTE</h1>
+</div>
 
 <!-- Panel de métricas en tiempo real -->
 <div id="panel-metricas">
@@ -304,9 +339,6 @@
         <span class="label">Nudos</span>
     </div>
 </div>
-
-<h1>     </h1>
-<!--<h2 id="tituloRuta">🧭 Regatas: Ubicación de boyado de:</h2>-->
 
 <div id="controles-superiores">
     <label style="display: none;">Ancho del Control (m): <span id="anchoLabel">10</span></label>
@@ -353,11 +385,6 @@
 <footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">
     <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
 </footer>
-
-</body>
-</html></title>
-</head>
-<body>
 
 </body>
 </html>

@@ -625,19 +625,23 @@ async function cargarRutas(idRuta) {
     console.log(`🗺️ Cargando ruta ${idRuta}:`, ruta);
 
     // Remover título anterior si existe
-    const tituloAnterior = document.querySelector('h2[data-titulo-ruta]');
-    if (tituloAnterior) {
-      tituloAnterior.remove();
-    }
+    //const tituloAnterior = document.querySelector('h2[data-titulo-ruta]');
+    //if (tituloAnterior) {
+    //  tituloAnterior.remove();
+    //}
 
     // Crear nuevo título
-    const titulo = document.createElement("h2");
-    titulo.innerText = ruta.nombre;
-    titulo.style.color = "white";
-    titulo.style.fontSize = "1.5em";
-    titulo.style.textShadow = "1px 1px 3px black";
-    titulo.setAttribute('data-titulo-ruta', 'true');
-    document.getElementById("controles-superiores").insertAdjacentElement('afterend', titulo);
+    //const titulo = document.createElement("h2");
+    //titulo.innerText = ruta.nombre;
+    //titulo.style.color = "white";
+    //titulo.style.fontSize = "1.5em";
+    //titulo.style.textShadow = "1px 1px 3px black";
+    //titulo.setAttribute('data-titulo-ruta', 'true');
+    //document.getElementById("controles-superiores").insertAdjacentElement('afterend', titulo);
+
+    // título dinámico en la barra superior
+    const titleEl = document.getElementById('site-title');
+    if (titleEl) titleEl.textContent = (ruta.nombre || '').toUpperCase();
 
     const puntos = ruta.puntos;
     if (!puntos || puntos.length === 0) {

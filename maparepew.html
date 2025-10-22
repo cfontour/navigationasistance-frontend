@@ -137,19 +137,7 @@
             font-size: 14px;
         }
 
-        #controles-superiores {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            display: flex;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px;
-            border-radius: 5px;
-            align-items: center;
-        }
+        #controles-superiores{ display:none; }
 
         #controles-superiores button {
             padding: 6px 10px;
@@ -310,6 +298,7 @@
 <!-- HEADER FIJO -->
 <div class="topbar">
     <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
+    <h1 id="site-title" class="site-title"></h1>
 </div>
 
 <!-- Panel de métricas en tiempo real -->

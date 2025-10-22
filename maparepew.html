@@ -8,117 +8,124 @@
     <style>
         /* ====== TOPBAR (franja azul) ====== */
         .topbar{
-          position: fixed; top:0; left:0; right:0; height:120px;
+          position:fixed; top:0; left:0; right:0;
+          height:160px;                               /* más alta para 2 filas */
           display:flex; align-items:center; justify-content:center;
           z-index:1100;
-          background: linear-gradient(180deg, rgba(20,105,150,.95), rgba(20,105,150,.82));
-          backdrop-filter: blur(4px);
-          /* IMPORTANTE: permitir clics en contenidos (botón, etc.) */
+          background:linear-gradient(180deg, rgba(20,105,150,.95), rgba(20,105,150,.82));
+          backdrop-filter:blur(4px);
           pointer-events:auto;
-          padding: 0 12px;
+          padding:0 12px;
         }
         .logo{
           position:absolute; left:10px; top:50%; transform:translateY(-50%);
           max-height:64px; width:auto;
-          filter: drop-shadow(2px 2px 4px rgba(0,0,0,.3));
+          filter:drop-shadow(2px 2px 4px rgba(0,0,0,.3));
+        }
+        /* contenedor central (título + chips) */
+        .topbar-center{
+          display:flex; flex-direction:column; align-items:center; gap:10px;
+          max-width:80%;
         }
         .site-title{
-          margin:0; font-size:32px; letter-spacing:2px; color:#fff;
+          margin:0;
+          font-size:34px; letter-spacing:2px; color:#fff;
           text-shadow:1px 1px 3px rgba(0,0,0,.5);
-          text-align:center;
+          text-align:center; line-height:1;
         }
-        /* Lado derecho del header */
+        .subrow{
+          display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;
+        }
+
+        /* Lado derecho */
         .topbar-right{
           position:absolute; right:10px; top:50%; transform:translateY(-50%);
           display:flex; align-items:center; gap:12px;
         }
 
-        /* ====== Botón viento dentro del header ====== */
+        /* Botón viento */
         #toggle-viento{
-          position:static;  /* <- deja de ser absoluto */
-          background: rgba(33,150,243,.95);
-          color:#fff; border:none; border-radius:10px;
+          background:rgba(33,150,243,.95); color:#fff; border:none; border-radius:10px;
           padding:10px 14px; font-size:16px; cursor:pointer;
-          backdrop-filter: none; width:auto; height:auto;
-          transition: transform .15s ease, filter .15s ease, background .15s;
+          transition:transform .15s ease, filter .15s ease, background .15s;
         }
-        #toggle-viento.activo{ background: rgba(76,175,80,.95); }
-        #toggle-viento:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+        #toggle-viento.activo{ background:rgba(76,175,80,.95); }
+        #toggle-viento:hover{ transform:translateY(-1px); filter:brightness(1.05); }
 
-        /* ====== Paneles convertidos a chips horizontales ====== */
-        /* Estilo base de “chip” compacto */
+        /* Chips */
         .chip{
-          display:inline-flex; align-items:center; gap:6px;
-          padding:6px 10px; border-radius:999px;
-          background: rgba(255,255,255,.14); color:#fff; font-weight:600; font-size:14px;
-          box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
-          white-space: nowrap;
+          display:inline-flex; align-items:center; gap:8px;
+          padding:8px 12px; border-radius:999px;
+          background:rgba(255,255,255,.14); color:#fff; font-weight:600; font-size:15px;
+          box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);
+          white-space:nowrap;
         }
         .chip .chip-label{ opacity:.85; font-weight:500; }
 
-        /* Reemplazamos paneles por contenedores flex, sin cajas grandes */
-        #panel-metricas, #panel-viento{
-          position:static;          /* <- quita fixed/absolute */
-          background: transparent;  /* sin fondo caja */
-          border:none; box-shadow:none; backdrop-filter:none;
-          padding:0; margin:0;
-          display:flex; align-items:center; gap:8px; /* horizontal */
-          min-width:auto; max-width:none; color:#fff;
+        /* Contenedores de viento y métricas (horizontal) */
+        #panel-viento, #panel-metricas{
+          display:flex; align-items:center; gap:10px;
+          background:transparent; border:none; box-shadow:none; padding:0; margin:0;
+          color:#fff;
         }
 
-        /* Reescalamos cada metrica como chip */
-        .metrica{
-          margin:0; padding:0; border-radius:999px; background:transparent;
-        }
-        /* ocultamos textos auxiliares de cada metrica y dejamos solo valores en chip */
-        #panel-metricas .metrica{ display:none; } /* oculta los bloques largos... */
-        /* ...pero reconstruimos las tres métricas como chips usando los mismos IDs */
-        /* contenedor extra para nuestras tres métricas */
-        .metricas-chips{ display:flex; gap:8px; }
-        /* truco: mostramos solo los spans con IDs existentes dentro de chips “nuevos” */
-        .chip span[id$="-value"], .chip #bearing-value { font-weight:700; }
+        /* Bearing: valor + “aguja” para que el JS pueda rotarla */
+        .bearing-needle{ display:inline-block; transform-origin:center; transition:transform .5s ease; }
 
-        /* Para que el mapa no quede debajo del header */
-        body{ margin:0; padding:130px 0 0 0; }
+        /* Que el mapa no quede debajo del header */
+        body{ margin:0; padding:170px 0 0 0; }
 
-        /* Map */
         #map{ height:90vh; position:relative; }
 
-        /* (Mantengo tus clases de partículas/canvas por si las usás) */
+        /* Canvas partículas (si lo usás) */
         #wind-canvas{ position:absolute; top:0; left:0; pointer-events:none; z-index:400; }
 
-        /* Quitamos el panel vertical de viento viejo/estilos no usados */
-        .viento-item,.viento-label,.viento-value,.viento-actualizado,
-        .bearing-compass,#controles-superiores{ display:none; }
+        /* Ocultamos controles viejos si tu JS aún los toca */
+        #controles-superiores{ display:none; }
     </style>
 </head>
-<body id="page-top" style="background-image: url('img/fondo_regata.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+<body id="page-top" style="background-image:url('img/fondo_regata.png'); background-size:cover; background-position:center; background-repeat:no-repeat;">
 
 <!-- HEADER FIJO -->
 <div class="topbar">
     <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
-    <!-- Título dinámico (lo completa tu JS con ruta.nombre) -->
-    <h1 id="site-title" class="site-title"></h1>
 
-    <!-- lado derecho: viento + métricas + botón -->
+    <div class="topbar-center">
+        <!-- Título dinámico (lo completa tu JS con ruta.nombre) -->
+        <h1 id="site-title" class="site-title"></h1>
+
+        <!-- fila debajo del título: viento + métricas -->
+        <div class="subrow">
+            <!-- Viento -->
+            <div id="panel-viento">
+                <div class="chip"><span class="chip-label">Dir</span><span id="vientoDir">–</span></div>
+                <div class="chip"><span class="chip-label">Vel</span><span id="vientoVel">–</span></div>
+                <div class="chip"><span class="chip-label">Ráf</span><span id="vientoRafagas">–</span></div>
+            </div>
+
+            <!-- Métricas: mantiene los mismos IDs que usa tu JS -->
+            <div id="panel-metricas">
+                <div class="chip">
+                    <span class="chip-label">Bearing</span>
+                    <span id="bearing-value">---°</span>
+                    <span id="bearing-needle" class="bearing-needle">↑</span>
+                </div>
+                <div class="chip"><span class="chip-label">Dist</span><span id="distancia-value">0.00</span></div>
+                <div class="chip"><span class="chip-label">Veloc</span><span id="velocidad-value">0.0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón a la derecha -->
     <div class="topbar-right">
-        <!-- Viento como chips -->
-        <div id="panel-viento">
-            <div class="chip"><span class="chip-label">Dir</span><span id="vientoDir">–</span></div>
-            <div class="chip"><span class="chip-label">Vel</span><span id="vientoVel">–</span></div>
-            <div class="chip"><span class="chip-label">Ráf</span><span id="vientoRafagas">–</span></div>
-        </div>
-
-        <!-- Métricas como chips (reutiliza tus IDs para que el JS actualice igual) -->
-        <div class="metricas-chips" id="panel-metricas">
-            <div class="chip"><span class="chip-label">Bearing</span><span id="bearing-value">---°</span></div>
-            <div class="chip"><span class="chip-label">Dist</span><span id="distancia-value">0.00</span></div>
-            <div class="chip"><span class="chip-label">Veloc</span><span id="velocidad-value">0.0</span></div>
-        </div>
-
-        <!-- Botón toggle viento -->
         <button id="toggle-viento" onclick="toggleCapaViento()">🌬️ Viento ON</button>
     </div>
+</div>
+
+<!-- Input oculto para evitar el error en maparepew.js:165 -->
+<div id="controles-superiores" style="display:none;">
+    <label>Ancho del Control (m): <span id="anchoLabel">10</span></label>
+    <input type="range" id="anchoCorredor" min="0" max="100" value="10" />
 </div>
 
 <div id="map"></div>
@@ -126,8 +133,8 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="maparepew.js"></script>
 
-<footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">
-    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
+<footer style="background-color:white; padding:1rem; border-radius:10px; box-shadow:0 0 6px rgba(0,0,0,0.3);">
+    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width:300px; display:block; margin:0 auto;">
 </footer>
 </body>
 </html>

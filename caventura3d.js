@@ -26,10 +26,10 @@ class CarreraAventura3D {
   }
 
   initCesium() {
-    // Inicializar visor Cesium con terreno global y capa satelital
     this.viewer = new Cesium.Viewer('cesiumContainer', {
       terrain: Cesium.Terrain.fromWorldTerrain(),
-      imageryProvider: new Cesium.IonImageryProvider({ assetId: 3 }), // Bing Aerial
+      imageryProvider: new Cesium.IonImageryProvider({ assetId: 3 }),
+      sceneMode: Cesium.SceneMode.SCENE3D,
       animation: false,
       timeline: false,
       baseLayerPicker: false,
@@ -38,9 +38,9 @@ class CarreraAventura3D {
       geocoder: false
     });
 
-    // Luz suave en el globo (sombra relieve)
     this.viewer.scene.globe.enableLighting = true;
   }
+
 
   setupEventListeners() {
     const playBtn = document.getElementById('playBtn');
@@ -172,25 +172,21 @@ class CarreraAventura3D {
       return;
     }
 
-    // 1) Limpio entidades previas (otra ruta anterior, etc.)
     this.viewer.entities.removeAll();
 
-    // 2) Convierto la ruta a posiciones cartesianas
     const positions = this.routeData.map(p =>
       Cesium.Cartesian3.fromDegrees(p.lon, p.lat)
     );
 
-    // 3) Dibujo la polilínea "pegada al suelo"
     this.viewer.entities.add({
       polyline: {
         positions,
-        width: 4,
-        material: Cesium.Color.CHARTREUSE.withAlpha(0.8),
+        width: 6,
+        material: Cesium.Color.LIME.withAlpha(0.9),
         clampToGround: true
       }
     });
 
-    // 4) Creo el "participante" como un punto rojo con label
     this.entity = this.viewer.entities.add({
       position: positions[0],
       point: {
@@ -207,10 +203,22 @@ class CarreraAventura3D {
       }
     });
 
-    // 5) Ajusto la cámara para ver toda la ruta
-    this.viewer.zoomTo(this.viewer.entities);
+    // Centro general primero
+    this.viewer.zoomTo(this.viewer.entities).then(() => {
+      // Después muevo cámara a vista inclinada tipo dron
+      const firstPoint = this.routeData[0];
+      this.viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(firstPoint.lon, firstPoint.lat, 500),
+        orientation: {
+          heading: Cesium.Math.toRadians(0.0),
+          pitch: Cesium.Math.toRadians(-45.0),
+          roll: 0.0
+        },
+        duration: 1.0
+      });
+    });
 
-    // 6) Reset del reproductor UI
+    // Reset de estados UI
     this.currentIndex = 0;
     this.isPlaying = false;
     document.getElementById('playBtn').textContent = '▶️ Play';

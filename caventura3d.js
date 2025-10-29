@@ -34,46 +34,41 @@ class CarreraAventura3D {
     console.log("🌍 initCesium() - creando viewer con OSM, sin terrain Ion");
 
     this.viewer = new Cesium.Viewer('cesiumContainer', {
-      // capa base OSM (pública, sin token)
       imageryProvider: new Cesium.UrlTemplateImageryProvider({
         url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         credit: '© OpenStreetMap'
       }),
-
-      // forzar 3D real
       sceneMode: Cesium.SceneMode.SCENE3D,
-
-      // UI mínima
       animation: false,
       timeline: false,
       baseLayerPicker: false,
       sceneModePicker: false,
       homeButton: false,
       geocoder: false,
-
-      // 👇 ATENCIÓN: terrain: undefined
-      // nada de Cesium.Terrain.fromWorldTerrain() todavía
       terrain: undefined
     });
 
-    // aseguramos globo visible
+    // nos aseguramos de tener un globo
     if (!this.viewer.scene.globe) {
       this.viewer.scene.globe = new Cesium.Globe(Cesium.Ellipsoid.WGS84);
     }
     this.viewer.scene.globe.show = true;
     this.viewer.scene.skyAtmosphere.show = true;
 
-    // posicionar cámara inicial aprox Uruguay
-    this.viewer.camera.setView({
-      destination: Cesium.Cartesian3.fromDegrees(-56.0, -34.9, 50000.0),
+    // 👇 ESTE ES EL CAMBIO: en vez de setView cerca de Uruguay,
+    // vamos a poner la cámara bien lejos mirando el planeta entero.
+    // Después, cuando carguemos la ruta, hacemos zoom a la ruta.
+    this.viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(-56.0, -34.9, 5000000.0), // 5,000 km arriba
       orientation: {
         heading: 0.0,
         pitch: Cesium.Math.toRadians(-45),
         roll: 0.0
-      }
+      },
+      duration: 0
     });
 
-    // Exponer viewer global para debug
+    // debug global
     window._geotraserViewer = this.viewer;
     console.log("✅ Viewer listo y expuesto en window._geotraserViewer");
   }
@@ -239,11 +234,11 @@ class CarreraAventura3D {
         destination: Cesium.Cartesian3.fromDegrees(
           firstPoint.lon,
           firstPoint.lat,
-          500
+          2000 // 2 km arriba del punto, no 500 m
         ),
         orientation: {
-          heading: Cesium.Math.toRadians(0.0),
-          pitch: Cesium.Math.toRadians(-45.0),
+          heading: this.viewer.camera.heading,            // mantenemos heading actual
+          pitch: Cesium.Math.toRadians(-60.0),            // mirando bastante hacia abajo
           roll: 0.0
         },
         duration: 1.0

@@ -1,21 +1,17 @@
 class CarreraAventura3D {
   constructor() {
-    // === CONFIG GENERAL ===
     this.baseURL = 'https://navigationasistance-backend-1.onrender.com';
 
-    // Token Cesium (dejé el tuyo tal cual)
     Cesium.Ion.defaultAccessToken =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1ODYyOTlmYi0yNzJiLTQ4YmItOTZjOC0xN2NkZjA2NjFlNDgiLCJpZCI6MzU1MTkyLCJpYXQiOjE3NjE3NDA0NTB9.xV9NaeQy9znoxa_HfijTDSG1zVepGVTDc-U4ZmEvo4Y';
 
-    // Estado runtime
     this.viewer = null;
-    this.routeData = [];     // puntos de la ruta [{lat, lon, distance}, ...]
-    this.currentIndex = 0;   // índice actual en la reproducción
-    this.isPlaying = false;  // flag play/pause
+    this.routeData = [];
+    this.currentIndex = 0;
+    this.isPlaying = false;
     this.playInterval = null;
-    this.entity = null;      // marcador "Participante"
+    this.entity = null;
 
-    // Arranque
     this.init();
   }
 
@@ -28,7 +24,13 @@ class CarreraAventura3D {
   initCesium() {
     this.viewer = new Cesium.Viewer('cesiumContainer', {
       terrain: Cesium.Terrain.fromWorldTerrain(),
-      imageryProvider: new Cesium.IonImageryProvider({ assetId: 3 }),
+
+      // 👇 cambiamos esto:
+      imageryProvider: new Cesium.UrlTemplateImageryProvider({
+        url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        credit: '© OpenStreetMap'
+      }),
+
       sceneMode: Cesium.SceneMode.SCENE3D,
       animation: false,
       timeline: false,
@@ -41,23 +43,19 @@ class CarreraAventura3D {
     this.viewer.scene.globe.enableLighting = true;
   }
 
-
   setupEventListeners() {
     const playBtn = document.getElementById('playBtn');
     const timeSlider = document.getElementById('timeSlider');
     const userSelector = document.getElementById('userSelector');
 
-    // Play / Pause
     playBtn.addEventListener('click', () => {
       this.togglePlayback();
     });
 
-    // Slider manual de tiempo
     timeSlider.addEventListener('input', (e) => {
       this.updatePositionFromSlider(e);
     });
 
-    // Cambio de participante
     userSelector.addEventListener('change', async (e) => {
       if (e.target.value) {
         await this.loadUserRoute(e.target.value);
@@ -65,28 +63,22 @@ class CarreraAventura3D {
     });
   }
 
-  // =========================
-  // CARGA DE DATOS DEL BACKEND
-  // =========================
-
   async loadParticipants() {
     const selector = document.getElementById('userSelector');
     selector.innerHTML = '<option value="">Cargando...</option>';
 
     try {
-      // /nadadorrutas/listar -> todos los vínculos usuario/ruta/evento
       const res = await fetch(`${this.baseURL}/nadadorrutas/listar`);
       const data = await res.json();
 
       selector.innerHTML = '<option value="">Selecciona un participante...</option>';
 
-      // Para cada nadadorruta, traigo los datos del usuario (nombre/apellido)
       for (const u of data) {
         const userRes = await fetch(`${this.baseURL}/usuarios/listarId/${u.usuarioId}`);
         const user = await userRes.json();
 
         const option = document.createElement('option');
-        option.value = u.usuarioId; // Este ID lo usamos más abajo
+        option.value = u.usuarioId;
         option.textContent = `${user.nombre} ${user.apellido}`;
         selector.appendChild(option);
       }
@@ -98,31 +90,25 @@ class CarreraAventura3D {
 
   async loadUserRoute(userId) {
     try {
-      // Fecha elegida en el datepicker (o hoy si está vacío)
       const selectedDate =
         document.getElementById('dateSelector').value ||
         new Date().toISOString().split('T')[0];
 
-      // 1) consulto cuál fue su último recorrido en esa fecha
       const lastRouteResponse = await fetch(
         `${this.baseURL}/nadadorhistoricorutas/ultimorecorrido/${userId}/${selectedDate}`
       );
       const lastRoute = await lastRouteResponse.json();
 
-      // lastRoute esperado: [rutaId]
       if (Array.isArray(lastRoute) && lastRoute.length > 0) {
         const rutaId = lastRoute[0];
 
-        // 2) traigo los puntos crudos de esa ruta
         const routeResponse = await fetch(
           `${this.baseURL}/nadadorhistoricorutas/ruta/${rutaId}`
         );
         const routePoints = await routeResponse.json();
 
-        // 3) proceso esos puntos -> array amigable con distancia acumulada
         this.routeData = this.processRouteData(routePoints);
 
-        // 4) los dibujo y reseteo el reproductor
         this.displayRoute3D();
       } else {
         console.warn('No se encontró recorrido para ese usuario/fecha.');
@@ -135,8 +121,6 @@ class CarreraAventura3D {
   }
 
   processRouteData(points) {
-    // Construye array [{lat, lon, distance}, ...]
-    // distance = km acumulados a lo largo de la ruta
     let totalDistanceKm = 0;
 
     return points.map((p, i) => {
@@ -161,10 +145,6 @@ class CarreraAventura3D {
       };
     });
   }
-
-  // =========================
-  // RENDER 3D
-  // =========================
 
   displayRoute3D() {
     if (!this.routeData.length) {
@@ -203,12 +183,14 @@ class CarreraAventura3D {
       }
     });
 
-    // Centro general primero
     this.viewer.zoomTo(this.viewer.entities).then(() => {
-      // Después muevo cámara a vista inclinada tipo dron
       const firstPoint = this.routeData[0];
       this.viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(firstPoint.lon, firstPoint.lat, 500),
+        destination: Cesium.Cartesian3.fromDegrees(
+          firstPoint.lon,
+          firstPoint.lat,
+          500
+        ),
         orientation: {
           heading: Cesium.Math.toRadians(0.0),
           pitch: Cesium.Math.toRadians(-45.0),
@@ -218,7 +200,6 @@ class CarreraAventura3D {
       });
     });
 
-    // Reset de estados UI
     this.currentIndex = 0;
     this.isPlaying = false;
     document.getElementById('playBtn').textContent = '▶️ Play';
@@ -228,20 +209,14 @@ class CarreraAventura3D {
     document.getElementById('timeDisplay').textContent = '00:00';
   }
 
-  // =========================
-  // PLAYBACK
-  // =========================
-
   togglePlayback() {
     const btn = document.getElementById('playBtn');
 
     if (this.isPlaying) {
-      // estaba reproduciendo → pausar
       this.pausePlayback();
       btn.textContent = '▶️ Play';
       this.isPlaying = false;
     } else {
-      // estaba pausado → reproducir
       this.startPlayback();
       btn.textContent = '⏸️ Pause';
       this.isPlaying = true;
@@ -251,7 +226,6 @@ class CarreraAventura3D {
   startPlayback() {
     if (!this.routeData.length) return;
 
-    // cada 500ms avanzo un "frame"
     this.playInterval = setInterval(() => {
       this.advancePlayback();
     }, 500);
@@ -265,7 +239,6 @@ class CarreraAventura3D {
   }
 
   advancePlayback() {
-    // fin de la ruta → stop
     if (this.currentIndex >= this.routeData.length - 1) {
       this.pausePlayback();
       this.isPlaying = false;
@@ -273,7 +246,6 @@ class CarreraAventura3D {
       return;
     }
 
-    // avanzar 1 punto
     this.currentIndex++;
     this.updateMarkerPosition();
     this.updateStats();
@@ -285,31 +257,21 @@ class CarreraAventura3D {
     const p = this.routeData[this.currentIndex];
     const pos = Cesium.Cartesian3.fromDegrees(p.lon, p.lat);
 
-    // mover la entidad
     this.entity.position = pos;
-
-    // NOTA: no movemos la cámara en cada frame todavía,
-    // así podés orbitar libre con el mouse sin que te secuestre.
   }
 
   updateStats() {
     const p = this.routeData[this.currentIndex];
     const distKm = p.distanceKm ?? 0;
 
-    // Distancia recorrida en km acumulados
     document.getElementById('distanceValue').textContent = distKm.toFixed(2);
-
-    // Velocidad real: por ahora no la estamos calculando (necesita timestamp).
-    // Lo dejamos “—” hasta la siguiente iteración en la que migremos tu cálculo de velocidad.
     document.getElementById('speedValue').textContent = '—';
 
-    // timeline visual tipo mm:ss (placeholder igual que tu lógica vieja)
-    const minutes = Math.floor(this.currentIndex / 2); // aprox 2 puntos / minuto
+    const minutes = Math.floor(this.currentIndex / 2);
     const seconds = (this.currentIndex % 2) * 30;
     document.getElementById('timeDisplay').textContent =
       `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
 
-    // actualizo slider
     document.getElementById('timeSlider').value =
       (this.currentIndex / (this.routeData.length - 1)) * 100;
   }
@@ -317,7 +279,6 @@ class CarreraAventura3D {
   updatePositionFromSlider(e) {
     if (!this.routeData.length) return;
 
-    // Traducir el % del slider a un índice de la ruta
     this.currentIndex = Math.floor(
       (e.target.value / 100) * (this.routeData.length - 1)
     );
@@ -343,13 +304,8 @@ class CarreraAventura3D {
     document.getElementById('timeDisplay').textContent = '00:00';
   }
 
-  // =========================
-  // UTILIDADES
-  // =========================
-
-  // Distancia Haversine (km) entre dos puntos lat/lon
   haversine(lat1, lon1, lat2, lon2) {
-    const R = 6371; // km radio Tierra
+    const R = 6371;
     const toRad = deg => (deg * Math.PI) / 180;
 
     const dLat = toRad(lat2 - lat1);
@@ -363,7 +319,7 @@ class CarreraAventura3D {
         Math.sin(dLon / 2);
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // km
+    return R * c;
   }
 }
 

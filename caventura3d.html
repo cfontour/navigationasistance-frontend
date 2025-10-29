@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Carrera de Aventura 3D</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CesiumJS -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.120/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.120/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap');
+        body {
+          margin: 0;
+          font-family: 'Segoe UI', sans-serif;
+          background-image: url('img/fondo_regata.png');
+          background-size: cover;
+          height: 100vh;
+          overflow: hidden;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 1fr 1fr;
+          gap: 10px;
+          padding: 10px;
+        }
+        .section {
+          background: rgba(255, 255, 255, 0.95);
+          border-radius: 15px;
+          padding: 20px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+        .user-section { grid-row: 1 / 3; grid-column: 1; }
+        .map-section { grid-row: 1; grid-column: 2; position: relative; }
+        .gauges-section { grid-row: 2; grid-column: 2; display: flex; justify-content: space-around; align-items: center; }
+
+        #cesiumContainer {
+          width: 100%;
+          height: calc(100% - 80px);
+          border-radius: 10px;
+          border: 2px solid #ddd;
+        }
+
+        .map-controls {
+          margin-top: 10px;
+          text-align: center;
+        }
+        .play-controls {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+        }
+        .play-btn {
+          background: #27ae60;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        .time-slider {
+          flex: 1;
+          margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Logo -->
+<img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="position:fixed;top:20px;left:10px;max-width:200px;z-index:1000;">
+
+<!-- Panel izquierdo (igual que antes, solo simplificado para demo) -->
+<div class="section user-section">
+    <h3>🏁 Participantes Carrera de Aventura</h3>
+    <input type="date" id="dateSelector" style="width:100%;padding:8px;margin-bottom:10px;">
+    <select id="userSelector" style="width:100%;padding:8px;">
+        <option value="">Selecciona un participante...</option>
+    </select>
+    <div id="userProfileContainer" style="margin-top:15px;">Selecciona un participante...</div>
+</div>
+
+<!-- Sección mapa 3D -->
+<div class="section map-section">
+    <div id="cesiumContainer"></div>
+    <div class="map-controls">
+        <div class="play-controls">
+            <button class="play-btn" id="playBtn">▶️ Play</button>
+            <input type="range" class="time-slider" id="timeSlider" min="0" max="100" value="0">
+            <span id="timeDisplay">00:00</span>
+        </div>
+    </div>
+</div>
+
+<!-- Sección inferior derecha (gauges) -->
+<div class="section gauges-section">
+    <div style="text-align:center">
+        <h3 id="speedValue">0</h3><p>Velocidad (km/h)</p>
+    </div>
+    <div style="text-align:center">
+        <h3 id="distanceValue">0.0</h3><p>Km Recorridos</p>
+    </div>
+</div>
+
+<script src="caventura3d.js"></script>
+</body>
+</html>

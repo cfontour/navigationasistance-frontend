@@ -31,46 +31,68 @@ class CarreraAventura3D {
   // CESIUM VIEWER (MODO SEGURO SIN TERRENO ION)
   // =========================
   initCesium() {
-    console.log("🌍 initCesium() - creando viewer con OSM, sin terrain Ion");
+    console.log("🌍 initCesium() - viewer con OSM + terreno mundial");
 
+    // 1. Creamos el viewer con terrain mundial
     this.viewer = new Cesium.Viewer('cesiumContainer', {
-      imageryProvider: new Cesium.UrlTemplateImageryProvider({
-        url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        credit: '© OpenStreetMap'
-      }),
+      // activamos terreno global de Cesium (usa tu token Ion)
+      terrain: Cesium.Terrain.fromWorldTerrain({
+          // exagerar 2x la altura real
+          // (esta API recentísima puede variar con la versión, si falla lo vemos)
+          exaggeration: 2.0
+        }),
+      // vamos a meter la capa OSM manualmente igual, así que no pasamos imageryProvider acá
       sceneMode: Cesium.SceneMode.SCENE3D,
       animation: false,
       timeline: false,
       baseLayerPicker: false,
       sceneModePicker: false,
       homeButton: false,
-      geocoder: false,
-      terrain: undefined
+      geocoder: false
     });
 
-    // nos aseguramos de tener un globo
+    // 2. Limpiar cualquier capa base que Cesium haya puesto y meter OSM explícitamente
+    this.viewer.imageryLayers.removeAll();
+    this.viewer.imageryLayers.addImageryProvider(
+      new Cesium.UrlTemplateImageryProvider({
+        url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        credit: '© OpenStreetMap'
+      })
+    );
+
+    // 3. Asegurarnos que el globo y la atmósfera están visibles
     if (!this.viewer.scene.globe) {
       this.viewer.scene.globe = new Cesium.Globe(Cesium.Ellipsoid.WGS84);
     }
     this.viewer.scene.globe.show = true;
     this.viewer.scene.skyAtmosphere.show = true;
 
-    // 👇 ESTE ES EL CAMBIO: en vez de setView cerca de Uruguay,
-    // vamos a poner la cámara bien lejos mirando el planeta entero.
-    // Después, cuando carguemos la ruta, hacemos zoom a la ruta.
+    // Esto ayuda a que se vean sombras suaves en el terreno
+    this.viewer.scene.globe.enableLighting = true;
+
+    // 4. Posición inicial de la cámara:
+    //    - Estamos a ~10 km sobre la zona de Uruguay, mirando hacia abajo,
+    //      lo cual exagera más el relieve visualmente que la vista totalmente cenital.
     this.viewer.camera.flyTo({
-      destination: Cesium.Cartesian3.fromDegrees(-56.0, -34.9, 5000000.0), // 5,000 km arriba
+      destination: Cesium.Cartesian3.fromDegrees(
+        -56.0,   // lon aprox
+        -34.9,   // lat aprox
+        10000.0  // altura en metros (10 km sobre el suelo)
+      ),
       orientation: {
         heading: 0.0,
-        pitch: Cesium.Math.toRadians(-45),
+        pitch: Cesium.Math.toRadians(-60), // mira más "rasante" que vertical
         roll: 0.0
       },
       duration: 0
     });
 
-    // debug global
+    // 5. Guardar para debug en consola
     window._geotraserViewer = this.viewer;
-    console.log("✅ Viewer listo y expuesto en window._geotraserViewer");
+    console.log("✅ Viewer listo (con terreno) y expuesto en window._geotraserViewer");
+
+    // 6. (opcional estético) escondenos el crédito Ion gigante
+    this.viewer._cesiumWidget._creditContainer.style.display = "none";
   }
 
   // =========================

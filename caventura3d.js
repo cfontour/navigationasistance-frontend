@@ -1,16 +1,18 @@
 class CarreraAventura3D {
   constructor() {
+    console.log("🚀 CarreraAventura3D constructor - USANDO V4 OSM SAFE MODE");
+
     // === CONFIG GENERAL ===
     this.baseURL = 'https://navigationasistance-backend-1.onrender.com';
 
-    // (Podemos dejar tu token Ion igual, aunque en este modo no usamos terreno Ion todavía)
+    // Token Ion (no lo usamos para imagery/terrain en este modo seguro, pero lo dejamos set)
     Cesium.Ion.defaultAccessToken =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1ODYyOTlmYi0yNzJiLTQ4YmItOTZjOC0xN2NkZjA2NjFlNDgiLCJpZCI6MzU1MTkyLCJpYXQiOjE3NjE3NDA0NTB9.xV9NaeQy9znoxa_HfijTDSG1zVepGVTDc-U4ZmEvo4Y';
 
     // Estado runtime
     this.viewer = null;
-    this.routeData = [];     // puntos [{lat, lon, distanceKm}, ...]
-    this.currentIndex = 0;   // índice actual en la reproducción
+    this.routeData = [];     // [{lat, lon, distanceKm}, ...]
+    this.currentIndex = 0;
     this.isPlaying = false;
     this.playInterval = null;
     this.entity = null;      // marcador del participante
@@ -26,20 +28,22 @@ class CarreraAventura3D {
   }
 
   // =========================
-  // CESIUM VIEWER (VERSIÓN SEGURA)
+  // CESIUM VIEWER (MODO SEGURO SIN TERRENO ION)
   // =========================
   initCesium() {
-    // Creamos el viewer SIN terreno Ion (para descartar conflictos) y con OSM como capa base
+    console.log("🌍 initCesium() - creando viewer con OSM, sin terrain Ion");
+
     this.viewer = new Cesium.Viewer('cesiumContainer', {
+      // capa base OSM (pública, sin token)
       imageryProvider: new Cesium.UrlTemplateImageryProvider({
         url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         credit: '© OpenStreetMap'
       }),
 
-      // Forzamos vista 3D real
+      // forzar 3D real
       sceneMode: Cesium.SceneMode.SCENE3D,
 
-      // Desactivamos UI que no usás en la demo
+      // UI mínima
       animation: false,
       timeline: false,
       baseLayerPicker: false,
@@ -47,29 +51,31 @@ class CarreraAventura3D {
       homeButton: false,
       geocoder: false,
 
-      // IMPORTANTE: terreno desactivado por ahora
+      // 👇 ATENCIÓN: terrain: undefined
+      // nada de Cesium.Terrain.fromWorldTerrain() todavía
       terrain: undefined
     });
 
-    // Asegurá que haya globo y atmósfera visibles
+    // aseguramos globo visible
     if (!this.viewer.scene.globe) {
       this.viewer.scene.globe = new Cesium.Globe(Cesium.Ellipsoid.WGS84);
     }
     this.viewer.scene.globe.show = true;
     this.viewer.scene.skyAtmosphere.show = true;
 
-    // Colocamos la cámara en Uruguay aprox para evitar que "nazca" mirando al vacío azul
+    // posicionar cámara inicial aprox Uruguay
     this.viewer.camera.setView({
-      destination: Cesium.Cartesian3.fromDegrees(-56.0, -34.9, 50000.0), // lon, lat, altura (m)
+      destination: Cesium.Cartesian3.fromDegrees(-56.0, -34.9, 50000.0),
       orientation: {
         heading: 0.0,
-        pitch: Cesium.Math.toRadians(-45), // mira hacia abajo en ángulo
+        pitch: Cesium.Math.toRadians(-45),
         roll: 0.0
       }
     });
 
-    // Para debug en consola: ahora podés usar _geotraserViewer en F12
+    // Exponer viewer global para debug
     window._geotraserViewer = this.viewer;
+    console.log("✅ Viewer listo y expuesto en window._geotraserViewer");
   }
 
   // =========================
@@ -80,17 +86,14 @@ class CarreraAventura3D {
     const timeSlider = document.getElementById('timeSlider');
     const userSelector = document.getElementById('userSelector');
 
-    // Play / Pause
     playBtn.addEventListener('click', () => {
       this.togglePlayback();
     });
 
-    // Slider manual de tiempo
     timeSlider.addEventListener('input', (e) => {
       this.updatePositionFromSlider(e);
     });
 
-    // Cambio de participante
     userSelector.addEventListener('change', async (e) => {
       if (e.target.value) {
         await this.loadUserRoute(e.target.value);
@@ -101,13 +104,11 @@ class CarreraAventura3D {
   // =========================
   // CARGA DE DATOS DEL BACKEND
   // =========================
-
   async loadParticipants() {
     const selector = document.getElementById('userSelector');
     selector.innerHTML = '<option value="">Cargando...</option>';
 
     try {
-      // /nadadorrutas/listar -> lista de asociaciones usuario/ruta/evento
       const res = await fetch(`${this.baseURL}/nadadorrutas/listar`);
       const data = await res.json();
 
@@ -118,7 +119,7 @@ class CarreraAventura3D {
         const user = await userRes.json();
 
         const option = document.createElement('option');
-        option.value = u.usuarioId; // usamos este ID para pedir la ruta luego
+        option.value = u.usuarioId;
         option.textContent = `${user.nombre} ${user.apellido}`;
         selector.appendChild(option);
       }
@@ -130,12 +131,10 @@ class CarreraAventura3D {
 
   async loadUserRoute(userId) {
     try {
-      // Tomamos la fecha elegida o hoy si está vacío
       const selectedDate =
         document.getElementById('dateSelector').value ||
         new Date().toISOString().split('T')[0];
 
-      // Paso 1: cuál fue su último recorrido ese día
       const lastRouteResponse = await fetch(
         `${this.baseURL}/nadadorhistoricorutas/ultimorecorrido/${userId}/${selectedDate}`
       );
@@ -144,16 +143,13 @@ class CarreraAventura3D {
       if (Array.isArray(lastRoute) && lastRoute.length > 0) {
         const rutaId = lastRoute[0];
 
-        // Paso 2: traigo los puntos de esa ruta
         const routeResponse = await fetch(
           `${this.baseURL}/nadadorhistoricorutas/ruta/${rutaId}`
         );
         const routePoints = await routeResponse.json();
 
-        // Paso 3: proceso (distancia acumulada, etc.)
         this.routeData = this.processRouteData(routePoints);
 
-        // Paso 4: dibujo y reseteo playback
         this.displayRoute3D();
       } else {
         console.warn('No se encontró recorrido para ese usuario/fecha.');
@@ -166,8 +162,6 @@ class CarreraAventura3D {
   }
 
   processRouteData(points) {
-    // points viene del backend con nadadorlat / nadadorlng
-    // devolvemos [{lat, lon, distanceKm}, ...] con distancia acumulada en km
     let totalDistanceKm = 0;
 
     return points.map((p, i) => {
@@ -196,22 +190,22 @@ class CarreraAventura3D {
   // =========================
   // RENDER 3D DE LA RUTA
   // =========================
-
   displayRoute3D() {
     if (!this.routeData.length) {
       console.warn('displayRoute3D() llamado sin datos');
       return;
     }
 
-    // Limpiar cualquier ruta previa
+    console.log("📍 Pintando ruta con", this.routeData.length, "puntos");
+
+    // limpiar entidades previas
     this.viewer.entities.removeAll();
 
-    // Convertir puntos lat/lon a posiciones 3D
     const positions = this.routeData.map(p =>
       Cesium.Cartesian3.fromDegrees(p.lon, p.lat)
     );
 
-    // Dibujar la polilínea (ruta) en verde
+    // línea de la ruta
     this.viewer.entities.add({
       polyline: {
         positions,
@@ -221,7 +215,7 @@ class CarreraAventura3D {
       }
     });
 
-    // Crear el marcador rojo del participante
+    // marcador participante
     this.entity = this.viewer.entities.add({
       position: positions[0],
       point: {
@@ -238,14 +232,14 @@ class CarreraAventura3D {
       }
     });
 
-    // Enfocar la cámara a la zona de la ruta y luego inclinarla tipo dron
+    // zoom a la ruta y después ángulo tipo dron
     this.viewer.zoomTo(this.viewer.entities).then(() => {
       const firstPoint = this.routeData[0];
       this.viewer.camera.flyTo({
         destination: Cesium.Cartesian3.fromDegrees(
           firstPoint.lon,
           firstPoint.lat,
-          500 // altura cámara ~500 m sobre el primer punto
+          500
         ),
         orientation: {
           heading: Cesium.Math.toRadians(0.0),
@@ -256,7 +250,7 @@ class CarreraAventura3D {
       });
     });
 
-    // Reset del reproductor UI
+    // reset playback UI
     this.currentIndex = 0;
     this.isPlaying = false;
     document.getElementById('playBtn').textContent = '▶️ Play';
@@ -267,19 +261,16 @@ class CarreraAventura3D {
   }
 
   // =========================
-  // PLAYBACK (PLAY/PAUSE/SLIDER)
+  // PLAYBACK
   // =========================
-
   togglePlayback() {
     const btn = document.getElementById('playBtn');
 
     if (this.isPlaying) {
-      // Pausar
       this.pausePlayback();
       btn.textContent = '▶️ Play';
       this.isPlaying = false;
     } else {
-      // Reproducir
       this.startPlayback();
       btn.textContent = '⏸️ Pause';
       this.isPlaying = true;
@@ -289,7 +280,6 @@ class CarreraAventura3D {
   startPlayback() {
     if (!this.routeData.length) return;
 
-    // Avanzar un punto cada 500ms
     this.playInterval = setInterval(() => {
       this.advancePlayback();
     }, 500);
@@ -304,7 +294,6 @@ class CarreraAventura3D {
 
   advancePlayback() {
     if (this.currentIndex >= this.routeData.length - 1) {
-      // fin de recorrido
       this.pausePlayback();
       this.isPlaying = false;
       document.getElementById('playBtn').textContent = '▶️ Play';
@@ -321,8 +310,6 @@ class CarreraAventura3D {
 
     const p = this.routeData[this.currentIndex];
     const pos = Cesium.Cartesian3.fromDegrees(p.lon, p.lat);
-
-    // Mover puntito rojo
     this.entity.position = pos;
   }
 
@@ -330,19 +317,14 @@ class CarreraAventura3D {
     const p = this.routeData[this.currentIndex];
     const distKm = p.distanceKm ?? 0;
 
-    // Distancia acumulada en km
     document.getElementById('distanceValue').textContent = distKm.toFixed(2);
-
-    // Velocidad real aún no calculada (falta timestamp en backend)
     document.getElementById('speedValue').textContent = '—';
 
-    // Timeline mm:ss (placeholder aproximado)
-    const minutes = Math.floor(this.currentIndex / 2); // ~2 puntos por minuto
+    const minutes = Math.floor(this.currentIndex / 2);
     const seconds = (this.currentIndex % 2) * 30;
     document.getElementById('timeDisplay').textContent =
       `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
 
-    // Actualizar slider
     document.getElementById('timeSlider').value =
       (this.currentIndex / (this.routeData.length - 1)) * 100;
   }
@@ -350,7 +332,6 @@ class CarreraAventura3D {
   updatePositionFromSlider(e) {
     if (!this.routeData.length) return;
 
-    // Convertir % del slider → índice en la ruta
     this.currentIndex = Math.floor(
       (e.target.value / 100) * (this.routeData.length - 1)
     );
@@ -377,12 +358,10 @@ class CarreraAventura3D {
   }
 
   // =========================
-  // UTILIDADES
+  // UTIL
   // =========================
-
-  // Distancia Haversine (km) entre dos puntos lat/lon
   haversine(lat1, lon1, lat2, lon2) {
-    const R = 6371; // km radio Tierra
+    const R = 6371;
     const toRad = deg => (deg * Math.PI) / 180;
 
     const dLat = toRad(lat2 - lat1);
@@ -400,8 +379,7 @@ class CarreraAventura3D {
   }
 }
 
-// IMPORTANTE: ahora esperamos a que cargue TODO (HTML + CSS + layout)
-// para que Cesium calcule bien tamaños
+// IMPORTANTE: esperamos load completo (no DOMContentLoaded)
 window.addEventListener('load', () => {
   new CarreraAventura3D();
 });

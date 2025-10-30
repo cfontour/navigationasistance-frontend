@@ -1160,6 +1160,17 @@ document.addEventListener("DOMContentLoaded", () => {
   windCanvasEl.style.pointerEvents = "none";
   windPane.appendChild(windCanvasEl);
 
+  // --- SINCRONIZAR TRANSFORM DEL CANVAS CON EL MAPA (pan/zoom) ---
+  const mapPane = map.getPanes().mapPane;            // <div class="leaflet-map-pane">
+  function syncWindCanvasTransform() {
+    // copia exactamente el transform que aplica Leaflet al mapPane
+    windCanvasEl.style.transform = mapPane.style.transform || '';
+  }
+  // sincronizar en los eventos de movimiento/zoom
+  map.on('move zoom zoomanim', syncWindCanvasTransform);
+  // y una vez de arranque
+  syncWindCanvasTransform();
+
   function resizeWindCanvas() {
     const size = map.getSize();
     const dpr = window.devicePixelRatio || 1;

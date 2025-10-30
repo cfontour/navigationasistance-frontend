@@ -1160,16 +1160,36 @@ document.addEventListener("DOMContentLoaded", () => {
   windCanvasEl.style.pointerEvents = "none";
   windPane.appendChild(windCanvasEl);
 
-  // --- SINCRONIZAR TRANSFORM DEL CANVAS CON EL MAPA (pan/zoom) ---
-  const mapPane = map.getPanes().mapPane;            // <div class="leaflet-map-pane">
-  function syncWindCanvasTransform() {
-    // copia exactamente el transform que aplica Leaflet al mapPane
-    windCanvasEl.style.transform = mapPane.style.transform || '';
+  // ——— QUE EL CANVAS SE COMPORTE COMO LAYER DE LEAFLET ———
+  L.DomUtil.addClass(windCanvasEl, 'leaflet-zoom-animated'); // participa del zoom animado
+
+  function alignWindCanvas() {
+    // posicionar el canvas en el origen de capa (igual que los tiles)
+    const topLeft = map.containerPointToLayerPoint([0, 0]);
+    L.DomUtil.setPosition(windCanvasEl, topLeft);
+
+    // dimensionar y DPI-correct
+    const size = map.getSize();
+    const dpr = window.devicePixelRatio || 1;
+    windCanvasEl.width  = Math.max(1, Math.floor(size.x * dpr));
+    windCanvasEl.height = Math.max(1, Math.floor(size.y * dpr));
+    windCanvasEl.style.width  = size.x + 'px';
+    windCanvasEl.style.height = size.y + 'px';
+
+    windCtx = windCanvasEl.getContext('2d');
+    windCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // si estaba encendido, resembrar para que no “desaparezcan” al mover
+    if (vientoVisible) {
+      windParticles = [];
+      for (let i = 0; i < PARTICLE_COUNT; i++) windParticles.push(new WindParticle(windCanvasEl));
+    }
   }
-  // sincronizar en los eventos de movimiento/zoom
-  map.on('move zoom zoomanim', syncWindCanvasTransform);
-  // y una vez de arranque
-  syncWindCanvasTransform();
+
+  // eventos que alteran vista: mover, zoom, resize, viewreset
+  map.on('move zoom resize viewreset', alignWindCanvas);
+  // y una vez al inicio
+  alignWindCanvas();
 
   function resizeWindCanvas() {
     const size = map.getSize();

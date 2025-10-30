@@ -1192,6 +1192,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (windCtx) windCtx.globalAlpha = 1;
   });
 
+  map.on('moveend', () => {
+    if (vientoVisible && windCanvasEl) {
+      windParticles = [];
+      for (let i = 0; i < PARTICLE_COUNT; i++) windParticles.push(new WindParticle(windCanvasEl));
+    }
+  });
+
   // Botón viento (sin inline handler)
   const btnViento = document.getElementById("toggle-viento");
   if (btnViento) {

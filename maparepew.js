@@ -1173,10 +1173,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  //resizeWindCanvas();
+  //map.on("resize zoomend moveend", resizeWindCanvas);
+  //map.on("zoomstart movestart", () => {
+  //  if (windCtx) windCtx.clearRect(0, 0, windCanvasEl.width, windCanvasEl.height);
+  //});
+
   resizeWindCanvas();
-  map.on("resize zoomend moveend", resizeWindCanvas);
-  map.on("zoomstart movestart", () => {
-    if (windCtx) windCtx.clearRect(0, 0, windCanvasEl.width, windCanvasEl.height);
+
+  // Mantener partículas visibles mientras se arrastra el mapa
+  map.on('resize zoomend', resizeWindCanvas);
+
+  // (Opcional) bajar un poco el alpha durante el zoom animado para evitar “smear” visual
+  map.on('zoomstart', () => {
+    if (windCtx) windCtx.globalAlpha = 0.8;
+  });
+  map.on('zoomend', () => {
+    if (windCtx) windCtx.globalAlpha = 1;
   });
 
   // Botón viento (sin inline handler)

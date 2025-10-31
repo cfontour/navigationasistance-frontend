@@ -1244,7 +1244,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Cargar ruta y nadadores
-  cargarRutas("52");
+  cargarRutas("67");
   cargarNavegantesVinculados();
   iniciarSistemaViento();
 

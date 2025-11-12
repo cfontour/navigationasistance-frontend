@@ -2,7 +2,7 @@ const map = L.map("map").setView([4.85, 31.61], 13);
 
 const RADIO_PUNTO_CONTROL = 20;
 
-// ✅ Capa base STREET (OpenStreetMap) — reemplaza la satelital
+// ✅ Capa base STREET (OpenStreetMap)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors',
   maxZoom: 19
@@ -16,7 +16,7 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
 */
 
 // Íconos personalizados
-const iconoInicio = L.icon({ iconUrl: 'img/start_flag.png', iconSize: [32, 32] });
+const iconoInicio = L.icon({ iconUrl: 'img/start_flag.png',  iconSize: [32, 32] });
 const iconoIntermedio = L.icon({ iconUrl: 'img/white_flag.png', iconSize: [24, 24] });
 const iconoFinal = L.icon({ iconUrl: 'img/finish_flag.png', iconSize: [32, 32] });
 
@@ -28,30 +28,52 @@ let puntosControl = [];
 let registrosHechos = new Set();
 let mostrarTraza = false;
 
+// ⛓️‍💥 polilínea que une los puntos de la ruta seleccionada
+let polylineRuta = null;
+
 // --- resto de tu JS SIN CAMBIOS ---
+// Carga una ruta por id, dibuja puntos y UNE con una línea CELESTE
 async function cargarRutas(idRuta) {
   try {
     const res = await fetch(`https://navigationasistance-backend-1.onrender.com/rutas/listarId/${idRuta}`);
     const ruta = await res.json();
 
+    // limpiar título previo si existe
+    const tituloViejo = document.querySelector("h2#tituloRutaCargada");
+    if (tituloViejo) tituloViejo.remove();
+
     const titulo = document.createElement("h2");
+    titulo.id = "tituloRutaCargada";
     titulo.innerText = ruta.nombre;
     titulo.style.color = "white";
     titulo.style.fontSize = "1.5em";
     titulo.style.textShadow = "1px 1px 3px black";
     document.body.insertBefore(titulo, document.getElementById("map"));
 
-    const puntos = ruta.puntos;
-    if (!puntos || puntos.length === 0) return;
+    let puntos = ruta.puntos;
+    if (!Array.isArray(puntos) || puntos.length === 0) return;
+
+    // 🔢 asegurar orden por secuencia
+    puntos = [...puntos].sort((a, b) => Number(a.secuencia) - Number(b.secuencia));
 
     const bounds = [];
+    const pathLatLngs = [];
+
+    // limpiar polilínea anterior si hubiera
+    if (polylineRuta) {
+      map.removeLayer(polylineRuta);
+      polylineRuta = null;
+    }
+
+    // opcional: limpiar círculos/markers de control previos
+    puntosControl = [];
 
     puntos.forEach((p, i) => {
       const latlng = [p.latitud, p.longitud];
       bounds.push(latlng);
+      pathLatLngs.push(latlng);
 
-      console.log("🧩 Punto recibido:", p);
-
+      // para verificación/registro de paso por puntos de control
       puntosControl.push({
         latitud: p.latitud,
         longitud: p.longitud,
@@ -60,7 +82,8 @@ async function cargarRutas(idRuta) {
         rutaId: idRuta
       });
 
-      const controlPointRadius = L.circle(latlng, {
+      // círculo de radio (20m)
+      L.circle(latlng, {
         radius: RADIO_PUNTO_CONTROL,
         color: 'blue',
         fillColor: '#3388ff',
@@ -68,6 +91,7 @@ async function cargarRutas(idRuta) {
         weight: 1
       }).addTo(map);
 
+      // marca el punto exacto
       L.circle(latlng, {
         radius: 5,
         color: 'rgba(255, 255, 0, 0.5)',
@@ -75,6 +99,7 @@ async function cargarRutas(idRuta) {
         fillOpacity: 1
       }).addTo(map);
 
+      // icono de inicio / intermedio / final
       let icon = iconoIntermedio;
       if (i === 0) icon = iconoInicio;
       else if (i === puntos.length - 1) icon = iconoFinal;
@@ -84,7 +109,13 @@ async function cargarRutas(idRuta) {
         .bindPopup(`Etiqueta: ${p.etiqueta}<br>Lat: ${p.latitud}<br>Lng: ${p.longitud}`);
     });
 
-    console.log("🧭 puntosControl cargados:", puntosControl);
+    // 🔵 dibujar la polilínea CELESTE que UNE TODOS LOS PUNTOS
+    polylineRuta = L.polyline(pathLatLngs, {
+      color: '#5BC0FF',      // celeste
+      weight: 4,
+      opacity: 0.9
+    }).addTo(map);
+
     map.fitBounds(bounds);
 
   } catch (err) {
@@ -136,7 +167,6 @@ async function cargarNavegantesVinculados() {
       const lat = parseFloat(n.nadadorlat);
       const lng = parseFloat(n.nadadorlng);
       const bearing = parseFloat(n.bearing);
-
       if (isNaN(lat) || isNaN(lng)) return;
 
       let icono;
@@ -329,6 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const idRutaSeleccionada = event.target.value;
     cargarRutas(idRutaSeleccionada);
   });
+
   cargarNavegantesVinculados();
   cargarUsuariosEnSelector();
   setInterval(cargarNavegantesVinculados, 5000);

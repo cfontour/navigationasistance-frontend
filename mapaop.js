@@ -1,4 +1,4 @@
-const map = L.map("map").setView([-34.9, -56.1], 13);
+const map = L.map("map").setView([4.85, 31.61], 13);
 
 const RADIO_PUNTO_CONTROL = 20;
 

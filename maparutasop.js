@@ -57,11 +57,12 @@ function confirmarRuta() {
   }
 
   const color = document.getElementById("color").value;
+  const nombre = `SUDAN - ${new Date().toISOString().slice(0,19).replace('T',' ')}`;
 
   fetch('https://navigationasistance-backend-1.onrender.com/rutas/agregar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ color: "OPERATIONAL" })
+    body: JSON.stringify({ nombre, color: "OPERATIONAL" })
   })
   .then(response => {
     if (!response.ok) throw new Error("Error al guardar la ruta");
@@ -73,7 +74,9 @@ function confirmarRuta() {
 
     if (isNaN(rutaId)) throw new Error("ID inválido de la ruta creada.");
 
-    document.getElementById("ruta-id-confirmada").innerText = `Ruta confirmada con ID: ${rutaId}`;
+    const label = document.getElementById("ruta-id-confirmada");
+    label.innerText = `Ruta confirmada con ID: ${rutaId}`;
+    label.style.color = "red";  // 🔴 texto en rojo
 
     const puntosParaEnviar = puntosActuales.map(p => ({
       ruta: { id: rutaId },

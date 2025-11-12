@@ -61,7 +61,7 @@ function confirmarRuta() {
   fetch('https://navigationasistance-backend-1.onrender.com/rutas/agregar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ color })
+    body: JSON.stringify({ color: "OPERATIONAL" })
   })
   .then(response => {
     if (!response.ok) throw new Error("Error al guardar la ruta");

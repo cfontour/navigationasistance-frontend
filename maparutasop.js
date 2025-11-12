@@ -76,7 +76,8 @@ function confirmarRuta() {
 
     const label = document.getElementById("ruta-id-confirmada");
     label.innerText = `Ruta confirmada con ID: ${rutaId}`;
-    label.style.color = "red";  // 🔴 texto en rojo
+    label.style.color = "white";       // ⚪ texto blanco
+    label.style.fontWeight = "bold";   // 🔠 texto en negrita
 
     const puntosParaEnviar = puntosActuales.map(p => ({
       ruta: { id: rutaId },

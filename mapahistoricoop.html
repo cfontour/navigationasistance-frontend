@@ -11,7 +11,7 @@
 
   <!-- Custom fonts -->
   <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,700,900" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
 
   <!-- Custom styles -->
   <link href="css/sb-admin-2.min.css" rel="stylesheet">
@@ -23,21 +23,49 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    #map { height: 500px; width: 100%; border: 1px solid #ccc; border-radius: 8px; }
+    body { font-family: 'Montserrat', sans-serif; }
+
+    #map {
+      height: 500px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
     .controls { margin-bottom: 1rem; }
+
     .controls label,
     .controls select,
     .controls input,
-    .controls button { margin-right: 1rem; font-size: 1rem; }
+    .controls button {
+      margin-right: 1rem;
+      font-size: 1rem;
+    }
+
+    /* --- ESTILO DEL TÍTULO PRINCIPAL --- */
+    .titulo-principal {
+      color: #fff;
+      text-align: center;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7);
+      margin: 20px 10px 15px;
+      font-size: 2.2rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
   </style>
 </head>
 
 <body id="page-top" style="background-image: url('img/fondo_operationalTracking.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
-<h1>🧭 Operational Tracking - Rutas Realizadas por el personal</h1>
+
+<h1 class="titulo-principal">🧭 Operational Tracking - Rutas Realizadas por el personal</h1>
 
 <div id="wrapper">
   <div id="content-wrapper" class="d-flex flex-column">
     <div id="content">
+
       <!-- Topbar -->
       <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
         <form class="form-inline">
@@ -48,11 +76,13 @@
 
         <ul class="navbar-nav ml-auto">
           <li class="nav-item dropdown no-arrow">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="txt-email-usuario">...</span>
               <img class="img-profile rounded-circle" src="img/undraw_profile.svg" alt="perfil">
             </a>
-            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                 aria-labelledby="userDropdown">
               <a class="dropdown-item" href="#"><i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>Perfil</a>
               <a class="dropdown-item" href="#"><i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>Configuración</a>
               <a class="dropdown-item" href="#"><i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>Actividad</a>
@@ -66,8 +96,6 @@
       </nav>
 
       <div class="container-fluid">
-        <h1>🧭 Visualización de las Rutas Realizadas</h1>
-
         <div class="controls">
           <label for="select-usuario">Seleccionar Personal:</label>
           <select id="select-usuario"><option value="">-- Seleccionar --</option></select>

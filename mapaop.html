@@ -3,92 +3,128 @@
 <head>
     <meta charset="UTF-8" />
     <title>Geotraser - Operational Tracking - Puntos</title>
-
-    <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
-    <!-- Fuente (opcional, queda muy bien) -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" />
 
     <style>
-        body { margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-
-        /* Panel de controles */
-         #controles-superiores{
-         position: absolute;
-         top: 110px;        /* ⬅️ empuja los controles debajo del título */
-         right: 10px;
-         z-index: 1000;
-         display: flex;
-         gap: 10px;
-         background: rgba(255,255,255,0.9);
-         padding: 10px;
-         border-radius: 5px;
-         align-items: center;
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Montserrat', sans-serif;
+          background-image: url('img/fondo_operationalTracking.png');
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
         }
 
-        /* Ajuste en pantallas chicas: un poco más abajo y a la izquierda */
-        @media (max-width: 992px){
-         #controles-superiores{ top: 140px; right: 10px; }
+        /* ===== CONTENEDOR SUPERIOR ===== */
+        #encabezado {
+          display: flex;
+          justify-content: space-between; /* 🟢 título a la izquierda, controles a la derecha */
+          align-items: center;
+          padding: 10px 20px;
+          background: rgba(0, 0, 0, 0.35);
+          border-radius: 8px;
+          margin: 10px;
         }
 
-        #controles-superiores button {
-          padding: 6px 10px; font-weight: bold; border: 1px solid #999;
-          background-color: white; border-radius: 5px; cursor: pointer;
-        }
-        #selector-usuario { padding: 5px; }
-
-        /* Mapa */
-        #map { height: 90vh; }
-
-        /* Títulos */
-         .titulo-principal,
-         .titulo-secundario {
-         color: #ffffff;
-         text-align: center;
-         text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9); /* 🔥 sombra más fuerte y difusa */
-         margin: 10px 12px 6px;
-         display: flex;
-         justify-content: center;
-         align-items: center;
-         gap: 8px;
-         background: rgba(0, 0, 0, 0.35); /* 🟢 fondo semitransparente para contraste */
-         padding: 8px 14px;
-         border-radius: 8px;
-        }
-
+        /* ===== TÍTULOS ===== */
         .titulo-principal {
-         font-size: 2.4rem;
-         font-weight: 800; /* más grueso */
-         letter-spacing: 1px;
+          color: #fff;
+          font-size: 2rem;
+          font-weight: 800;
+          text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9);
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
 
         .titulo-secundario {
-         font-size: 1.8rem;
-         font-weight: 700;
+          color: #fff;
+          font-size: 1.6rem;
+          font-weight: 700;
+          text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          justify-content: center;
+          margin-top: 10px;
         }
 
+        /* ===== CONTROLES ===== */
+        #controles-superiores {
+          display: flex;
+          gap: 10px;
+          background: rgba(255, 255, 255, 0.9);
+          padding: 10px;
+          border-radius: 5px;
+          align-items: center;
+        }
+
+        #controles-superiores button {
+          padding: 6px 10px;
+          font-weight: bold;
+          border: 1px solid #999;
+          background-color: white;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+
+        #selector-usuario,
+        #select-ruta {
+          padding: 5px;
+        }
+
+        /* ===== MAPA ===== */
+        #map {
+          height: 85vh;
+          margin-top: 10px;
+        }
+
+        footer {
+          background-color: white;
+          padding: 1rem;
+          border-radius: 10px;
+          box-shadow: 0 0 6px rgba(0,0,0,0.3);
+        }
+
+        footer img {
+          max-width: 300px;
+          display: block;
+          margin: 0 auto;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+          #encabezado {
+            flex-direction: column;
+            gap: 10px;
+          }
+        }
     </style>
 </head>
-<body id="page-top" style="background-image: url('img/fondo_operationalTracking.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
 
-<h1 class="titulo-principal">🧭 Operational Tracking</h1>
-<h2 id="tituloRuta" class="titulo-secundario">📍 Puntos de control</h2>
-
-<div id="controles-superiores">
-    <select id="select-ruta"><option disabled selected>Seleccione una ruta</option></select>
-    <select id="selector-usuario"><option disabled selected>Seleccione un usuario</option></select>
-    <button id="boton-traza">Trazar Ruta</button>
-    <button id="boton-borrar-traza">Borrar Traza</button>
+<body id="page-top">
+<!-- 🧭 Encabezado con título y controles en una sola línea -->
+<div id="encabezado">
+    <h1 class="titulo-principal">🧭 Operational Tracking</h1>
+    <div id="controles-superiores">
+        <select id="select-ruta"><option disabled selected>Seleccione una ruta</option></select>
+        <select id="selector-usuario"><option disabled selected>Seleccione un usuario</option></select>
+        <button id="boton-traza">Trazar Ruta</button>
+        <button id="boton-borrar-traza">Borrar Traza</button>
+    </div>
 </div>
+
+<h2 id="tituloRuta" class="titulo-secundario">📍 Puntos de control</h2>
 
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="mapaop.js"></script>
 
-<footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">
-    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
+<footer>
+    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER">
 </footer>
 </body>
 </html>

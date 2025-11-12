@@ -29,19 +29,32 @@
         #map { height: 90vh; }
 
         /* Títulos */
-        .titulo-principal,
-        .titulo-secundario {
-          color: #fff !important;
-          text-align: left;
-          text-shadow: 2px 2px 6px rgba(0,0,0,.7);
-          margin: 10px 12px 6px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 8px;
+         .titulo-principal,
+         .titulo-secundario {
+         color: #ffffff;
+         text-align: center;
+         text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9); /* 🔥 sombra más fuerte y difusa */
+         margin: 10px 12px 6px;
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         gap: 8px;
+         background: rgba(0, 0, 0, 0.35); /* 🟢 fondo semitransparente para contraste */
+         padding: 8px 14px;
+         border-radius: 8px;
         }
-        .titulo-principal { font-size: 2.2rem; font-weight: 700; }
-        .titulo-secundario { font-size: 1.6rem; font-weight: 600; }
+
+        .titulo-principal {
+         font-size: 2.4rem;
+         font-weight: 800; /* más grueso */
+         letter-spacing: 1px;
+        }
+
+        .titulo-secundario {
+         font-size: 1.8rem;
+         font-weight: 700;
+        }
+
     </style>
 </head>
 <body id="page-top" style="background-image: url('img/fondo_operationalTracking.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">

@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function cargarUsuarios() {
   const selector = document.getElementById("selectorUsuario");
-  selector.innerHTML = '<option value="">Todos los participantes</option>';
+  selector.innerHTML = '<option value="">Todo el Personal</option>';
 
   const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
   const data = await res.json();

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Navigation Assitance - Mapa de Rutas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
+
+    <style>
+        html, body {
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          font-family: 'Montserrat', sans-serif;
+          background-image: url('img/fondo_operationalTracking.png');
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          color: white;
+          display: flex;
+          flex-direction: column;
+        }
+
+        h1 {
+          text-align: center;
+          margin-top: 1.5rem;
+          text-shadow: 1px 1px 2px black;
+        }
+
+        .controls {
+          background-color: rgba(255, 255, 255, 0.95);
+          color: #333;
+          padding: 1.5rem;
+          border-radius: 10px;
+          max-width: 800px;
+          width: 90%;
+          margin: 1rem auto 0 auto;
+          box-shadow: 0 0 10px rgba(0,0,0,0.3);
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .controls label {
+          font-weight: bold;
+          margin-right: 0.5rem;
+        }
+
+        .controls select {
+          padding: 0.5rem;
+          border-radius: 5px;
+          border: 1px solid #ccc;
+        }
+
+        .controls button {
+          padding: 0.6rem 1.2rem;
+          font-size: 14px;
+          background-color: #007BFF;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+
+        .controls button:hover {
+          background-color: #0056b3;
+        }
+
+        #ruta-id-confirmada {
+          text-align: center;
+          margin: 0.5rem auto 1rem auto;
+          font-weight: bold;
+          color: #00cc66;
+        }
+
+        #map {
+          flex-grow: 1;
+          margin: 0 auto 1rem auto;
+          width: 90%;
+          max-width: 1200px;
+          height: 60vh;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 0 8px rgba(0,0,0,0.4);
+        }
+
+        footer {
+          background-color: white;
+          padding: 1rem;
+          border-radius: 10px;
+          box-shadow: 0 0 6px rgba(0,0,0,0.3);
+          margin: 1rem auto;
+        }
+
+        footer img {
+          max-width: 300px;
+          display: block;
+          margin: 0 auto;
+        }
+
+        @media (max-width: 600px) {
+          .controls {
+            flex-direction: column;
+          }
+
+          .controls button, .controls select {
+            width: 100%;
+          }
+        }
+    </style>
+</head>
+<body id="page-top">
+
+<h1>🧭 Armado de Rutas - Operational Tracking</h1>
+
+<div class="controls">
+    <label for="color">Color de la Ruta:</label>
+    <select id="color">
+        <option value="red">Rojo</option>
+        <option value="blue">Azul</option>
+        <option value="green">Verde</option>
+        <option value="orange">Naranja</option>
+        <option value="purple">Violeta</option>
+        <option value="brown">Marrón</option>
+        <option value="black">Negro</option>
+        <option value="pink">Rosa</option>
+        <option value="gray">Gris</option>
+        <option value="cyan">Cian</option>
+    </select>
+
+    <button onclick="confirmarRuta()">Confirmar Ruta</button>
+    <button onclick="finalizar()">Finalizar</button>
+</div>
+
+<div id="ruta-id-confirmada"></div>
+
+<div id="map"></div>
+
+<footer>
+    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER">
+</footer>
+
+<script src="maparutasop.js"></script>
+
+</body>
+</html>

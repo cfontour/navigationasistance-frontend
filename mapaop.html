@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><!DOCTYPE html>
+        <html lang="es">
+        <head>
+        <meta charset="UTF-8" />
+        <title>Geotraser - Operational Tracking - Puntos</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        #controles-superiores {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          z-index: 1000;
+          display: flex;
+          gap: 10px;
+          background: rgba(255, 255, 255, 0.9);
+          padding: 10px;
+          border-radius: 5px;
+          align-items: center;
+        }
+
+        #controles-superiores button {
+          padding: 6px 10px;
+          font-weight: bold;
+          border: 1px solid #999;
+          background-color: white;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+
+        #selector-usuario {
+          padding: 5px;
+        }
+
+        #map {
+          height: 90vh;
+        }
+
+        h2 {
+          font-size: 28px;
+          color: #333;
+          text-align: center;
+          margin-top: 10px;
+        }
+    </style>
+</head>
+<body id="page-top" style="background-image: url('img/fondo_operationalTracking.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+<h1>🧭 Operational Tracking</h1>
+<h2 id="tituloRuta">Puntos de control de:</h2>
+
+<div id="controles-superiores">
+    <select id="select-ruta">
+        <option disabled selected>Seleccione una ruta</option>
+    </select>
+    <select id="selector-usuario">
+        <option disabled selected>Seleccione un usuario</option>
+    </select>
+    <button id="boton-traza">Trazar Ruta</button>
+    <button id="boton-borrar-traza">Borrar Traza</button>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="mapaop.js"></script>
+
+<footer style="background-color: white; padding: 1rem; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.3);">
+    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
+</footer>
+
+</body>
+</html>
+</title>
+</head>
+<body>
+
+</body>
+</html>

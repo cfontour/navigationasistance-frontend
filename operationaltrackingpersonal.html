@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Geotraser - Operational Tracking</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dual-listbox@3.0.4/dist/dual-listbox.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/dual-listbox@3.0.4/dist/dual-listbox.min.js"></script>
+  <style>
+    .dual-list {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin: 20px;
+      gap: 1rem;
+    }
+
+    .dual-list select {
+      width: 300px;
+      height: 300px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+
+    th, td {
+      padding: 8px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background-color: #eee;
+    }
+
+    .section-box {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+      margin: 1rem auto;
+      max-width: 1200px;
+    }
+
+    section.section {
+      padding-top: 1rem !important;
+      padding-bottom: 1rem !important;
+    }
+
+    /* 🎯 Corrección visual específica para dual-listbox (desktop + móvil) */
+    .dual-listbox {
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      gap: 1rem;
+      margin: 1rem auto;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .dual-listbox .dual-listbox__container {
+      width: 45% !important;
+      min-width: 160px;
+    }
+
+    .dual-listbox .dual-listbox__buttons {
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .dual-listbox__title {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    @media (max-width: 768px) {
+      .dual-listbox {
+        flex-direction: column !important;
+        align-items: center;
+      }
+
+      .dual-listbox .dual-listbox__container {
+        width: 100% !important;
+      }
+
+      .dual-listbox .dual-listbox__buttons {
+        flex-direction: row;
+        justify-content: center;
+        margin: 1rem 0;
+      }
+    }
+  </style>
+</head>
+
+<script src="https://cdn.jsdelivr.net/npm/dual-listbox@3.0.4/dist/dual-listbox.min.js"></script>
+<script>
+  // Envolvés tu <select multiple> con DualListbox
+  const dualListbox = new DualListbox('#usuariosDisponibles', {
+    availableTitle: 'USUARIOS',
+    selectedTitle: 'PERSONAL OPERATIONAL TRACKING',
+    addButtonText: 'Agregar',
+    removeButtonText: 'Quitar',
+    addAllButtonText: 'Agregar todos',
+    removeAllButtonText: 'Quitar todos',
+    searchable: true
+  });
+</script>
+
+<body id="page-top" style="background-image: url('img/fondo_operationalTracking.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+
+<!-- 🧭 TÍTULOS FUERA DE LA SECCIÓN -->
+<section class="section has-text-centered">
+  <h1 class="title is-2 has-text-white">🧭 Personal Operational Tracking</h1>
+  <h2 class="subtitle is-3 has-text-white">Gestión de Personal - Operational Tracking</h2>
+</section>
+
+<!-- 💠 SECCIÓN PRINCIPAL -->
+<section class="section">
+  <div class="section-box">
+    <div class="dual-list">
+      <div>
+        <h2 class="subtitle">USUARIOS</h2>
+        <select id="usuariosDisponibles" multiple></select>
+      </div>
+
+      <div class="buttons">
+        <button onclick="asignarUsuario()">➤</button>
+        <button onclick="quitarUsuario()">⬅</button>
+      </div>
+
+      <div>
+        <h2 class="subtitle">PERSONAL OPERATIONAL TRACKING</h2>
+        <select id="usuariosAsignados" multiple></select>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 📋 TABLA -->
+<section class="section">
+  <div class="section-box">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h3 class="title is-4">Listado de Personal Registrado</h3>
+      <button class="button is-info" onclick="exportarPDF()">Exportar PDF</button>
+    </div>
+    <div class="table-container">
+      <table id="tablaParticipantes">
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Mail</th>
+          <th>Teléfono</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<script src="operationaltrackingpersonal.js"></script>
+
+<!-- ✅ FOOTER CON MISMO ANCHO Y ESTILO -->
+<section class="section">
+  <div class="section-box has-text-centered">
+    <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px;">
+  </div>
+</section>
+
+</body>
+</html>

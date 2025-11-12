@@ -1,8 +1,8 @@
-let map = L.map('map').setView([-34.9, -56.2], 13);
+let map = L.map('map').setView([4.85, 31.61], 13);
 
-L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-  subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-  maxZoom: 20,
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors',
+  maxZoom: 19
 }).addTo(map);
 
 let rutasConfirmadas = [];

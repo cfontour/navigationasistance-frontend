@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const latElem = document.getElementById("lat");
   const lonElem = document.getElementById("lon");
 
-  const sirenaAudio = new Audio('img/sirena.mp3'); // colocá el archivo en la misma carpeta que el mapa.html
+  const sirenaAudio = new Audio('img/sirena.mp3');
   sirenaAudio.loop = false;
 
   const iconosDisponibles = [
@@ -26,8 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const archivo = iconosDisponibles[indiceIcono % iconosDisponibles.length];
       const icono = L.icon({
         iconUrl: `img/${archivo}`,
-        iconSize: [32, 32], // o el tamaño real del PNG
-        iconAnchor: [16, 16] // centro
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
       });
       iconosPorUsuario.set(usuarioid, icono);
       indiceIcono++;
@@ -54,14 +54,24 @@ document.addEventListener("DOMContentLoaded", () => {
     return coloresPorUsuario.get(usuarioid);
   }
 
+  // Alias para compatibilidad
+  function obtenerColorUsuario(usuarioid) {
+    return obtenerColorParaUsuario(usuarioid);
+  }
+
   // Historial de trazas por usuario
   const rutaHistorial = new Map();
+  let mostrarTraza = false; // Flag para mostrar traza
   let trazaActiva = false;
   let marcadorInicio = null;
+  let polylineTraza = null; // Polyline de la ruta actual
 
   let naveganteSeleccionadoId = null;
   let colorSeleccionado = null;
-  let usuarioTrazaActiva = null; // Variable para rastrear quién tiene la traza activa
+  let usuarioTrazaActiva = null;
+
+  // Sistema de tokens para evitar race conditions
+  let trazaToken = 0;
 
   let map = L.map('map').setView([0, 0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -70,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const swimmerMarkers = new Map();
 
-  // Función para limpiar toda la traza (circles + bandera inicio)
+  // Función para limpiar toda la traza (circles + bandera inicio + polyline)
   function limpiarTraza() {
     rutaHistorial.forEach(puntos => {
       puntos.forEach(p => map.removeLayer(p));
@@ -80,6 +90,73 @@ document.addEventListener("DOMContentLoaded", () => {
       map.removeLayer(marcadorInicio);
       marcadorInicio = null;
     }
+    if (polylineTraza) {
+      map.removeLayer(polylineTraza);
+      polylineTraza = null;
+    }
+  }
+
+  // Trazar la ruta histórica completa del usuario para el día actual
+  async function trazarRutaUsuarioEspecifico(usuarioId) {
+    // si no hay traza activa para ese usuario, salir
+    if (!mostrarTraza || usuarioTrazaActiva !== usuarioId) return;
+
+    const miToken = ++trazaToken; // token propio de este llamado
+
+    const fechaUruguay = new Date().toLocaleDateString("sv-SE", {
+      timeZone: "America/Montevideo",
+    });
+
+    try {
+      const resUuid = await fetch(
+        `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${fechaUruguay}`
+      );
+      const uuidList = await resUuid.json();
+      if (!uuidList || uuidList.length === 0) return;
+
+      const ultimaRuta = uuidList[0];
+      const res = await fetch(
+        `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${ultimaRuta}`
+      );
+      let puntos = await res.json();
+
+      // orden por hora (UTC-3)
+      puntos.sort((a, b) => {
+        const tA = new Date(`${a.nadadorfecha}T${a.nadadorhora.split("T")[1]}`).getTime();
+        const tB = new Date(`${b.nadadorfecha}T${b.nadadorhora.split("T")[1]}`).getTime();
+        if (tA === tB) return Number(a.secuencia) - Number(b.secuencia);
+        return tA - tB;
+      });
+
+      const latlngs = puntos
+        .filter(
+          (p) =>
+            Number.isFinite(parseFloat(p.nadadorlat)) &&
+            Number.isFinite(parseFloat(p.nadadorlng)) &&
+            Number(p.secuencia) >= 1
+        )
+        .map((p) => [parseFloat(p.nadadorlat), parseFloat(p.nadadorlng)]);
+
+      if (latlngs.length === 0) return;
+
+      // si durante el fetch se apagó, abortar silencioso
+      if (miToken !== trazaToken || !mostrarTraza || usuarioTrazaActiva !== usuarioId) return;
+
+      // borrar anterior y dibujar
+      if (polylineTraza) map.removeLayer(polylineTraza);
+
+      const colorUsuario = obtenerColorUsuario(usuarioId);
+      polylineTraza = L.polyline(latlngs, {
+        color: colorUsuario,
+        weight: 7,
+        dashArray: "10, 10",
+      }).addTo(map);
+
+      // por encima de azulejos y debajo de UI
+      polylineTraza.bringToFront();
+    } catch (err) {
+      console.error("❌ Error al trazar ruta:", err);
+    }
   }
 
   // Activar traza para un usuario cuando se hace click en su marcador
@@ -88,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     usuarioTrazaActiva = usuarioid;
     colorSeleccionado = obtenerColorParaUsuario(usuarioid);
     trazaActiva = true;
+    mostrarTraza = true;
 
     // Limpiar traza previa (si había de otro usuario)
     limpiarTraza();
@@ -104,12 +182,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // Cargar traza histórica del usuario
     cargarTrazaHistorica(usuarioid, colorSeleccionado);
 
+    // Trazar la ruta completa del día
+    trazarRutaUsuarioEspecifico(usuarioid);
+
     // Centrar mapa en el navegante
     map.setView(position, 15);
   }
 
   function desactivarTraza() {
     trazaActiva = false;
+    mostrarTraza = false;
     usuarioTrazaActiva = null;
     limpiarTraza();
   }
@@ -117,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("keydown", function (event) {
     if (event.key === "t" || event.key === "T") {
       trazaActiva = !trazaActiva;
+      mostrarTraza = trazaActiva;
       alert(`Traza en vivo ${trazaActiva ? "activada" : "desactivada"}`);
 
       if (!trazaActiva) {
@@ -139,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         // Activar traza
         const pos = marker.getLatLng();
-        const nombre = e.target.closest('div').textContent || "Navegante";
+        const nombre = marker.options.nombre || "Navegante";
         activarTrazaParaUsuario(usuarioid, [pos.lat, pos.lng], nombre);
       }
 
@@ -409,6 +492,11 @@ document.addEventListener("DOMContentLoaded", () => {
         latElem.textContent = parseFloat(data[0].nadadorlat).toFixed(2);
         lonElem.textContent = parseFloat(data[0].nadadorlng).toFixed(2);
       }
+
+      // Si hay traza activa, re-trazar la ruta completa cada ciclo
+      if (mostrarTraza && usuarioTrazaActiva) {
+        await trazarRutaUsuarioEspecifico(usuarioTrazaActiva);
+      }
     } catch (error) {
       console.error("Error al obtener la posición del nadador:", error);
     }
@@ -448,5 +536,6 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
+  // Iniciar ciclo de actualizaciones
   setInterval(getSwimmer, 5000);
 });

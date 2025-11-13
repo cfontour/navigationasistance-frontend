@@ -387,36 +387,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const estado = nadador.estado ? nadador.estado : "Navegante";
 
-        const popupTexto = `
-          <div class="popup-card">
-            <div style="font-weight:bold; margin-bottom:4px;">📍 ${nombre}</div>
-            <div style="font-size:0.9rem; color:#555;">ID: ${usuarioid}</div>
-            <hr style="margin:8px 0;">
-            <button
-              class="btn-activar-traza"
-              data-usuarioid="${usuarioid}"
-              data-nombre="${nombre}"
-              style="
-                display:block;
-                width:100%;
-                padding:8px 12px;
-                margin:4px 0 8px 0;
-                border:none;
-                border-radius:6px;
-                background:#28a745;
-                color:#fff;
-                font-weight:600;
-                cursor:pointer;
-              "
-            >
-              🟢 Activar Traza
-            </button>
-            <div style="font-size:0.85rem; margin-top:6px;">
-              <strong>Puntos de control:</strong><br>
-              <em>Sin puntos registrados</em>
-            </div>
-          </div>
-        `;
+        // Usar htmlPopupUsuario para construir el popup dinámico
+        const datosUsuario = {
+          nombre: nombre,
+          apellido: ""
+        };
+        const popupTexto = htmlPopupUsuario(usuarioid, datosUsuario);
         const tooltipTexto = `👤 ${nombre}\n🆔 ${usuarioid}\n🕒 ${hora}\n📶 Estado: ${estado}`;
 
         // EMERGENCIA
@@ -500,6 +476,52 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Error al obtener la posición del nadador:", error);
     }
+  }
+
+  function htmlPopupUsuario(usuarioid, datosUsuario = {}) {
+    const historial = historialPuntos.get(usuarioid) || [];
+    const listaHtml = historial
+      .map(
+        (p) =>
+          `<li>${p.etiqueta} <small>${new Date(p.fechaHora).toLocaleTimeString()}</small></li>`
+      )
+      .join("");
+
+    const esTrazaActiva = usuarioTrazaActiva === usuarioid;
+    const textoBoton = esTrazaActiva ? "🔴 Desactivar Traza" : "🟢 Activar Traza";
+    const colorBoton = esTrazaActiva ? "#e74c3c" : "#27ae60";
+
+    const nombreCompleto = datosUsuario.nombre
+      ? `${datosUsuario.nombre} ${datosUsuario.apellido || ""}`
+      : `Usuario ${usuarioid}`;
+
+    return `
+      <div style="min-width: 220px;">
+        <strong>📍 ${nombreCompleto}</strong><br/>
+        <small>ID: ${usuarioid}</small><br/><br/>
+        <div style="margin: 10px 0;">
+          <button
+            class="btn-toggle-traza"
+            data-usuario="${usuarioid}"
+            style="
+              background: ${colorBoton};
+              color: white;
+              border: none;
+              padding: 8px 12px;
+              border-radius: 5px;
+              cursor: pointer;
+              font-weight: bold;
+              width: 100%;
+              margin-bottom: 10px;
+            "
+          >${textoBoton}</button>
+        </div>
+        <strong>🏁 Puntos de control:</strong><br/>
+        <ul style="margin: 5px 0; padding-left: 20px;">
+          ${listaHtml.length > 0 ? listaHtml : "<li><em>Sin puntos registrados</em></li>"}
+        </ul>
+      </div>
+    `;
   }
 
   cargarNavegantes();

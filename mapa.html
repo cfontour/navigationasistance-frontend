@@ -24,6 +24,7 @@
 
     <style>
         #map {
+            position: relative; /* agregado para poder superponer capas/canvas */
             height: 500px;
             width: 100%;
             border: 1px solid #ccc;
@@ -103,22 +104,27 @@
         }
 
         @keyframes blink {
-            0%, 100% { filter: brightness(100%); }
-            50%      { filter: brightness(220%); }
+            0%, 100% {
+                filter: brightness(100%);
+            }
+            50% {
+                filter: brightness(220%);
+            }
         }
-
     </style>
 </head>
 
-<body id="page-top" style="background-image: url('img/fondo-navigationasistance.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+<body id="page-top"
+      style="background-image: url('img/fondo-navigationasistance.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
 
 <!-- Page Wrapper -->
 <div id="wrapper">
 
     <!-- Sidebar -->
-    <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-image: url('img/fondo-navigationasistance.jpg'); background-size: cover; background-position: center;">
+    <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar"
+        style="background-image: url('img/fondo-navigationasistance.jpg'); background-size: cover; background-position: center;">
 
-    <!-- Sidebar - Brand -->
+        <!-- Sidebar - Brand -->
         <a class="sidebar-brand d-flex align-items-center justify-content-center" href="login.html">
             <div class="sidebar-brand-icon rotate-n-15">
                 <i class="fas fa-compass"></i>
@@ -130,7 +136,6 @@
         <hr class="sidebar-divider my-0">
 
         <!-- Nav Items -->
-
         <li class="nav-item">
             <a class="nav-link" href="usuarios.html">
                 <i class="fas fa-fw fa-table"></i>
@@ -190,9 +195,12 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                              aria-labelledby="userDropdown">
-                            <a class="dropdown-item" href="#"><i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>Perfil</a>
-                            <a class="dropdown-item" href="#"><i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>Configuración</a>
-                            <a class="dropdown-item" href="#"><i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>Actividad</a>
+                            <a class="dropdown-item" href="#"><i
+                                    class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>Perfil</a>
+                            <a class="dropdown-item" href="#"><i
+                                    class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>Configuración</a>
+                            <a class="dropdown-item" href="#"><i
+                                    class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>Actividad</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                                 <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>Cerrar sesión
@@ -234,11 +242,12 @@
                 <!-- Mapa -->
                 <div id="map"></div>
 
-                <!-- Botón Traza -->
+                <!-- Botón Traza (ya no se usa, se deja comentado) -->
+                <!--
                 <button id="btn-traza" style="position: absolute; top: 80px; right: 40px; z-index: 1000;" class="btn btn-primary shadow">
                     🔁 Traza
                 </button>
-
+                -->
 
             </div>
             <!-- End of Container -->
@@ -250,7 +259,8 @@
         <footer class="sticky-footer bg-white">
             <div class="container my-auto">
                 <div class="copyright text-center my-auto">
-                    <img src="img/logo-geotraser-marine.png" alt="GEOTRASER" style="height: 250px; opacity: 0.85; margin-left: 1px">
+                    <img src="img/logo-geotraser-marine.png" alt="GEOTRASER"
+                         style="height: 250px; opacity: 0.85; margin-left: 1px">
                 </div>
             </div>
         </footer>
@@ -297,8 +307,8 @@
 
 </body>
 
-    <div class="text-center my-4">
-        <img src="img/geotraser-transparente.png" alt="GEOTRASER Logo" style="max-width: 240px; opacity: 0.95;">
-    </div>
+<div class="text-center my-4">
+    <img src="img/geotraser-transparente.png" alt="GEOTRASER Logo" style="max-width: 240px; opacity: 0.95;">
+</div>
 
 </html>

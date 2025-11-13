@@ -61,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let naveganteSeleccionadoId = null;
   let colorSeleccionado = null;
+  let usuarioTrazaActiva = null; // Variable para rastrear quién tiene la traza activa
 
   let map = L.map('map').setView([0, 0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -84,19 +85,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Activar traza para un usuario cuando se hace click en su marcador
   function activarTrazaParaUsuario(usuarioid, position, nombre) {
     naveganteSeleccionadoId = usuarioid;
+    usuarioTrazaActiva = usuarioid;
     colorSeleccionado = obtenerColorParaUsuario(usuarioid);
     trazaActiva = true;
-
-    // Actualizar texto del botón de dropdown (opcional, pero queda prolijo)
-    const dropdownButton = document.getElementById("dropdownButton");
-    if (dropdownButton) {
-      dropdownButton.textContent = `👤 ${nombre}`;
-    }
 
     // Limpiar traza previa (si había de otro usuario)
     limpiarTraza();
 
-    // Marcador de inicio (si querés marcar el punto donde se clickeó)
+    // Marcador de inicio
     marcadorInicio = L.marker(position, {
       icon: L.icon({
         iconUrl: "img/start_flag.png",
@@ -112,6 +108,12 @@ document.addEventListener("DOMContentLoaded", () => {
     map.setView(position, 15);
   }
 
+  function desactivarTraza() {
+    trazaActiva = false;
+    usuarioTrazaActiva = null;
+    limpiarTraza();
+  }
+
   document.addEventListener("keydown", function (event) {
     if (event.key === "t" || event.key === "T") {
       trazaActiva = !trazaActiva;
@@ -123,21 +125,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Evento delegado para los botones de traza en los popups
   document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-activar-traza');
-    if (!btn) return;
+    if (e.target.classList.contains('btn-toggle-traza')) {
+      const usuarioid = e.target.dataset.usuario;
+      const marker = swimmerMarkers.get(usuarioid);
 
-    const usuarioid = btn.dataset.usuarioid;
-    const nombre = btn.dataset.nombre;
+      if (!marker) return;
 
-    const marker = swimmerMarkers.get(usuarioid);
-    if (!marker) return;
+      if (usuarioTrazaActiva === usuarioid) {
+        // Desactivar traza
+        desactivarTraza();
+      } else {
+        // Activar traza
+        const pos = marker.getLatLng();
+        const nombre = e.target.closest('div').textContent || "Navegante";
+        activarTrazaParaUsuario(usuarioid, [pos.lat, pos.lng], nombre);
+      }
 
-    const pos = marker.getLatLng();
-    activarTrazaParaUsuario(usuarioid, [pos.lat, pos.lng], nombre);
+      // Actualizar el popup dinámicamente
+      const popup = marker.getPopup();
+      if (popup) {
+        const datosUsuario = {
+          nombre: marker.options.nombre || "Navegante",
+          apellido: ""
+        };
+        popup.setContent(htmlPopupUsuario(usuarioid, datosUsuario));
+      }
+    }
   });
-
-  // Ya NO usamos el botón btn-traza (fue removido del HTML)
 
   function createSwimmerIcon(zoomLevel) {
     const minSize = 24;
@@ -182,51 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const api_url = new URL("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
   let firstTime = true;
 
-  async function cargarNavegantes() {
-    try {
-      const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
-      const nadadores = await response.json();
-
-      const lista = document.getElementById("navegantesList");
-      lista.innerHTML = ""; // limpiar lista previa
-
-      const usuariosProcesados = new Set();
-
-      for (const nadador of nadadores) {
-        const lat = parseFloat(nadador.nadadorlat);
-        const lng = parseFloat(nadador.nadadorlng);
-        const id = nadador.usuarioid;
-
-        if (isNaN(lat) || isNaN(lng) || usuariosProcesados.has(id)) continue;
-
-        usuariosProcesados.add(id);
-
-        const usuarioRes = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${id}`);
-        const usuario = await usuarioRes.json();
-        const nombre = usuario.nombre && usuario.apellido
-          ? `${usuario.nombre} ${usuario.apellido}`
-          : usuario.nombre || "Navegante";
-
-        const color = obtenerColorParaUsuario(id);
-
-        const li = document.createElement("li");
-        li.dataset.id = id;
-        li.dataset.lat = lat;
-        li.dataset.lng = lng;
-        li.dataset.nombre = nombre;
-        li.className = "navegante-item";
-        li.innerHTML = `
-          <span class="color-dot" style="background-color: ${color};"></span>
-          ${nombre}
-        `;
-
-        lista.appendChild(li);
-      }
-    } catch (error) {
-      console.error("Error al cargar navegantes:", error);
-    }
-  }
-
   async function cargarTrazaHistorica(uuid, color) {
     try {
       const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${uuid}`);
@@ -259,35 +230,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error al cargar traza histórica:", err);
     }
   }
-
-  document.getElementById("navegantesList").addEventListener("click", function (e) {
-    const clickedItem = e.target.closest("li[data-id]");
-    if (!clickedItem) return;
-
-    const id = clickedItem.getAttribute("data-id");
-    const lat = parseFloat(clickedItem.dataset.lat);
-    const lng = parseFloat(clickedItem.dataset.lng);
-    const nombre = clickedItem.dataset.nombre;
-
-    naveganteSeleccionadoId = id;
-    colorSeleccionado = obtenerColorParaUsuario(id);
-
-    // Cambiar el texto del botón
-    document.getElementById("dropdownButton").textContent = `👤 ${nombre}`;
-
-    // Centrar el mapa
-    if (!isNaN(lat) && !isNaN(lng)) {
-      map.flyTo([lat, lng], 15);
-    }
-
-    // Ocultar el menú desplegable
-    document.getElementById("navegantesList").style.display = "none";
-  });
-
-  document.getElementById("dropdownButton").addEventListener("click", () => {
-    const lista = document.getElementById("navegantesList");
-    lista.style.display = lista.style.display === "block" ? "none" : "block";
-  });
 
   async function getUsuarioNombre(id) {
     try {
@@ -422,12 +364,14 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!marker.options.usuarioid) {
             marker.options.usuarioid = usuarioid;
           }
+          marker.options.nombre = nombre;
           marker.options.emergency = nadador.emergency === true;
         } else {
           marker = L.marker(position, {
             icon: icono,
             emergency: nadador.emergency === true,
-            usuarioid: usuarioid
+            usuarioid: usuarioid,
+            nombre: nombre
           })
             .addTo(map)
             .bindPopup(popupTexto)
@@ -435,14 +379,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           swimmerMarkers.set(usuarioid, marker);
         }
-
-        // 📌 Click en marcador = activar traza para ese navegante
-        //if (!marker._trazaClickAttached) {
-        //  marker.on('click', () => {
-        //    activarTrazaParaUsuario(usuarioid, position, nombre);
-        //  });
-        //  marker._trazaClickAttached = true;
-        //}
 
         // ⛳ Marcar inicio si aún no lo hicimos y la traza está activa para este usuario
         if (trazaActiva && usuarioid === naveganteSeleccionadoId && !marcadorInicio) {
@@ -479,14 +415,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function htmlPopupUsuario(usuarioid, datosUsuario = {}) {
-    const historial = historialPuntos.get(usuarioid) || [];
-    const listaHtml = historial
-      .map(
-        (p) =>
-          `<li>${p.etiqueta} <small>${new Date(p.fechaHora).toLocaleTimeString()}</small></li>`
-      )
-      .join("");
-
     const esTrazaActiva = usuarioTrazaActiva === usuarioid;
     const textoBoton = esTrazaActiva ? "🔴 Desactivar Traza" : "🟢 Activar Traza";
     const colorBoton = esTrazaActiva ? "#e74c3c" : "#27ae60";
@@ -516,15 +444,9 @@ document.addEventListener("DOMContentLoaded", () => {
             "
           >${textoBoton}</button>
         </div>
-        <strong>🏁 Puntos de control:</strong><br/>
-        <ul style="margin: 5px 0; padding-left: 20px;">
-          ${listaHtml.length > 0 ? listaHtml : "<li><em>Sin puntos registrados</em></li>"}
-        </ul>
       </div>
     `;
   }
 
-  cargarNavegantes();
   setInterval(getSwimmer, 5000);
-  setInterval(cargarNavegantes, 5000); // o el intervalo que prefieras
 });

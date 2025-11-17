@@ -8,7 +8,7 @@ async function cargarUsuarios() {
   const selector = document.getElementById("selectorUsuario");
   selector.innerHTML = '<option value="">Todo el Personal</option>';
 
-  const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
+  const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listarGrupo/otsudan");
   const data = await res.json();
 
   for (const u of data) {

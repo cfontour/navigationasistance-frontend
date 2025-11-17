@@ -89,7 +89,7 @@ class RegatasDashboard {
 
    async loadParticipants() {
        try {
-           const response = await fetch(`${this.baseURL}/nadadorrutas/listarGrupo/regatas`);
+           const response = await fetch(`${this.baseURL}/nadadorrutas/listarGrupo/cavent`);
            const data = await response.json();
 
            console.log("🔍 Datos nadadorrutas:", data);

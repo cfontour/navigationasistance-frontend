@@ -279,7 +279,7 @@ async function verificarPuntosDeControl(usuarioid, latActual, lngActual) {
 }
 
 async function cargarUsuariosEnSelector() {
-  const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
+  const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listarGrupo/otsudan");
   const relaciones = await res.json();
   const selector = document.getElementById("selector-usuario");
 

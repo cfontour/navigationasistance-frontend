@@ -45,7 +45,7 @@ async function asignarUsuario() {
 
     // 🟢 OBTENER SU GRUPO DESDE EL OBJETO
     const grupoid = usuarioObj.grupoid;
-        
+
     try {
       const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/agregar", {
         method: "POST",
@@ -105,7 +105,7 @@ function quitarUsuario() {
 //let asignaciones = [];
 
 async function cargarParticipantes() {
-  const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
+  const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listarGrupo/regatas");
   const lista = await res.json();
   const tbody = document.querySelector("#tablaParticipantes tbody");
   const destino = document.getElementById("usuariosAsignados");

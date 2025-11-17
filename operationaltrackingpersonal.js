@@ -103,7 +103,7 @@ function quitarUsuario() {
 //let asignaciones = [];
 
 async function cargarParticipantes() {
-  const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listar");
+  const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listarGrupo/otsudan");
   const lista = await res.json();
   const tbody = document.querySelector("#tablaParticipantes tbody");
   const destino = document.getElementById("usuariosAsignados");

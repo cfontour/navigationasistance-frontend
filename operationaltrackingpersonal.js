@@ -171,7 +171,7 @@ async function exportarPDF() {
     body: body
   });
 
-  doc.save("participantes-carrera.pdf");
+  doc.save("personal-operational.pdf");
 }
 
 document.addEventListener("DOMContentLoaded", () => {

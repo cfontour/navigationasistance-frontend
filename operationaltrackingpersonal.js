@@ -34,6 +34,17 @@ async function asignarUsuario() {
   Array.from(origen.selectedOptions).forEach(async opt => {
     const usuarioId = opt.value;
 
+    // 🔍 OBTENER EL OBJETO COMPLETO DEL USUARIO
+    const usuarioObj = usuarios.find(u => u.id === usuarioId);
+
+    if (!usuarioObj) {
+      console.error("❌ No se encontró usuario en el array");
+      return;
+    }
+
+    // 🟢 OBTENER SU GRUPO DESDE EL OBJETO
+    const grupoid = usuarioObj.grupoid;
+
     try {
       const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/agregar", {
         method: "POST",

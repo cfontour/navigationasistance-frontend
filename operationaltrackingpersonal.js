@@ -51,7 +51,8 @@ async function asignarUsuario() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           usuarioId,
-          rutaId: rutaIdGlobal
+          rutaId: rutaIdGlobal,
+          grupoid
         })
       });
 

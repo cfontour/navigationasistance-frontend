@@ -171,5 +171,20 @@
     </div>
 </section>
 
+<script>
+    // Inicializar después de que cargue el DOM
+    document.addEventListener('DOMContentLoaded', function() {
+        const dualListbox = new DualListbox('#usuariosDisponibles', {
+          availableTitle: 'USUARIOS',
+          selectedTitle: 'PARTICIPANTES DE REGATAS',
+          addButtonText: 'Agregar',
+          removeButtonText: 'Quitar',
+          addAllButtonText: 'Agregar todos',
+          removeAllButtonText: 'Quitar todos',
+          searchable: true
+        });
+    });
+</script>
+
 </body>
 </html>

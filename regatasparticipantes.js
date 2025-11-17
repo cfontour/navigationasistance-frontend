@@ -17,7 +17,7 @@ async function obtenerRutaIdPorNombre(nombreRuta = "PUNTA DEL ESTE") {
 
 async function cargarUsuarios() {
   // grupo regatas
-  const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuarios/listarGrupos/regatas");
+  const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuarios/listarGrupo/regatas");
   usuarios = await res.json();
 
   const lista = document.getElementById("usuariosDisponibles");

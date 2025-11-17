@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let chartInstance = null;
 
   async function cargarUsuarios() {
-    const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuarios/listar");
+    const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuarios/listarGrupo/otsudan");
     const usuarios = await res.json();
     usuarios.forEach((u) => {
       const opt = document.createElement("option");

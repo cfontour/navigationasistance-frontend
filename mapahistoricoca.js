@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let chartInstance = null;
 
   async function cargarUsuarios() {
+    //carga grupo ca
     const res = await fetch("https://navigationasistance-backend-1.onrender.com/usuarios/listarGrupo/cavent");
     const usuarios = await res.json();
     usuarios.forEach((u) => {

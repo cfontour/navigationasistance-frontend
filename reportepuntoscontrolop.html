@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Geotraser - Reporte de Puntos de la Actividad</title>
+    <title>Geotraser - Activity Points Report</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -27,8 +27,8 @@
 <body id="page-top" style="background-image: url('img/fondo_operationalTracking.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
 
 <section class="section has-text-centered">
-    <h1 class="title is-2 has-text-white">🧭 Reporte de la Actividad</h1>
-    <h2 class="subtitle is-3 has-text-white">Visualización de puntos de control realizados</h2>
+    <h1 class="title is-2 has-text-white">🧭 Activity Points Report</h1>
+    <h2 class="subtitle is-3 has-text-white">Visualization of Completly Checkponits</h2>
 </section>
 
 <section class="section">
@@ -37,13 +37,13 @@
             <div class="control">
                 <div class="select">
                     <select id="selectorUsuario">
-                        <option value="">Todo el Personal</option>
+                        <option value="">All Staff</option>
                     </select>
                 </div>
             </div>
             <div class="control">
-                <button id="btnExportarPDF" class="button is-info" onclick="exportarPDF()">Exportar PDF</button>
-                <button class="button is-primary" onclick="generarReporte()">Generar Reporte</button>
+                <button id="btnExportarPDF" class="button is-info" onclick="exportarPDF()">Export PDF</button>
+                <button class="button is-primary" onclick="generarReporte()">Generate Report</button>
             </div>
         </div>
 
@@ -51,11 +51,11 @@
             <table class="table is-fullwidth is-striped" id="tablaReporte">
                 <thead>
                 <tr>
-                    <th>ID Usuario</th>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th>Etiqueta Punto</th>
-                    <th>Fecha y Hora</th>
+                    <th>ID User</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Point label</th>
+                    <th>Date and Time</th>
                 </tr>
                 </thead>
                 <tbody></tbody>

@@ -80,7 +80,7 @@ function exportarPDF() {
   // Determinar el nombre del archivo
   const nombreArchivo = idSeleccionado
     ? `reporte_personal_${idSeleccionado}.pdf`
-    : `reporte_personal_todos.pdf`;
+    : `reporte_personal_all.pdf`;
 
   doc.autoTable({
     html: "#tablaReporte",

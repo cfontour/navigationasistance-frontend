@@ -23,7 +23,7 @@ $(document).ready(function () {
         // Para cada registro del grupo, buscar nombre y apellido del usuario
         const peticionesUsuarios = data
           .map(item => {
-            const usuarioId = item.usuarioid;
+            const usuarioId = item.usuarioId;
             if (!usuarioId) return null;
 
             return fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${encodeURIComponent(usuarioId)}`)

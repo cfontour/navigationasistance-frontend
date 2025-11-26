@@ -2,16 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Geotraser - Borrado de Puntos de Control</title>
-
-    <!-- Bulma -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-
-    <!-- DataTables (Bulma) -->
-    <link rel="stylesheet"
-          href="https://cdn.datatables.net/1.13.6/css/dataTables.bulma.min.css">
-
+    <title>Geotraser - Reporte de Puntos de la Actividad</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
         .section-box {
             background-color: rgba(255, 255, 255, 0.95);
@@ -30,58 +24,53 @@
         }
     </style>
 </head>
+<body id="page-top" style="background-image: url('img/fondo_operationalTracking.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
 
-<body id="page-top"
-      style="background-image: url('img/fondo_operationalTracking.png');
-             background-size: cover;
-             background-position: center;
-             background-repeat: no-repeat;">
-
-<!-- Título principal -->
 <section class="section has-text-centered">
-    <h1 class="title is-2 has-text-white">🧭 Gestión de Navegantes en vivo</h1>
-    <h2 class="subtitle is-3 has-text-white">Borrado de puntos de control asociados</h2>
+    <h1 class="title is-2 has-text-white">🧭 Reporte de la Actividad</h1>
+    <h2 class="subtitle is-3 has-text-white">Visualización de puntos de control realizados</h2>
 </section>
 
-<!-- Caja central con la grilla -->
 <section class="section">
     <div class="section-box">
-
-        <h3 class="title is-4">Listado de Usuarios</h3>
+        <div class="field is-grouped is-justify-content-space-between">
+            <div class="control">
+                <div class="select">
+                    <select id="selectorUsuario">
+                        <option value="">Todo el Personal</option>
+                    </select>
+                </div>
+            </div>
+            <div class="control">
+                <button id="btnExportarPDF" class="button is-info" onclick="exportarPDF()">Exportar PDF</button>
+                <button class="button is-primary" onclick="generarReporte()">Generar Reporte</button>
+            </div>
+        </div>
 
         <div class="table-container">
-            <table class="table is-fullwidth is-striped" id="navegantes">
+            <table class="table is-fullwidth is-striped" id="tablaReporte">
                 <thead>
                 <tr>
                     <th>ID Usuario</th>
                     <th>Nombre</th>
                     <th>Apellido</th>
-                    <th>Acciones</th>
+                    <th>Etiqueta Punto</th>
+                    <th>Fecha y Hora</th>
                 </tr>
                 </thead>
-                <tbody>
-                <!-- Las filas se cargan desde otborrarpuntoscontrol.js -->
-                </tbody>
+                <tbody></tbody>
             </table>
         </div>
     </div>
 </section>
 
-<!-- Logo abajo -->
+<script src="reportepuntoscontrolop.js"></script>
+
 <section class="section">
     <div class="section-box has-text-centered">
-        <img src="img/negro_transparente_geotraser.png"
-             alt="GEOTRASER"
-             style="max-width: 300px;">
+        <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px;">
     </div>
 </section>
-
-<!-- JS: jQuery + DataTables + tu script -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bulma.min.js"></script>
-
-<script src="otborrarpuntoscontrol.js"></script>
 
 </body>
 </html>

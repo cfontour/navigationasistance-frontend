@@ -89,6 +89,7 @@ $(document).ready(function () {
           return r.text();
         })
         .then(() => {
+          alert("User checkpoints successfully deleted.");
           cargarDatos();
         })
         .catch(err => {

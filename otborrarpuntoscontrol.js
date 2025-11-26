@@ -71,7 +71,7 @@ $(document).ready(function () {
       })
       .catch(err => {
         console.error("Error cargando datos:", err);
-        alert("No se pudieron cargar los navegantes. Revisá el backend.");
+        alert("The users could not be loaded. Please check the backend.");
       });
   }
 
@@ -80,7 +80,7 @@ $(document).ready(function () {
     const usuarioId = $(this).data('usuario');
     if (!usuarioId) return;
 
-    if (confirm(`¿Seguro que querés eliminar al usuario ${usuarioId}?`)) {
+    if (confirm(`¿Are you sure you want to delete the user checkpoints ${usuarioId}?`)) {
       fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/eliminarUsuariocaPuntos${encodeURIComponent(usuarioId)}`, {
         method: 'POST'
       })
@@ -93,7 +93,7 @@ $(document).ready(function () {
         })
         .catch(err => {
           console.error("Error eliminando usuario:", err);
-          alert("No se pudo eliminar. Revisá el backend.");
+          alert("It could not be deleted. Please check the backend.");
         });
     }
   });

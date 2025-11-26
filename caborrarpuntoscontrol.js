@@ -80,7 +80,7 @@ $(document).ready(function () {
     const usuarioId = $(this).data('usuario');
     if (!usuarioId) return;
 
-    if (confirm(`¿Are you sure you want to delete the user checkpoints ${usuarioId}?`)) {
+    if (confirm(`¿Está seguro que desea eliminar los checkpoints del usuario ${usuarioId}?`)) {
       fetch(`https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/eliminarUsuariocaPuntos/${encodeURIComponent(usuarioId)}`, {
         method: 'DELETE'
       })

@@ -2,7 +2,7 @@
 $(document).ready(function () {
   const tabla = $('#navegantes').DataTable({
     language: {
-      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/en-GB.json"
     },
     columnDefs: [
       { targets: -1, orderable: false } // Acciones no ordenable

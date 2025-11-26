@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Geotraser - Carreras de Aventura - Administración</title>
+
+  <!-- Bulma -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+
+  <!-- DataTables (Bulma) -->
+  <link rel="stylesheet"
+        href="https://cdn.datatables.net/1.13.6/css/dataTables.bulma.min.css">
+
+  <!-- FontAwesome (FALTA EN TU VISTA → ESTO REPONE EL ÍCONO) -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    .section-box {
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+        margin: 1rem auto;
+        max-width: 1200px;
+    }
+    section.section {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+    }
+    .table-container {
+        margin-top: 1rem;
+    }
+  </style>
+</head>
+
+<body id="page-top"
+      style="background-image: url('img/fondo_operationalTracking.png');
+             background-size: cover;
+             background-position: center;
+             background-repeat: no-repeat;">
+
+<!-- Título principal -->
+<section class="section has-text-centered">
+  <h1 class="title is-2 has-text-white">🧭 Carreras de Aventura - Administración</h1>
+  <h2 class="subtitle is-3 has-text-white">Borrar Puntos de Control</h2>
+</section>
+
+<!-- Caja central con la grilla -->
+<section class="section">
+  <div class="section-box">
+
+    <h3 class="title is-4">Lista de Competidores</h3>
+
+    <div class="table-container">
+      <table class="table is-fullwidth is-striped" id="navegantes">
+        <thead>
+        <tr>
+          <th>ID Usuario</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Acción</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Las filas se cargan desde otborrarpuntoscontrol.js -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Logo abajo -->
+<section class="section">
+  <div class="section-box has-text-centered">
+    <img src="img/negro_transparente_geotraser.png"
+         alt="GEOTRASER"
+         style="max-width: 300px;">
+  </div>
+</section>
+
+<!-- JS: jQuery + DataTables + tu script -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bulma.min.js"></script>
+
+<script src="caborrarpuntoscontrol.js"></script>
+
+</body>
+</html>

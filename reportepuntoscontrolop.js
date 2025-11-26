@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function cargarUsuarios() {
   const selector = document.getElementById("selectorUsuario");
-  selector.innerHTML = '<option value="">Todo el Personal</option>';
+  selector.innerHTML = '<option value="">All Staff</option>';
 
   const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listarGrupo/otsudan");
   const data = await res.json();
@@ -57,10 +57,10 @@ async function generarReporte() {
       tbody.appendChild(tr);
     }
 
-    alert("✅ Reporte generado correctamente.");
+    alert("✅ Report generated successfully.");
   } catch (error) {
-    console.error("❌ Error al generar reporte:", error);
-    alert("⚠️ Error al generar el reporte.");
+    console.error("❌ Error generating report:", error);
+    alert("⚠️ Error generating report.");
   }
 }
 
@@ -70,7 +70,7 @@ function exportarPDF() {
   const table = document.querySelector("#tablaReporte");
 
   if (!table || table.rows.length <= 1) {
-    alert("⚠️ No hay datos en la tabla para exportar.");
+    alert("⚠️ There is no data in the table to export..");
     return;
   }
 

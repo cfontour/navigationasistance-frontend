@@ -11,7 +11,7 @@ async function obtenerRutaIdPorNombre(nombreRuta = "JACKSONVILLE") {
     // 🟢 LOG #1: ID de la ruta encontrada
     console.log(`🟢 Ruta encontrada: ${ruta.nombre}, ID: ${rutaIdGlobal}`);
   } else {
-    console.warn("❌ No se encontró la ruta con nombre:", nombreRuta);
+    console.warn("❌ The named route was not found:", nombreRuta);
   }
 }
 
@@ -38,7 +38,7 @@ async function asignarUsuario() {
     const usuarioObj = usuarios.find(u => u.id === usuarioId);
 
     if (!usuarioObj) {
-      console.error("❌ No se encontró usuario en el array");
+      console.error("❌ No user was found in the list");
       return;
     }
 
@@ -77,11 +77,11 @@ function quitarUsuario() {
     const match = asignaciones.find(a => a.usuarioId === usuarioId);
 
     if (!match) {
-      alert(`No se encontró asignación para usuario ID: ${usuarioId}`);
+      alert(`No assignment found for user ID: ${usuarioId}`);
       return;
     }
 
-    const confirmar = confirm(`¿Eliminar al usuario ${opt.text}?`);
+    const confirmar = confirm(`¿Delete the user ${opt.text}?`);
     if (!confirmar) return;
 
     try {
@@ -93,10 +93,10 @@ function quitarUsuario() {
         opt.remove();
         cargarParticipantes(); // 🔁 recarga grilla y lista derecha
       } else {
-        alert("❌ Error eliminando participante.");
+        alert("❌ Error removing user.");
       }
     } catch (err) {
-      console.error("Error al eliminar:", err);
+      console.error("Delete error:", err);
     }
   });
 }
@@ -154,9 +154,9 @@ async function exportarPDF() {
   const doc = new jsPDF();
 
   doc.setFontSize(16);
-  doc.text("Listado de Participantes Registrados", 14, 20);
+  doc.text("List of Registered Personnel", 14, 20);
 
-  const head = [["ID", "Nombre", "Apellido", "Mail", "Teléfono"]];
+  const head = [["ID", "Name", "Description", "eMail", "Phone"]];
   const body = [];
 
   const tabla = document.querySelectorAll("#tablaParticipantes tbody tr");

@@ -12,7 +12,7 @@ $(document).ready(function () {
   cargarDatos();
 
   function cargarDatos() {
-    fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listarGrupo/cavent")
+    fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarGrupo/cavent")
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();

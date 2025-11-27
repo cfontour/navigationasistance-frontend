@@ -12,7 +12,7 @@ $(document).ready(function () {
   cargarDatos();
 
   function cargarDatos() {
-    fetch("https://navigationasistance-backend-1.onrender.com/nadadorrutas/listarGrupo/otsudan")
+    fetch("https://navigationasistance-backend-1.onrender.com/usuariocapuntoscontrol/listarGrupo/otsudan")
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();

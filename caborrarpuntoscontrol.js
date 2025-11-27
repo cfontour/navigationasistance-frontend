@@ -20,33 +20,28 @@ $(document).ready(function () {
       .then(data => {
         tabla.clear();
 
-        // Para cada registro del grupo, buscar nombre y apellido del usuario
-        const peticionesUsuarios = data
-          .map(item => {
-            const usuarioId = item.usuarioId;
-            if (!usuarioId) return null;
+        const peticionesUsuarios = data.map(item => {
+          const usuarioId = item.nadadorrutaId; //  🔥 CORREGIDO
 
-            return fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${encodeURIComponent(usuarioId)}`)
-              .then(r => {
-                if (!r.ok) throw new Error(`HTTP ${r.status} al obtener usuarioId=${usuarioId}`);
-                return r.json();
-              })
-              .then(usuario => ({
-                usuarioId: usuarioId,
-                nombre: usuario.nombre ?? "",
-                apellido: usuario.apellido ?? ""
-              }))
-              .catch(err => {
-                console.error("Error obteniendo datos de usuario:", err);
-                // En caso de error, al menos mostramos el ID
-                return {
-                  usuarioId: usuarioId,
-                  nombre: "",
-                  apellido: ""
-                };
-              });
-          })
-          .filter(Boolean); // quita nulls si hubiera items sin usuarioid
+          return fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${encodeURIComponent(usuarioId)}`)
+            .then(r => {
+              if (!r.ok) throw new Error(`HTTP ${r.status} al obtener usuarioId=${usuarioId}`);
+              return r.json();
+            })
+            .then(usuario => ({
+              usuarioId,
+              nombre: usuario.nombre ?? "",
+              apellido: usuario.apellido ?? ""
+            }))
+            .catch(err => {
+              console.error("Error obteniendo datos de usuario:", err);
+              return {
+                usuarioId,
+                nombre: "",
+                apellido: ""
+              };
+            });
+        });
 
         return Promise.all(peticionesUsuarios);
       })

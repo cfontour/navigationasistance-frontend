@@ -112,7 +112,7 @@
     }
   </style>
 
-  <!-- 🔒 Protección de acceso usando sesión del backend -->
+  <!-- 🔒 Protección de acceso usando SOLO sesión del backend -->
   <script>
     document.addEventListener("DOMContentLoaded", async function () {
       const backendUrl = "https://navigationasistance-backend-1.onrender.com";
@@ -120,15 +120,13 @@
       try {
         const res = await fetch(`${backendUrl}/usuarios/sesion/estado`, {
           method: "GET",
-          credentials: "include" // 👈 IMPORTANTE para enviar la cookie de sesión
+          credentials: "include"
         });
 
-        if (!res.ok) {
-          // No hay sesión → volver al login
+        if (res.status !== 200) {
           window.location.replace("loginot.html");
         }
       } catch (e) {
-        console.error("Error verificando sesión:", e);
         window.location.replace("loginot.html");
       }
     });

@@ -112,14 +112,23 @@
     }
   </style>
 
-  <!-- 🔒 Protección de acceso -->
+  <!-- 🔒 Protección de acceso usando sesión del backend -->
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const usuario = localStorage.getItem("usuarioLogueado");
-      console.log("usuarioLogueado en menu.html =", usuario);
+    document.addEventListener("DOMContentLoaded", async function () {
+      const backendUrl = "https://navigationasistance-backend-1.onrender.com";
 
-      if (!usuario) {
-        // replace evita que pueda volver con el botón "Atrás" al menú sin loguearse
+      try {
+        const res = await fetch(`${backendUrl}/usuarios/sesion/estado`, {
+          method: "GET",
+          credentials: "include" // 👈 IMPORTANTE para enviar la cookie de sesión
+        });
+
+        if (!res.ok) {
+          // No hay sesión → volver al login
+          window.location.replace("loginot.html");
+        }
+      } catch (e) {
+        console.error("Error verificando sesión:", e);
         window.location.replace("loginot.html");
       }
     });

@@ -10,7 +10,10 @@ async function login() {
     try {
         const backendUrl = "https://navigationasistance-backend-1.onrender.com";
 
-        const res = await fetch(`${backendUrl}/usuarios/login/${usuario}/${password}`);
+        const res = await fetch(`${backendUrl}/usuarios/login/${usuario}/${password}`, {
+                    method: "GET",
+                    credentials: "include" // 🔹 importante para que la cookie de sesión viaje
+                });
 
         if (res.status === 200) {
             const usuarioData = await res.json(); // viene el JSON del usuario

@@ -10,18 +10,13 @@ async function login() {
     try {
         const backendUrl = "https://navigationasistance-backend-1.onrender.com";
 
-        const res = await fetch(`${backendUrl}/usuarios/login/${usuario}/${password}`, {  // ✅ Paréntesis, no backticks
-            method: "GET",
-            credentials: "include"
-        });
-
-        console.log("Status:", res.status); // Ver qué devuelve
-        console.log("Response:", res);
+        const res = await fetch(`${backendUrl}/usuarios/login/${usuario}/${password}`);
 
         if (res.status === 200) {
+            // Login correcto
             window.location.href = "menuop.html";
         } else {
-            alert("Usuario o contraseña incorrecto");
+            // No autorizado
             window.location.href = "noacceso.html";
         }
 

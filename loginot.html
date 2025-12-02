@@ -1,69 +1,51 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login Operational Tracking</title>
+  <meta charset="UTF-8">
+  <title>Login - Plataforma</title>
 
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-image: url('img/fondo_operationalTracking.png');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+        font-family: Arial, sans-serif;
+        margin: 40px;
     }
 
-    #loginBox {
-      background: rgba(0, 0, 0, 0.7);
-      padding: 30px;
-      border-radius: 10px;
-      width: 300px;
-      color: white;
+    label {
+        display: block;
+        margin-bottom: 10px;
     }
 
     input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 5px;
-      border: none;
+        padding: 8px;
+        width: 250px;
+        margin-bottom: 15px;
     }
 
     button {
-      width: 100%;
-      padding: 12px;
-      background-color: #00bcd4;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    button:hover {
-      background-color: #0097a7;
+        padding: 10px 20px;
+        cursor: pointer;
     }
   </style>
-
-  <script src="loginot.js" defer></script>
 </head>
+
 <body>
 
-<div id="loginBox">
-  <h2>Acceso al Módulo</h2>
+<h2>Ingreso al Módulo</h2>
 
-  <input type="text" id="usuario" placeholder="Usuario">
-  <input type="password" id="password" placeholder="Contraseña">
+<form id="loginForm">
+  <label>Usuario:
+    <input type="text" id="usuario" required>
+  </label>
 
-  <!-- 🔥 ESTE BOTÓN ES CLAVE: LLAMA A login() -->
-  <button onclick="login()">Ingresar</button>
-</div>
+  <label>Password:
+    <input type="password" id="password" required>
+  </label>
+
+  <button type="button" onclick="login()">Ingresar</button>
+</form>
+
+<!-- JS externo -->
+<script src="loginot.js"></script>
 
 </body>
 </html>

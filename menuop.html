@@ -112,27 +112,14 @@
     }
   </style>
 
-  <!-- 🔒 Protección de acceso usando SOLO sesión del backend -->
+  <!-- 🔒 Protección de acceso: si no hay usuarioLogueado, redirige al login -->
   <script>
-    document.addEventListener("DOMContentLoaded", async function () {
-      const backendUrl = "https://navigationasistance-backend-1.onrender.com";
-
-      try {
-        const res = await fetch(`${backendUrl}/usuarios/sesion/estado`, {
-        method: "GET",
-        credentials: "include"
-      });
-
-      console.log("Sesión status:", res.status); // Debug
-
-      if (res.status !== 200) {
-          console.log("Sesión inválida, redirigiendo...");
-          window.location.replace("loginot.html");
-        }
-      } catch (e) {
-        window.location.replace("loginot.html");
+    (function () {
+      const usuario = localStorage.getItem("usuarioLogueado");
+      if (!usuario) {
+        window.location.href = "loginot.html";
       }
-    });
+    })();
   </script>
 
 </head>

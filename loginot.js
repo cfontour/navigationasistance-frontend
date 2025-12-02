@@ -13,6 +13,12 @@ async function login() {
         const res = await fetch(`${backendUrl}/usuarios/login/${usuario}/${password}`);
 
         if (res.status === 200) {
+            const usuarioData = await res.json(); // viene el JSON del usuario
+
+            // 🔹 Guardamos "sesión" sencilla en el navegador
+            localStorage.setItem("usuarioLogueado", usuarioData.id); // o usuarioData.usuario, etc.
+
+
             // Login correcto
             window.location.href = "menuop.html";
         } else {

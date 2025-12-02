@@ -10,7 +10,7 @@ async function login() {
     try {
         const backendUrl = "https://navigationasistance-backend-1.onrender.com";
 
-        const res = await fetch(`${backendUrl}/usuarios/login/${usuario}/${password}`, {
+        const res = await fetch(`${backendUrl}/login/${usuario}/${password}`, {
             method: "GET",
             credentials: "include"
         });
@@ -31,5 +31,4 @@ async function login() {
         console.error("Error en login:", e);
         alert("Error de conexión con el servidor");
     }
-    
 }

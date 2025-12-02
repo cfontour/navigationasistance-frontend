@@ -1,12 +1,103 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Acceso no permitido</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acceso No Permitido</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background-image: url('img/fondo_operationalTracking.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+
+    header {
+      width: 100%;
+      text-align: center;
+      padding: 20px 10px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      font-size: 24px;
+    }
+
+    .error-container {
+      width: 90%;
+      max-width: 400px;
+      background-color: rgba(0, 0, 0, 0.75);
+      border-radius: 10px;
+      padding: 25px;
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    .error-title {
+      font-size: 22px;
+      margin-bottom: 15px;
+    }
+
+    .error-desc {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 20px;
+    }
+
+    .login-button {
+      padding: 10px 20px;
+      background-color: #00bcd4;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-size: 15px;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .login-button:hover {
+      background-color: #009fb5;
+    }
+
+    footer {
+      padding: 20px;
+    }
+
+    footer img {
+      max-width: 200px;
+      border-radius: 12px;
+    }
+  </style>
 </head>
+
 <body>
-<h1>Acceso no permitido</h1>
-<p>No tiene permisos para acceder a este módulo.</p>
-<a href="/login.html">Volver al login</a>
+
+<header>
+  <h1>🧭 Operational Tracking</h1>
+</header>
+
+<div class="error-container">
+  <div class="error-title">🚫 Acceso No Permitido</div>
+  <div class="error-desc">
+    No tiene permisos para acceder a este módulo o su sesión no es válida.
+  </div>
+
+  <button class="login-button" onclick="window.location.href='loginot.html'">
+    Volver al Login
+  </button>
+</div>
+
+<footer>
+  <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER">
+</footer>
+
 </body>
 </html>

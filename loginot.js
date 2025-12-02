@@ -10,20 +10,21 @@ async function login() {
     try {
         const backendUrl = "https://navigationasistance-backend-1.onrender.com";
 
-        const res = await fetch(`${backendUrl}/usuarios/login/${usuario}/${password}`);
+        const res = await fetch(`${backendUrl}/usuarios/login/${usuario}/${password}`, {
+            method: "GET",
+            credentials: "include"
+        });
 
         if (res.status === 200) {
-            const usuarioData = await res.json(); // viene el JSON del usuario
+            const data = await res.json();
+            const token = data.token;
 
-            // 🔹 Guardamos "sesión" sencilla en el navegador
-            localStorage.setItem("usuarioLogueado", usuarioData.id); // o usuarioData.usuario, etc.
+            // 🔑 Guardar JWT en localStorage
+            localStorage.setItem("authToken", token);
 
-
-            // Login correcto
             window.location.href = "menuop.html";
         } else {
-            // No autorizado
-            window.location.href = "noacceso.html";
+            alert("Usuario o contraseña incorrecto");
         }
 
     } catch (e) {

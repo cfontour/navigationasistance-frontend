@@ -9,7 +9,7 @@
     body {
       margin: 0;
       font-family: 'Montserrat', sans-serif;
-      background-image: url('img/fondo_operationalTracking.png'); /* Usa la imagen sin menú */
+      background-image: url('img/fondo_operationalTracking.png');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -112,14 +112,37 @@
     }
   </style>
 
-  <!-- 🔒 Protección de acceso -->
+  <!-- 🔒 Protección de acceso con JWT -->
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const usuario = localStorage.getItem("usuarioLogueado");
-      console.log("usuarioLogueado en menu.html =", usuario);
+    document.addEventListener("DOMContentLoaded", async function () {
+      const backendUrl = "https://navigationasistance-backend-1.onrender.com";
+      const token = localStorage.getItem("authToken");
 
-      if (!usuario) {
-        // replace evita que pueda volver con el botón "Atrás" al menú sin loguearse
+      console.log("Token en menuop.html =", token);
+
+      // Si no hay token, redirigir a login
+      if (!token) {
+        window.location.replace("loginot.html");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${backendUrl}/usuarios/sesion/estado`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        console.log("Respuesta sesion/estado =", res.status);
+
+        if (res.status !== 200) {
+          // Token inválido o expirado
+          localStorage.removeItem("authToken");
+          window.location.replace("loginot.html");
+        }
+      } catch (e) {
+        console.error("Error verificando sesión:", e);
         window.location.replace("loginot.html");
       }
     });
@@ -168,7 +191,6 @@
     </div>
   </div>
 
-  <!-- NUEVO ITEM -->
   <div class="accordion-item">
     <div class="accordion-header">📄 Reporte de Actividades</div>
     <div class="accordion-content">
@@ -176,15 +198,6 @@
     </div>
   </div>
 
-  <!-- NUEVO ITEM -->
-  <!--
-  <div class="accordion-item">
-    <div class="accordion-header">📄 Reporte Por Equipos</div>
-    <div class="accordion-content">
-      <a href="caventurareporte.html">Visualizar Time Lap</a>
-    </div>
-  </div>
-  -->
   <button class="colapsar-btn" onclick="colapsarTodo()">🔽 Colapsar todo</button>
 </div>
 

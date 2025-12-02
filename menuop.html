@@ -111,6 +111,17 @@
       }
     }
   </style>
+
+  <!-- 🔒 Protección de acceso: si no hay usuarioLogueado, redirige al login -->
+  <script>
+    (function () {
+      const usuario = localStorage.getItem("usuarioLogueado");
+      if (!usuario) {
+        window.location.href = "loginot.html";
+      }
+    })();
+  </script>
+
 </head>
 <body>
 

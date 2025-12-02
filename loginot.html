@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Plataforma</title>
+
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    input {
+        padding: 8px;
+        width: 250px;
+        margin-bottom: 15px;
+    }
+
+    button {
+        padding: 10px 20px;
+        cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Ingreso al Módulo</h2>
+
+<form id="loginForm">
+  <label>Usuario:
+    <input type="text" id="usuario" required>
+  </label>
+
+  <label>Password:
+    <input type="password" id="password" required>
+  </label>
+
+  <button type="button" onclick="login()">Ingresar</button>
+</form>
+
+<!-- JS externo -->
+<script src="loginot.js"></script>
+
+</body>
+</html>

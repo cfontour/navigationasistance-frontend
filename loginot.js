@@ -16,10 +16,8 @@ async function login() {
         });
 
         if (res.status === 200) {
-            // Login correcto → ir al menú
             window.location.href = "menuop.html";
         } else {
-            // Usuario o password incorrecta
             window.location.href = "noacceso.html";
         }
 

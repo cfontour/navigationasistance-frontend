@@ -4,153 +4,66 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login Operational Tracking</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" />
 
   <style>
     body {
       margin: 0;
-      font-family: 'Montserrat', sans-serif;
-      background-image: url('img/fondo_operationalTracking.png'); /* mismo fondo que el menú */
+      font-family: Arial, sans-serif;
+      background-image: url('img/fondo_operationalTracking.png');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
     }
 
-    header {
-      width: 100%;
-      text-align: center;
-      padding: 20px 10px;
-      background: rgba(0, 0, 0, 0.5);
-      color: white;
-      font-size: 24px;
-    }
-
-    .login-container {
-      width: 90%;
-      max-width: 400px;
-      background-color: rgba(0, 0, 0, 0.75);
+    #loginBox {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 30px;
       border-radius: 10px;
-      padding: 20px 25px 25px 25px;
+      width: 300px;
       color: white;
-      margin: 40px 0;
-      box-sizing: border-box;
     }
 
-    .login-title {
-      text-align: center;
-      font-size: 20px;
-      margin-bottom: 20px;
-    }
-
-    .login-group {
-      margin-bottom: 15px;
-    }
-
-    .login-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 14px;
-    }
-
-    .login-group input {
+    input {
       width: 100%;
       padding: 10px;
+      margin: 10px 0;
       border-radius: 5px;
       border: none;
-      box-sizing: border-box;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 14px;
     }
 
-    .login-button {
+    button {
       width: 100%;
-      padding: 10px 0;
-      margin-top: 10px;
+      padding: 12px;
       background-color: #00bcd4;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       color: white;
-      font-size: 16px;
       cursor: pointer;
-      font-family: 'Montserrat', sans-serif;
+      font-size: 16px;
     }
 
-    .login-button:hover {
-      background-color: #00a0b5;
-    }
-
-    .login-help {
-      margin-top: 10px;
-      font-size: 12px;
-      text-align: center;
-      opacity: 0.8;
-    }
-
-    footer {
-      padding: 20px;
-    }
-
-    footer img {
-      max-width: 200px;
-      border-radius: 12px;
-    }
-
-    @media (max-width: 600px) {
-      header {
-        font-size: 18px;
-      }
-
-      .login-title {
-        font-size: 18px;
-      }
-
-      .login-button {
-        font-size: 14px;
-      }
+    button:hover {
+      background-color: #0097a7;
     }
   </style>
+
+  <script src="loginot.js" defer></script>
 </head>
 <body>
 
-<header>
-  <h1>🧭 Operational Tracking - Login</h1>
-</header>
+<div id="loginBox">
+  <h2>Acceso al Módulo</h2>
 
-<div class="login-container">
-  <div class="login-title">Acceso al Módulo</div>
+  <input type="text" id="usuario" placeholder="Usuario">
+  <input type="password" id="password" placeholder="Contraseña">
 
-  <form id="loginForm" onsubmit="event.preventDefault(); login();">
-    <div class="login-group">
-      <label for="usuario">Usuario</label>
-      <input type="text" id="usuario" name="usuario" required />
-    </div>
-
-    <div class="login-group">
-      <label for="password">Contraseña</label>
-      <input type="password" id="password" name="password" required />
-    </div>
-
-    <button type="submit" class="login-button">Ingresar</button>
-  </form>
-
-  <div class="login-help">
-    Ingrese sus credenciales para continuar.
-  </div>
+  <!-- 🔥 ESTE BOTÓN ES CLAVE: LLAMA A login() -->
+  <button onclick="login()">Ingresar</button>
 </div>
 
-<footer>
-  <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" style="max-width: 300px; display: block; margin: 0 auto;">
-</footer>
-
-<!-- Lógica de login en archivo separado -->
-<script src="loginot.js"></script>
-<script>
-  document.title = "Login Operational Tracking";
-</script>
 </body>
 </html>

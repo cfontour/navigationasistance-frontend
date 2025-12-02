@@ -119,11 +119,14 @@
 
       try {
         const res = await fetch(`${backendUrl}/usuarios/sesion/estado`, {
-          method: "GET",
-          credentials: "include"
-        });
+        method: "GET",
+        credentials: "include"
+      });
 
-        if (res.status !== 200) {
+      console.log("Sesión status:", res.status); // Debug
+
+      if (res.status !== 200) {
+          console.log("Sesión inválida, redirigiendo...");
           window.location.replace("loginot.html");
         }
       } catch (e) {

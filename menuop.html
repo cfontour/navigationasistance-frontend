@@ -112,14 +112,17 @@
     }
   </style>
 
-  <!-- 🔒 Protección de acceso: si no hay usuarioLogueado, redirige al login -->
+  <!-- 🔒 Protección de acceso -->
   <script>
-    (function () {
+    document.addEventListener("DOMContentLoaded", function () {
       const usuario = localStorage.getItem("usuarioLogueado");
+      console.log("usuarioLogueado en menu.html =", usuario);
+
       if (!usuario) {
-        window.location.href = "loginot.html";
+        // replace evita que pueda volver con el botón "Atrás" al menú sin loguearse
+        window.location.replace("loginot.html");
       }
-    })();
+    });
   </script>
 
 </head>

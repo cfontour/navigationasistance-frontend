@@ -102,6 +102,20 @@
           }
         }
     </style>
+
+    <!-- 🔒 Protección de acceso -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          const usuario = localStorage.getItem("usuarioLogueado");
+          console.log("usuarioLogueado en menu.html =", usuario);
+
+          if (!usuario) {
+            // replace evita que pueda volver con el botón "Atrás" al menú sin loguearse
+            window.location.replace("loginot.html");
+          }
+        });
+    </script>
+    
 </head>
 
 <body id="page-top">

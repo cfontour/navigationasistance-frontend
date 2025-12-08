@@ -17,6 +17,11 @@ $(document).ready(function () {
        if (controlNavItem) {
           controlNavItem.parentElement.classList.add("d-none");
        }
+
+       const controlNavItem = document.querySelector('a[href="vergrupos.html"]');
+       if (controlNavItem) {
+          controlNavItem.parentElement.classList.add("d-none");
+       }
     }
 
     if (usuario.rol === "ADMINISTRADOR") {

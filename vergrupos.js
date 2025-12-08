@@ -65,7 +65,7 @@ $(document).ready(function () {
       return;
     }
 
-    fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/${encodeURIComponent(usuarioId)}/grupo`, {
+    fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/usuarios/${encodeURIComponent(usuarioId)}/grupo`, {
       method: 'PUT',
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ grupoid: nuevoGrupo })

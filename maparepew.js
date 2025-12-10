@@ -906,7 +906,8 @@ async function cargarRutas(idRuta) {
     const ruta = await res.json();
 
     const titleEl = document.getElementById("site-title");
-    if (titleEl) titleEl.textContent = (ruta.nombre || "").toUpperCase();
+    //if (titleEl) titleEl.textContent = (ruta.nombre || "").toUpperCase();
+    if (titleEl) titleEl.textContent = ("REGATAS").toUpperCase();
 
     const puntos = ruta.puntos;
     if (!puntos || puntos.length === 0) return;

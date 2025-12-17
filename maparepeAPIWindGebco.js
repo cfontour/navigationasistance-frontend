@@ -1872,6 +1872,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   windPane.style.pointerEvents = 'none';
   windPane.appendChild(windCanvasEl);
 
+  // Resize con DPR (nítido)
   function resizeWindCanvas() {
     const size = map.getSize();
     const dpr = window.devicePixelRatio || 1;
@@ -1884,19 +1885,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     windCtx = windCanvasEl.getContext('2d');
     windCtx.setTransform(dpr, 0, 0, dpr, 0, 0); // coords en px CSS
 
-    // 👈 MISMA LÓGICA, EJECUTADA EN EL MOMENTO CORRECTO
-    if (vientoResiembraTimeout) {
-      clearTimeout(vientoResiembraTimeout);
-    }
-
-    vientoResiembraTimeout = setTimeout(() => {
-      if (vientoVisible) {
-        windParticles = [];
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-          windParticles.push(new WindParticle(windCanvasEl));
-        }
+    // 👈 resembrar si está encendido
+    if (vientoVisible) {
+      windParticles = [];
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        windParticles.push(new WindParticle(windCanvasEl));
       }
-    }, 120);
+    }
   }
 
   resizeWindCanvas();

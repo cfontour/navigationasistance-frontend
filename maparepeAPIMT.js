@@ -250,29 +250,31 @@ function crearIconoCompetidorConBearing(bearing, usuarioid) {
 
 async function cargarNavegantesVinculados() {
   try {
-    const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listarActivosEnCarrera");
+    const response = await fetch(
+      "https://navigationasistance-backend-1.onrender.com/nadadorposicion/listarActivosEnCarrera",
+      { cache: "no-store" }
+    );
+
     const nadadores = await response.json();
-    if (nadadores.length === 0) historialPuntos = new Map();
+    console.log("🔍 Navegantes activos:", nadadores);
 
-    for (let m of marcadores.values()) {
-      map.removeLayer(m);
-    }
-    marcadores.clear();
+    // 🔑 IDs activos normalizados (string)
+    const idsActivos = new Set();
 
-    console.log("🔍 Respuesta de nadadores:", nadadores);
+    for (const n of nadadores) {
+      const userId = String(n.usuarioid); // 🔒 NORMALIZACIÓN ÚNICA
+      idsActivos.add(userId);
 
-    nadadores.forEach(n => {
       const lat = parseFloat(n.nadadorlat);
       const lng = parseFloat(n.nadadorlng);
-      const bearing = parseFloat(n.bearing);
+      const bearing = parseFloat(n.bearing) || 0;
 
-      console.log("👤 Navegante activo:", n);
-
-      if (isNaN(lat) || isNaN(lng)) {
-        console.warn(`❌ Coordenadas inválidas para usuario ${n.usuarioid}:`, n);
-        return;
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        console.warn(`❌ Coordenadas inválidas para usuario ${userId}`, n);
+        continue;
       }
 
+      // 🎯 Icono (emergencia o normal)
       let icono;
       if (n.emergency === true) {
         icono = L.icon({
@@ -283,32 +285,47 @@ async function cargarNavegantesVinculados() {
         });
 
         if (sirenaAudio.paused) {
-          sirenaAudio.play().catch(e => console.warn("No se pudo reproducir la sirena:", e));
+          sirenaAudio.play().catch(() => {});
         }
       } else {
-        icono = crearIconoCompetidorConBearing(bearing, n.usuarioid);
-        const colorUsuario = obtenerColorUsuario(n.usuarioid);
-        setTimeout(() => aplicarColorIcono(n.usuarioid, colorUsuario), 200);
+        icono = crearIconoCompetidorConBearing(bearing, userId);
+        const colorUsuario = obtenerColorUsuario(userId);
+        aplicarColorIcono(userId, colorUsuario);
       }
 
-      const marcador = L.marker([lat, lng], {
-        icon: icono
-      }).addTo(map)
-        .bindPopup(`🧍 Usuario: ${n.usuarioid}<br>🕓 ${n.fechaUltimaActualizacion}`);
-
-      marcadores.set(String(n.usuarioid), marcador);
-      marcador.bindPopup(generarContenidoPopup(n.usuarioid));
-      actualizarPopup(n.usuarioid);
-
-      if (n.usuarioid && puntosControl.length > 0) {
-        verificarPuntosDeControl(n.usuarioid, lat, lng);
+      // 🔁 ACTUALIZAR o CREAR marcador
+      if (marcadores.has(userId)) {
+        const marker = marcadores.get(userId);
+        marker.setLatLng([lat, lng]);
+        marker.setIcon(icono);
       } else {
-        console.warn(`⚠️ No se puede verificar puntos de control para ${n.usuarioid}. Datos faltantes.`);
+        const marker = L.marker([lat, lng], { icon: icono })
+          .addTo(map)
+          .bindPopup(generarContenidoPopup(userId));
+
+        marcadores.set(userId, marker);
       }
-    });
+
+      // 🎯 Verificar puntos de control
+      if (puntosControl.length > 0) {
+        verificarPuntosDeControl(userId, lat, lng);
+      }
+    }
+
+    // 🧹 Eliminar marcadores que ya no están activos
+    for (const [userId, marker] of marcadores.entries()) {
+      if (!idsActivos.has(userId)) {
+        map.removeLayer(marker);
+        marcadores.delete(userId);
+
+        if (usuarioTrazaActiva === userId) {
+          borrarTraza();
+        }
+      }
+    }
 
   } catch (error) {
-    console.error("Error al cargar nadadores vinculados:", error);
+    console.error("❌ Error al cargar navegantes vinculados:", error);
   }
 }
 

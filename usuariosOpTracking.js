@@ -51,17 +51,17 @@ function inicializarDataTable() {
     // Inicializar nuevo DataTable
     dataTable = $('#usuarios').DataTable({
         "language": {
-            "lengthMenu": "Mostrar _MENU_ registros por página",
-            "zeroRecords": "No se encontraron registros",
-            "info": "Mostrando página _PAGE_ de _PAGES_",
-            "infoEmpty": "No hay registros disponibles",
+            "lengthMenu": "Show _MENU_ records on page",
+            "zeroRecords": "Records not found",
+            "info": "Show page _PAGE_ de _PAGES_",
+            "infoEmpty": "No more records",
             "infoFiltered": "(filtrado de _MAX_ registros totales)",
-            "search": "Buscar:",
+            "search": "Find:",
             "paginate": {
-                "first": "Primero",
-                "last": "Último",
-                "next": "Siguiente",
-                "previous": "Anterior"
+                "first": "First",
+                "last": "Last",
+                "next": "Next",
+                "previous": "Previous"
             }
         },
         "pageLength": 10,
@@ -180,7 +180,7 @@ async function agregarUsuario() {
         document.getElementById('formAgregarUsuario').reset();
         document.getElementById('inputPassword').parentElement.classList.remove('d-none');
         document.getElementById('inputId').readOnly = false;
-        document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Agregar";
+        document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Add";
         modoEditar = false;
 
         const usuarioStr = localStorage.getItem("usuarioLogueado");
@@ -192,8 +192,8 @@ async function agregarUsuario() {
         }
 
     } catch (error) {
-        console.error("Error al agregar/modificar usuario:", error);
-        alert("No se pudo guardar el usuario. Intente nuevamente.");
+        console.error("Error in add/update user:", error);
+        alert("Could not save the user. Try later.");
     }
 }
 
@@ -223,7 +223,7 @@ async function editarUsuario(id) {
 
         document.getElementById('inputId').readOnly = true;
         document.getElementById('inputPassword').parentElement.classList.add('d-none');
-        document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Modificar";
+        document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Upadate";
 
         modoEditar = true;
 
@@ -265,8 +265,8 @@ async function cambiarPassword() {
         alert(resultado);
         document.getElementById('formCambiarPassword').reset();
     } catch (error) {
-        console.error("Error al cambiar contraseña:", error);
-        alert("No se pudo cambiar la contraseña.");
+        console.error("Error on change the password:", error);
+        alert("Could not change the password.");
     }
 }
 
@@ -313,7 +313,7 @@ function mostrarVistaSoloDelUsuario(usuario) {
 
     container.appendChild(card);
 
-    document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Modificar";
+    document.querySelector("#formAgregarUsuario button[type='submit']").innerText = "Update";
     modoEditar = true;
 }
 

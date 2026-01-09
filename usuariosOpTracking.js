@@ -51,12 +51,12 @@ function inicializarDataTable() {
     // Inicializar nuevo DataTable
     dataTable = $('#usuarios').DataTable({
         "language": {
-            "lengthMenu": "Show _MENU_ records on page",
+            "lengthMenu": "Show _MENU_ entries",
             "zeroRecords": "Records not found",
-            "info": "Show page _PAGE_ de _PAGES_",
+            "info": "Showing _PAGE_ to _PAGES_ of entries",
             "infoEmpty": "No more records",
             "infoFiltered": "(filtrado de _MAX_ registros totales)",
-            "search": "Find:",
+            "search": "Search:",
             "paginate": {
                 "first": "First",
                 "last": "Last",
@@ -65,7 +65,7 @@ function inicializarDataTable() {
             }
         },
         "pageLength": 10,
-        "lengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
+        "lengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
         "ordering": true,
         "searching": true,
         "paging": true,

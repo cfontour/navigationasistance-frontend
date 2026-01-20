@@ -24,7 +24,7 @@ async function login() {
 
             window.location.href = "menuop.html";
         } else {
-            alert("Usuario o contraseña incorrecto");
+            alert("Wrong User or password");
         }
 
     } catch (e) {

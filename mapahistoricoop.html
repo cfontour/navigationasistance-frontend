@@ -95,7 +95,7 @@
 
 <body id="page-top" style="background-image: url('img/fondo_operationalTracking.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
 
-<h1 class="titulo-principal">🧭 Operational Tracking - Rutas Realizadas por el personal</h1>
+<h1 class="titulo-principal">🧭 Operational Tracking - Routes taken by staff</h1>
 
 <div id="wrapper">
   <div id="content-wrapper" class="d-flex flex-column">
@@ -132,17 +132,17 @@
 
       <div class="container-fluid">
         <div class="controls">
-          <label for="select-usuario">Seleccionar Personal:</label>
-          <select id="select-usuario"><option value="">-- Seleccionar --</option></select>
+          <label for="select-usuario">Select Staff:</label>
+          <select id="select-usuario"><option value="">-- Select --</option></select>
 
-          <label for="fecha">Fecha:</label>
+          <label for="fecha">Date:</label>
           <input type="date" id="fecha"/>
 
-          <label for="select-recorrido">Recorrido:</label>
-          <select id="select-recorrido"><option value="">-- Seleccionar recorrido --</option></select>
+          <label for="select-recorrido">Route:</label>
+          <select id="select-recorrido"><option value="">-- Select Route --</option></select>
 
-          <button id="btn-cargar" class="btn btn-primary btn-sm">Cargar Ruta</button>
-          <button id="btn-exportar" class="btn btn-success btn-sm">Exportar CSV</button>
+          <button id="btn-cargar" class="btn btn-primary btn-sm">Load Rout</button>
+          <button id="btn-exportar" class="btn btn-success btn-sm">Export to CSV</button>
         </div>
 
         <div id="map"></div>
@@ -168,13 +168,13 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">¿Cerrar sesión?</h5>
+        <h5 class="modal-title">¿Sign out?</h5>
         <button class="close" type="button" data-dismiss="modal"><span aria-hidden="true">×</span></button>
       </div>
-      <div class="modal-body">Seleccioná "Cerrar sesión" si querés finalizar la sesión actual.</div>
+      <div class="modal-body">Select "Sign out" If you want to end the current session.</div>
       <div class="modal-footer">
         <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
-        <a class="btn btn-primary" href="loginot.html">Cerrar sesión</a>
+        <a class="btn btn-primary" href="loginot.html">Sign Out</a>
       </div>
     </div>
   </div>

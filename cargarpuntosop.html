@@ -143,9 +143,8 @@
     <option value="#FFC0CB">Pink</option>
   </select>
 
-  <label for="excelFile" style="cursor:pointer;">Select file</label>
-  <span id="excelFileText" style="margin-left:8px;font-style:italic;">No file selected</span>
-  <input type="file" id="excelFile" accept=".xlsx" style="display:none;">
+  <label for="excelFile">Select Excel file (.xlsx):</label>
+  <input type="file" id="excelFile" accept=".xlsx">
 
   <button onclick="procesarCarga()">Load Route</button>
   <div id="resultado"></div>

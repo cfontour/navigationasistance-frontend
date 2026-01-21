@@ -244,8 +244,22 @@ async function actualizarPopup(usuarioid) {
     }).join("");
 
     const popupHtml = `<strong>${nombreCompleto}</strong><br/>Puntos de control:<br/><ul>${listaHtml}</ul>`;
+
     const marcador = marcadores.get(String(usuarioid));
-    if (marcador) marcador.bindPopup(popupHtml);
+    if (marcador) {
+      // Popup con el historial
+      marcador.bindPopup(popupHtml);
+
+      // 👉 Tooltip con ID + nombre
+      marcador.bindTooltip(
+        `${usuarioid} - ${nombreCompleto}`,
+        {
+          permanent: false,       // si querés que quede siempre visible poné true
+          direction: "top",
+          offset: [0, -40]        // para que no tape el ícono
+        }
+      );
+    }
 
   } catch (err) {
     console.error(`❌ Error crítico al actualizar popup para ${usuarioid}:`, err);

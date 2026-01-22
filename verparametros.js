@@ -103,7 +103,7 @@ $(document).ready(function () {
 
     const payload = { clave, valor: valorTrim };
 
-    fetch("https://navigationasistance-backend-1.onrender.com/parametros/actualizar", {
+    fetch(`https://navigationasistance-backend-1.onrender.com/parametros/actualizar/${encodeURIComponent(clave)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

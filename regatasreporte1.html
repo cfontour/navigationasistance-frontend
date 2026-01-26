@@ -22,8 +22,7 @@
             background-position: center;
             background-repeat: no-repeat;
             min-height: 100vh;
-            /* 👉 ahora se puede desplazar la página */
-            overflow-x: auto;
+            overflow-x: auto;  /* barra de desplazamiento general si hace falta */
             overflow-y: auto;
         }
 
@@ -127,7 +126,7 @@
             color: #6c757d;
         }
 
-        /* Derecha: 50% vertical MAPA / 25% GAUGES / 25% GRÁFICO */
+        /* Derecha: 50% MAPA / 25% GAUGES / 25% GRÁFICO */
         .right-column {
             grid-row: 1;
             grid-column: 2;
@@ -137,6 +136,7 @@
             height: 100%;
         }
 
+        /* MAPA (50%) */
         .map-section {
             flex: 0 0 50%;
             display: flex;
@@ -181,6 +181,7 @@
             margin: 0 10px;
         }
 
+        /* GAUGES (25%) */
         .gauges-section {
             flex: 0 0 25%;
             display: flex;
@@ -245,7 +246,7 @@
             font-weight: 500;
         }
 
-        /* GRÁFICO velocidad vs tiempo */
+        /* GRÁFICO velocidad vs tiempo (25%) */
         .chart-section {
             flex: 0 0 25%;
             display: flex;
@@ -297,7 +298,10 @@
         <div class="user-selector-area">
             <h3>🏁 Participantes de la Regata</h3>
             <div style="margin-bottom: 15px;">
-                <label for="dateSelector" style="display: block; margin-bottom: 5px; font-weight: bold; color: #2c3e50;">Fecha de la Regata:</label>
+                <label for="dateSelector"
+                       style="display: block; margin-bottom: 5px; font-weight: bold; color: #2c3e50;">
+                    Fecha de la Regata:
+                </label>
                 <input type="date" id="dateSelector" class="user-dropdown" style="margin-bottom: 10px;">
             </div>
             <select class="user-dropdown" id="userSelector">

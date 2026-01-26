@@ -130,7 +130,7 @@ class RegatasDashboard {
     }
 
     clearMap() {
-        // Polylines (rutas del playback)
+        // Borra solo las polylines del playback, mantiene puntos de control
         this.map.eachLayer((layer) => {
             if (layer instanceof L.Polyline) {
                 this.map.removeLayer(layer);
@@ -354,8 +354,10 @@ class RegatasDashboard {
         this.pausePlayback();
         this.currentIndex = 0;
         this.isPlaying = false;
-        document.getElementById('playBtn').textContent = '▶️ Play';
-        document.getElementById('timeSlider').value = 0;
+        const playBtn = document.getElementById('playBtn');
+        const slider = document.getElementById('timeSlider');
+        if (playBtn) playBtn.textContent = '▶️ Play';
+        if (slider) slider.value = 0;
         this.updateMapPosition();
         this.updateGauges();
         this.updateTimeSlider();
@@ -370,14 +372,14 @@ class RegatasDashboard {
             this.map.removeLayer(this.currentMarker);
         }
 
-        const userData = this.currentUserData;
-        const personData = this.currentPersonData;
+        const userData = this.currentUserData || {};
+        const personData = this.currentPersonData || {};
 
         const popupContent = `
-            <strong>${personData?.nombre || 'Usuario'}</strong><br>
-            Embarcación: ${personData?.nombre || 'N/A'}<br>
-            Usuario: ${userData?.nombre || 'N/A'} ${userData?.apellido || ''}<br>
-            Teléfono: ${userData?.telefono || 'N/A'}
+            <strong>${personData.nombre || 'Usuario'}</strong><br>
+            Embarcación: ${personData.nombre || 'N/A'}<br>
+            Usuario: ${userData.nombre || 'N/A'} ${userData.apellido || ''}<br>
+            Teléfono: ${userData.telefono || 'N/A'}
         `;
 
         this.currentMarker = L.marker([currentPoint.lat, currentPoint.lng])
@@ -404,21 +406,25 @@ class RegatasDashboard {
 
     updateGauge(gaugeId, percentage) {
         const circumference = 2 * Math.PI * 60;
-        const offset = circumference - (percentage / 100) * circumference;
+        const visible = (percentage / 100) * circumference;
         document.getElementById(gaugeId).style.strokeDasharray =
-            `${circumference - offset} ${circumference}`;
+            `${visible} ${circumference - visible}`;
     }
 
     updateTimeSlider() {
+        if (this.routeData.length <= 1) return;
+
         const slider = document.getElementById('timeSlider');
         const progress = (this.currentIndex / (this.routeData.length - 1)) * 100;
-        slider.value = progress;
+        if (slider) slider.value = progress;
 
         const timeDisplay = document.getElementById('timeDisplay');
         const minutes = Math.floor(this.currentIndex / 2);
         const seconds = (this.currentIndex % 2) * 30;
-        timeDisplay.textContent =
-            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        if (timeDisplay) {
+            timeDisplay.textContent =
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
     }
 
     calculateDistance(lat1, lon1, lat2, lon2) {
@@ -449,16 +455,23 @@ class RegatasDashboard {
         const canvas = document.getElementById('speedChart');
         if (!canvas || this.routeData.length === 0) return;
 
-        const ctx = canvas.getContext('2d');
-
+        const container = canvas.parentElement;
         const labels = this.routeData.map((p, index) => index); // índice como "tiempo"
         const data = this.routeData.map(p => p.speed);
 
-        // 👉 ancho grande para poder “moverse” horizontalmente
-        const baseWidth = 800;        // ancho mínimo del gráfico
-        const pxPerPoint = 3;         // zoom horizontal (subís/bajás este valor según te guste)
-        canvas.width = Math.max(baseWidth, data.length * pxPerPoint);
-        canvas.height = canvas.parentElement.clientHeight || 200;
+        // ancho grande para poder moverse horizontalmente
+        const baseWidth = 800;   // ancho mínimo del gráfico
+        const pxPerPoint = 3;    // zoom horizontal
+
+        const targetWidth = Math.max(baseWidth, data.length * pxPerPoint);
+        const targetHeight = (container && container.clientHeight) ? container.clientHeight : 200;
+
+        // Usamos estilos CSS (no atributos width/height) para que Chart.js no se rompa
+        canvas.style.width = targetWidth + 'px';
+        canvas.style.height = targetHeight + 'px';
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
 
         if (this.speedChart) {
             this.speedChart.destroy();
@@ -474,12 +487,12 @@ class RegatasDashboard {
                     tension: 0.1,
                     borderWidth: 1.5,
                     borderColor: '#2980b9',
-                    fill: false,      // 👉 sin relleno, chau “mancha azul”
+                    fill: false,      // sin relleno, sin "mancha azul"
                     pointRadius: 0
                 }]
             },
             options: {
-                responsive: false,          // 👉 usamos el tamaño del canvas (no se comprime)
+                responsive: false,          // usamos el tamaño del canvas
                 maintainAspectRatio: false,
                 scales: {
                     x: {
@@ -487,7 +500,7 @@ class RegatasDashboard {
                     },
                     y: {
                         beginAtZero: true,
-                        max: 30,            // tope razonable en nudos
+                        max: 30,
                         title: {
                             display: true,
                             text: 'Nudos'

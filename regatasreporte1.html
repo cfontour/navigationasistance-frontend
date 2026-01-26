@@ -25,7 +25,7 @@
             overflow: hidden;
         }
 
-        /* Estilos para el logo en esquina superior izquierda */
+        /* Logo esquina superior izquierda */
         .logo {
             position: fixed;
             top: 20px;
@@ -37,8 +37,8 @@
 
         .dashboard-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
+            grid-template-columns: 1fr 1fr; /* 50% - 50% */
+            grid-template-rows: 1fr;
             height: 100vh;
             gap: 10px;
             padding: 10px;
@@ -53,9 +53,9 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        /* Sección izquierda: Selector + Datos */
+        /* Izquierda: datos generales */
         .user-section {
-            grid-row: 1 / 3;
+            grid-row: 1;
             grid-column: 1;
         }
 
@@ -125,16 +125,27 @@
             color: #6c757d;
         }
 
-        /* Sección superior derecha: Mapa (NO TOCADA EN ALTURA RELATIVA) */
-        .map-section {
+        /* Derecha: 50% vertical MAPA / 25% GAUGES / 25% GRÁFICO */
+        .right-column {
             grid-row: 1;
             grid-column: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+        }
+
+        .map-section {
+            flex: 0 0 50%;
+            display: flex;
+            flex-direction: column;
         }
 
         #map {
-            height: calc(100% - 80px);
+            flex: 1;                 /* ocupa todo el alto disponible del bloque MAPA */
             border-radius: 10px;
             border: 2px solid #ddd;
+            min-height: 0;
         }
 
         .map-controls {
@@ -168,19 +179,8 @@
             margin: 0 10px;
         }
 
-        /* Sección inferior derecha: Medidores + Gráfico
-           Esta fila equivale al 50% inferior del alto del lado derecho.
-           Dentro: 50% gauges + 50% gráfico = 25% + 25% del total del lado derecho.
-        */
         .gauges-section {
-            grid-row: 2;
-            grid-column: 2;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .gauges-top {
-            flex: 1; /* 50% de la mitad inferior → 25% del total */
+            flex: 0 0 25%;
             display: flex;
             flex-direction: row;
             justify-content: space-around;
@@ -243,34 +243,29 @@
             font-weight: 500;
         }
 
-        /* Bloque inferior: gráfico (25% del total derecha) */
+        /* GRÁFICO velocidad vs tiempo */
         .chart-section {
-            flex: 1; /* 50% de la mitad inferior → 25% del total */
+            flex: 0 0 25%;
             display: flex;
             flex-direction: column;
-            margin-top: 5px;
         }
 
-        .chart-section h3 {
-            font-size: 16px;
-            margin-bottom: 4px;
+        .chart-title {
             text-align: center;
+            margin-bottom: 8px;
+            font-weight: 600;
             color: #2c3e50;
         }
 
-        .chart-scroll {
+        .chart-container {
             flex: 1;
-            width: 100%;
-            height: 100%;
-            overflow: auto; /* scroll interno si el canvas es más grande */
-            background: #ffffff;
-            border-radius: 8px;
-            border: 1px solid #e1e1e1;
+            min-height: 0;
+            overflow: auto; /* si el gráfico es más grande, barras de scroll internas */
         }
 
-        #speedTimeChart {
-            min-width: 900px;   /* asegura que se vea bien aunque haya scroll */
-            min-height: 220px;  /* rellena el espacio del bloque */
+        #speedChart {
+            width: 100%;
+            height: 100%;
         }
 
         .loading {
@@ -294,11 +289,10 @@
 <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
 
 <div class="dashboard-container">
-    <!-- Sección izquierda: Selector + Datos del usuario -->
+    <!-- Izquierda: selector + datos del usuario -->
     <div class="section user-section">
         <div class="user-selector-area">
             <h3>🏁 Participantes de la Regata</h3>
-            <!-- Control de fecha -->
             <div style="margin-bottom: 15px;">
                 <label for="dateSelector" style="display: block; margin-bottom: 5px; font-weight: bold; color: #2c3e50;">Fecha de la Regata:</label>
                 <input type="date" id="dateSelector" class="user-dropdown" style="margin-bottom: 10px;">
@@ -313,21 +307,22 @@
         </div>
     </div>
 
-    <!-- Sección superior derecha: Mapa -->
-    <div class="section map-section">
-        <div id="map"></div>
-        <div class="map-controls">
-            <div class="play-controls">
-                <button class="play-btn" id="playBtn">▶️ Play</button>
-                <input type="range" class="time-slider" id="timeSlider" min="0" max="100" value="0">
-                <span id="timeDisplay">00:00</span>
+    <!-- Derecha: mapa + gauges + gráfico -->
+    <div class="right-column">
+        <!-- MAPA (50%) -->
+        <div class="section map-section">
+            <div id="map"></div>
+            <div class="map-controls">
+                <div class="play-controls">
+                    <button class="play-btn" id="playBtn">▶️ Play</button>
+                    <input type="range" class="time-slider" id="timeSlider" min="0" max="100" value="0">
+                    <span id="timeDisplay">00:00</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Sección inferior derecha: Medidores + Gráfico -->
-    <div class="section gauges-section">
-        <div class="gauges-top">
+        <!-- VELOCIDAD Y MILLAS (25%) -->
+        <div class="section gauges-section">
             <div class="gauge-container">
                 <div class="gauge speed-gauge">
                     <svg class="gauge-svg">
@@ -353,10 +348,11 @@
             </div>
         </div>
 
-        <div class="chart-section">
-            <h3>Velocidad en función del tiempo</h3>
-            <div class="chart-scroll">
-                <canvas id="speedTimeChart"></canvas>
+        <!-- GRÁFICO VELOCIDAD vs TIEMPO (25%) -->
+        <div class="section chart-section">
+            <h4 class="chart-title">Velocidad en función del tiempo</h4>
+            <div class="chart-container">
+                <canvas id="speedChart"></canvas>
             </div>
         </div>
     </div>
@@ -366,6 +362,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <!-- Chart.js para el gráfico -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Lógica del dashboard -->
 <script src="regatasreporte1.js"></script>
 </body>
 </html>

@@ -12,7 +12,7 @@ class RegatasDashboard {
         this.puntosControl = [];
         this.RADIO_PUNTO_CONTROL = 20; // 20 metros
 
-        // nuevo: chart
+        // Nuevo: gráfico
         this.speedChart = null;
 
         this.init();
@@ -86,7 +86,7 @@ class RegatasDashboard {
                 this.currentIndex = Math.floor((e.target.value / 100) * (this.routeData.length - 1));
                 this.updateMapPosition();
                 this.updateGauges();
-                this.updateTimeSlider(); // slider sigue como tu versión original
+                this.updateTimeSlider();
             }
         });
     }
@@ -125,7 +125,7 @@ class RegatasDashboard {
             personData = await personResponse.json();
             console.log("🔍 PersonData desde endpoint:", personData);
 
-            // guardamos
+            // Guardar para usar en el popup del marcador
             this.currentUserData = userData;
             this.currentPersonData = personData;
 
@@ -155,7 +155,7 @@ class RegatasDashboard {
         this.currentIndex = 0;
         this.resetPlayback();
 
-        // limpiar chart
+        // Limpiar gráfico
         if (this.speedChart) {
             this.speedChart.destroy();
             this.speedChart = null;
@@ -238,7 +238,7 @@ class RegatasDashboard {
                     console.log("✅ routeData final:", this.routeData.length);
                     this.displayRoute();
                     this.resetPlayback();
-                    this.buildSpeedChart();   // <-- nuevo
+                    this.buildSpeedChart(); // nuevo: gráfico
                 }
             }
         } catch (error) {
@@ -252,6 +252,8 @@ class RegatasDashboard {
         const processed = points.map((point, index) => {
             let speed = 0;
             let distance = 0;
+            let currentTime = null;
+            let prevTime = null;
 
             if (index > 0) {
                 const prevPoint = points[index - 1];
@@ -260,13 +262,18 @@ class RegatasDashboard {
                     parseFloat(point.nadadorlat), parseFloat(point.nadadorlng)
                 );
 
-                // Calcular tiempo transcurrido (asumiendo que hay timestamp)
-                const currentTime = new Date(point.nadadorhora).getTime();
-                const prevTime = new Date(prevPoint.nadadorhora).getTime();
+                currentTime = new Date(point.nadadorhora).getTime();
+                prevTime = new Date(prevPoint.nadadorhora).getTime();
                 const timeDiff = (currentTime - prevTime) / 1000;
 
                 // Velocidad en nudos (millas náuticas por hora)
-                speed = timeDiff > 0 ? (distance / timeDiff) * 3600 / 1.852 : 0;
+                if (timeDiff > 0) {
+                    speed = (distance / timeDiff) * 3600 / 1.852;
+                } else {
+                    speed = 0;
+                }
+            } else {
+                currentTime = new Date(point.nadadorhora).getTime();
             }
 
             return {
@@ -274,7 +281,7 @@ class RegatasDashboard {
                 lng: parseFloat(point.nadadorlng),
                 speed: speed,
                 distance: distance,
-                timestamp: point.timestamp || null,
+                horaMs: currentTime,
                 cumulativeDistance: 0
             };
         });
@@ -306,7 +313,6 @@ class RegatasDashboard {
             this.map.removeLayer(this.routeLine);
         }
 
-        // Crear segmentos coloreados
         const maxSpeed = Math.max(...this.routeData.map(p => p.speed));
 
         for (let i = 0; i < this.routeData.length - 1; i++) {
@@ -412,10 +418,12 @@ class RegatasDashboard {
 
         // Actualizar velocímetro (máximo 30 nudos)
         const maxSpeed = 30;
-        const speedClamped = Math.min(currentPoint.speed, maxSpeed);
-        const speedPercentage = Math.min(speedClamped / maxSpeed, 1) * 100;
+        const rawSpeed = currentPoint.speed || 0;
+        const displaySpeed = Math.min(rawSpeed, maxSpeed);
+        const speedPercentage = Math.min(displaySpeed / maxSpeed, 1) * 100;
+
         this.updateGauge('speedGauge', speedPercentage);
-        document.getElementById('speedValue').textContent = speedClamped.toFixed(1);
+        document.getElementById('speedValue').textContent = displaySpeed.toFixed(1);
 
         // Actualizar distancia (convertir a millas náuticas)
         const distanceNM = currentPoint.cumulativeDistance / 1.852; // km a millas náuticas
@@ -436,7 +444,7 @@ class RegatasDashboard {
         const progress = (this.currentIndex / (this.routeData.length - 1)) * 100;
         slider.value = progress;
 
-        // MISMO CÁLCULO QUE TENÍAS (no lo toco)
+        // Actualizar display de tiempo (mantengo tu lógica aproximada)
         const timeDisplay = document.getElementById('timeDisplay');
         const minutes = Math.floor(this.currentIndex / 2); // Asumiendo 2 puntos por minuto
         const seconds = (this.currentIndex % 2) * 30;
@@ -467,7 +475,7 @@ class RegatasDashboard {
         }
     }
 
-    // === NUEVO: gráfico velocidad vs tiempo ===
+    // === Nuevo: gráfico velocidad vs tiempo ===
     buildSpeedChart() {
         const canvas = document.getElementById('speedTimeChart');
         if (!canvas || !this.routeData.length) return;
@@ -481,9 +489,15 @@ class RegatasDashboard {
 
         const MAX_KNOTS = 30;
 
-        // eje X: índice ~ tiempo (puntos cada ~30 s)
-        const labels = this.routeData.map((_, i) => (i / 2).toFixed(1)); // minutos aproximados
-        const data = this.routeData.map(p => Math.min(p.speed, MAX_KNOTS));
+        const firstTime = this.routeData[0].horaMs || null;
+
+        const labels = this.routeData.map(p => {
+            if (!firstTime || !p.horaMs) return '';
+            const deltaMin = (p.horaMs - firstTime) / 60000;
+            return deltaMin.toFixed(1); // minutos desde el inicio
+        });
+
+        const data = this.routeData.map(p => Math.min(p.speed || 0, MAX_KNOTS));
 
         this.speedChart = new Chart(ctx, {
             type: 'line',
@@ -505,7 +519,10 @@ class RegatasDashboard {
                     x: {
                         title: {
                             display: true,
-                            text: 'Tiempo (minutos aprox.)'
+                            text: 'Tiempo (minutos desde el inicio)'
+                        },
+                        ticks: {
+                            maxTicksLimit: 10
                         }
                     },
                     y: {
@@ -524,11 +541,28 @@ class RegatasDashboard {
         });
     }
 
-    // Nueva función para cargar la ruta específica (ya la tenías)
+    // Nueva función para cargar la ruta específica
     async cargarRutas(idRuta) {
         try {
             const res = await fetch(`${this.baseURL}/rutas/listarId/${idRuta}`);
             const ruta = await res.json(); // 'ruta' ya es el objeto de la ruta
+
+            // Agregar título de la ruta
+            const titulo = document.createElement("h2");
+            titulo.innerText = ruta.nombre;
+            titulo.style.color = "white";
+            titulo.style.fontSize = "1.5em";
+            titulo.style.textShadow = "1px 1px 3px black";
+            titulo.style.position = "absolute";
+            titulo.style.top = "10px";
+            titulo.style.left = "50%";
+            titulo.style.transform = "translateX(-50%)";
+            titulo.style.zIndex = "1000";
+            titulo.style.margin = "0";
+            titulo.style.padding = "10px 20px";
+            titulo.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+            titulo.style.borderRadius = "10px";
+            document.body.appendChild(titulo);
 
             const puntos = ruta.puntos;
             if (!puntos || puntos.length === 0) return;
@@ -549,9 +583,9 @@ class RegatasDashboard {
                     rutaId: idRuta
                 });
 
-                // círculo de control
+                // ✅ Círculo sombreado para marcar el radio de 20 metros del punto de control
                 L.circle(latlng, {
-                    radius: this.RADIO_PUNTO_CONTROL,
+                    radius: this.RADIO_PUNTO_CONTROL, // Radio en metros
                     color: 'blue',
                     fillColor: '#3388ff',
                     fillOpacity: 0.2,

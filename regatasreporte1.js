@@ -13,6 +13,9 @@ class RegatasDashboard {
         this.RADIO_PUNTO_CONTROL = 20; // 20 metros
         this.speedChart = null;
 
+        this.currentUserData = null;
+        this.currentPersonData = null;
+
         this.init();
     }
 
@@ -145,18 +148,27 @@ class RegatasDashboard {
         this.routeData = [];
         this.currentIndex = 0;
         this.resetPlayback();
+
+        // limpiar gráfico si existiera
+        if (this.speedChart) {
+            this.speedChart.destroy();
+            this.speedChart = null;
+        }
     }
 
     displayUserProfile(userData, personData) {
         const container = document.getElementById('userProfileContainer');
 
+        // avatar: intentamos img/{id}.png; fallback a placeholder
+        const avatarSrc = userData?.id ? `img/${userData.id}.png` : 'img/avatar-default.png';
+
         const profileHTML = `
             <div class="user-profile">
                 <img class="user-avatar"
-                     src="${personData?.apellido || `img/${userData?.id}.png` || 'img/avatar-default.png'}"
+                     src="${avatarSrc}"
                      alt="Avatar"
-                     onerror="this.src='https://via.placeholder.com/80'">
-                <h4>${personData?.nombre || 'N/A'}</h4>
+                     onerror="this.src='https://via.placeholder.com/300'">
+                <h4>${personData?.nombre || 'N/A'} - ${userData?.apellido || ''}</h4>
             </div>
             <div class="user-info">
                 <div class="info-item">
@@ -219,7 +231,7 @@ class RegatasDashboard {
                     console.log("✅ routeData final:", this.routeData.length);
                     this.displayRoute();
                     this.resetPlayback();
-                    this.updateSpeedChart(); // gráfico listo
+                    this.updateSpeedChart(); // gráfico listo (con decimación)
                 }
             }
         } catch (error) {
@@ -353,8 +365,10 @@ class RegatasDashboard {
         this.pausePlayback();
         this.currentIndex = 0;
         this.isPlaying = false;
-        document.getElementById('playBtn').textContent = '▶️ Play';
-        document.getElementById('timeSlider').value = 0;
+        const playBtn = document.getElementById('playBtn');
+        if (playBtn) playBtn.textContent = '▶️ Play';
+        const slider = document.getElementById('timeSlider');
+        if (slider) slider.value = 0;
         this.updateMapPosition();
         this.updateGauges();
         this.updateTimeSlider();
@@ -392,20 +406,24 @@ class RegatasDashboard {
         const maxSpeed = 30;
         const speedPercentage = Math.min(currentPoint.speed / maxSpeed, 1) * 100;
         this.updateGauge('speedGauge', speedPercentage);
-        document.getElementById('speedValue').textContent = currentPoint.speed.toFixed(1);
+        const speedValueEl = document.getElementById('speedValue');
+        if (speedValueEl) speedValueEl.textContent = currentPoint.speed.toFixed(1);
 
         const distanceNM = currentPoint.cumulativeDistance / 1.852;
         const maxDistance = this.routeData[this.routeData.length - 1].cumulativeDistance / 1.852;
         const distancePercentage = maxDistance > 0 ? (distanceNM / maxDistance) * 100 : 0;
         this.updateGauge('distanceGauge', distancePercentage);
-        document.getElementById('distanceValue').textContent = distanceNM.toFixed(1);
+        const distanceValueEl = document.getElementById('distanceValue');
+        if (distanceValueEl) distanceValueEl.textContent = distanceNM.toFixed(1);
     }
 
     updateGauge(gaugeId, percentage) {
         const circumference = 2 * Math.PI * 60; // radio 60
-        const offset = circumference - (percentage / 100) * circumference;
-        document.getElementById(gaugeId).style.strokeDasharray =
-            `${circumference - offset} ${circumference}`;
+        const filled = (percentage / 100) * circumference;
+        const element = document.getElementById(gaugeId);
+        if (element) {
+            element.style.strokeDasharray = `${filled} ${circumference}`;
+        }
     }
 
     updateTimeSlider() {
@@ -416,10 +434,12 @@ class RegatasDashboard {
         slider.value = progress;
 
         const timeDisplay = document.getElementById('timeDisplay');
-        const minutes = Math.floor(this.currentIndex / 2);
-        const seconds = (this.currentIndex % 2) * 30;
-        timeDisplay.textContent =
-            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        if (timeDisplay) {
+            const minutes = Math.floor(this.currentIndex / 2);
+            const seconds = (this.currentIndex % 2) * 30;
+            timeDisplay.textContent =
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
     }
 
     calculateDistance(lat1, lon1, lat2, lon2) {
@@ -445,22 +465,41 @@ class RegatasDashboard {
         }
     }
 
-    // --- GRÁFICO DE VELOCIDAD ---
+    // --- GRÁFICO DE VELOCIDAD (con downsampling tipo A) ---
     updateSpeedChart() {
         const canvas = document.getElementById('speedChart');
         if (!canvas || this.routeData.length === 0) return;
+        if (typeof Chart === 'undefined') return;
+
+        const totalPoints = this.routeData.length;
+        const MAX_POINTS = 3000; // opción A: ver todo, pero resumido
+
+        const step = Math.max(1, Math.ceil(totalPoints / MAX_POINTS));
+        const sampledPoints = [];
+        for (let i = 0; i < totalPoints; i += step) {
+            sampledPoints.push(this.routeData[i]);
+        }
+
+        const labels = sampledPoints.map(p => {
+            if (p.timestamp) {
+                const d = new Date(p.timestamp);
+                return d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            }
+            return '';
+        });
+
+        const data = sampledPoints.map(p => p.speed);
+
+        // Hacemos el canvas más ancho que el contenedor para permitir scroll horizontal,
+        // pero con un límite razonable.
+        const minWidth = 800;
+        const pxPerPoint = 4;
+        const targetWidth = Math.max(minWidth, sampledPoints.length * pxPerPoint);
+        canvas.style.width = `${targetWidth}px`;
+        canvas.style.height = '100%';
 
         const ctx = canvas.getContext('2d');
-        if (!ctx || typeof Chart === 'undefined') return;
-
-        const labels = this.routeData.map((p, index) => index); // índice como "tiempo"
-        const data = this.routeData.map(p => p.speed);
-
-        // ancho grande para poder desplazarse horizontalmente
-        const baseWidth = 800;        // ancho mínimo del gráfico
-        const pxPerPoint = 3;         // zoom horizontal
-        canvas.width = Math.max(baseWidth, data.length * pxPerPoint);
-        canvas.height = canvas.parentElement.clientHeight || 200;
+        if (!ctx) return;
 
         if (this.speedChart) {
             this.speedChart.destroy();
@@ -476,13 +515,17 @@ class RegatasDashboard {
                     tension: 0.1,
                     borderWidth: 1.5,
                     borderColor: '#2980b9',
-                    fill: false,          // SIN relleno → sin mancha azul
+                    fill: false,
                     pointRadius: 0
                 }]
             },
             options: {
-                responsive: false,
+                responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
                 scales: {
                     x: {
                         display: false
@@ -497,7 +540,12 @@ class RegatasDashboard {
                     }
                 },
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    decimation: {
+                        enabled: true,
+                        algorithm: 'lttb',
+                        samples: MAX_POINTS
+                    }
                 }
             }
         });

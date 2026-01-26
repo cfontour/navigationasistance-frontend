@@ -25,14 +25,12 @@ class RegatasDashboard {
     }
 
     initMap() {
-        // Inicializar mapa centrado en coordenadas por defecto
         this.map = L.map('map').setView([-34.9011, -56.1645], 13); // Montevideo
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(this.map);
 
-        // Iconos personalizados
         this.iconoInicio = L.icon({
             iconUrl: 'img/start_flag.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -252,8 +250,7 @@ class RegatasDashboard {
                 }
 
                 if (!isFinite(speed) || speed < 0) speed = 0;
-                // Limite razonable para evitar 200000 nudos ridículos
-                if (speed > 30) speed = 30;
+                if (speed > 30) speed = 30; // límite razonable
             }
 
             return {
@@ -455,20 +452,36 @@ class RegatasDashboard {
         const canvas = document.getElementById('speedChart');
         if (!canvas || this.routeData.length === 0) return;
 
+        if (typeof Chart === 'undefined') {
+            console.error('❌ Chart.js no está disponible');
+            return;
+        }
+
         const container = canvas.parentElement;
-        const labels = this.routeData.map((p, index) => index); // índice como "tiempo"
-        const data = this.routeData.map(p => p.speed);
 
-        // ancho grande para poder moverse horizontalmente
-        const baseWidth = 800;   // ancho mínimo del gráfico
-        const pxPerPoint = 3;    // zoom horizontal
+        // downsampling para no dibujar 95k puntos
+        const MAX_POINTS = 5000;
+        const labels = [];
+        const data = [];
+        let step = 1;
 
+        if (this.routeData.length > MAX_POINTS) {
+            step = Math.ceil(this.routeData.length / MAX_POINTS);
+        }
+
+        for (let i = 0; i < this.routeData.length; i += step) {
+            labels.push(i);
+            data.push(this.routeData[i].speed);
+        }
+
+        const baseWidth = 800;
+        const pxPerPoint = 3;
         const targetWidth = Math.max(baseWidth, data.length * pxPerPoint);
         const targetHeight = (container && container.clientHeight) ? container.clientHeight : 200;
 
-        // Usamos estilos CSS (no atributos width/height) para que Chart.js no se rompa
-        canvas.style.width = targetWidth + 'px';
-        canvas.style.height = targetHeight + 'px';
+        // importante: usar width/height reales del canvas
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
 
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
@@ -492,7 +505,7 @@ class RegatasDashboard {
                 }]
             },
             options: {
-                responsive: false,          // usamos el tamaño del canvas
+                responsive: false,
                 maintainAspectRatio: false,
                 scales: {
                     x: {

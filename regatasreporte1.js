@@ -12,7 +12,7 @@ class RegatasDashboard {
         this.puntosControl = [];
         this.RADIO_PUNTO_CONTROL = 20; // 20 metros
 
-        // Chart de velocidad
+        // nuevo: chart
         this.speedChart = null;
 
         this.init();
@@ -27,14 +27,14 @@ class RegatasDashboard {
     }
 
     initMap() {
-        // Mapa centrado en Montevideo
-        this.map = L.map('map').setView([-34.9011, -56.1645], 13);
+        // Inicializar mapa centrado en coordenadas por defecto
+        this.map = L.map('map').setView([-34.9011, -56.1645], 13); // Montevideo
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(this.map);
 
-        // Iconos
+        // Definir iconos personalizados
         this.iconoInicio = L.icon({
             iconUrl: 'img/start_flag.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -86,6 +86,7 @@ class RegatasDashboard {
                 this.currentIndex = Math.floor((e.target.value / 100) * (this.routeData.length - 1));
                 this.updateMapPosition();
                 this.updateGauges();
+                this.updateTimeSlider(); // slider sigue como tu versión original
             }
         });
     }
@@ -114,13 +115,17 @@ class RegatasDashboard {
 
     async loadUserDetails(userId) {
         try {
+            // Cargar datos del usuario
             const userResponse = await fetch(`${this.baseURL}/usuarios/listarId/${userId}`);
             const userData = await userResponse.json();
 
+            let personData = null;
+
             const personResponse = await fetch(`${this.baseURL}/personas/listarId/${userId}`);
-            const personData = await personResponse.json();
+            personData = await personResponse.json();
             console.log("🔍 PersonData desde endpoint:", personData);
 
+            // guardamos
             this.currentUserData = userData;
             this.currentPersonData = personData;
 
@@ -132,23 +137,29 @@ class RegatasDashboard {
     }
 
     clearMap() {
+        // Borrar TODAS las polylines (trazas de rutas)
         this.map.eachLayer((layer) => {
             if (layer instanceof L.Polyline) {
                 this.map.removeLayer(layer);
             }
         });
 
+        // Limpiar marcador actual
         if (this.currentMarker) {
             this.map.removeLayer(this.currentMarker);
             this.currentMarker = null;
         }
 
+        // Resetear datos
         this.routeData = [];
         this.currentIndex = 0;
         this.resetPlayback();
 
-        // limpiar gráfico
-        this.updateSpeedChart(true);
+        // limpiar chart
+        if (this.speedChart) {
+            this.speedChart.destroy();
+            this.speedChart = null;
+        }
     }
 
     displayUserProfile(userData, personData) {
@@ -213,7 +224,7 @@ class RegatasDashboard {
             console.log("🔍 Respuesta último recorrido:", lastRoute);
 
             if (lastRoute && Array.isArray(lastRoute) && lastRoute.length > 0) {
-                const rutaId = lastRoute[0];
+                const rutaId = lastRoute[0]; // Tomar el primer elemento del array
                 console.log("🔍 RutaId encontrado:", rutaId);
 
                 const routeResponse = await fetch(`${this.baseURL}/nadadorhistoricorutas/ruta/${rutaId}`);
@@ -227,7 +238,7 @@ class RegatasDashboard {
                     console.log("✅ routeData final:", this.routeData.length);
                     this.displayRoute();
                     this.resetPlayback();
-                    this.updateSpeedChart(); // actualiza gráfico
+                    this.buildSpeedChart();   // <-- nuevo
                 }
             }
         } catch (error) {
@@ -237,55 +248,43 @@ class RegatasDashboard {
     }
 
     processRouteData(points) {
-        const processed = [];
-        let totalDistance = 0;
-        let firstTime = null;
-
-        for (let i = 0; i < points.length; i++) {
-            const point = points[i];
-
-            const lat = parseFloat(point.nadadorlat);
-            const lng = parseFloat(point.nadadorlng);
-
+        // Procesar puntos y calcular velocidades
+        const processed = points.map((point, index) => {
             let speed = 0;
             let distance = 0;
-            let elapsedSeconds = 0;
 
-            const currentTime = point.nadadorhora ? new Date(point.nadadorhora).getTime() : null;
-
-            if (firstTime === null && currentTime !== null) {
-                firstTime = currentTime;
-            }
-
-            if (i > 0 && currentTime !== null && processed[i - 1].rawTime != null) {
-                const prevPoint = points[i - 1];
+            if (index > 0) {
+                const prevPoint = points[index - 1];
                 distance = this.calculateDistance(
                     parseFloat(prevPoint.nadadorlat), parseFloat(prevPoint.nadadorlng),
-                    lat, lng
+                    parseFloat(point.nadadorlat), parseFloat(point.nadadorlng)
                 );
 
-                const timeDiff = (currentTime - processed[i - 1].rawTime) / 1000;
-                // km/h -> nudos
+                // Calcular tiempo transcurrido (asumiendo que hay timestamp)
+                const currentTime = new Date(point.nadadorhora).getTime();
+                const prevTime = new Date(prevPoint.nadadorhora).getTime();
+                const timeDiff = (currentTime - prevTime) / 1000;
+
+                // Velocidad en nudos (millas náuticas por hora)
                 speed = timeDiff > 0 ? (distance / timeDiff) * 3600 / 1.852 : 0;
             }
 
-            if (firstTime !== null && currentTime !== null) {
-                elapsedSeconds = (currentTime - firstTime) / 1000;
-            }
-
-            totalDistance += distance;
-
-            processed.push({
-                lat,
-                lng,
-                speed,
-                distance,
+            return {
+                lat: parseFloat(point.nadadorlat),
+                lng: parseFloat(point.nadadorlng),
+                speed: speed,
+                distance: distance,
                 timestamp: point.timestamp || null,
-                cumulativeDistance: totalDistance,
-                rawTime: currentTime,
-                elapsedSeconds
-            });
-        }
+                cumulativeDistance: 0
+            };
+        });
+
+        // Calcular distancia acumulativa
+        let totalDistance = 0;
+        processed.forEach(point => {
+            totalDistance += point.distance;
+            point.cumulativeDistance = totalDistance;
+        });
 
         return processed;
     }
@@ -293,28 +292,33 @@ class RegatasDashboard {
     displayRoute() {
         if (this.routeData.length === 0) return;
 
+        // Centrar mapa en la ruta
         const bounds = L.latLngBounds(this.routeData.map(p => [p.lat, p.lng]));
         this.map.fitBounds(bounds);
 
+        // Crear línea de ruta con colores según velocidad
         this.createColoredRoute();
     }
 
     createColoredRoute() {
+        // Limpiar ruta anterior
         if (this.routeLine) {
             this.map.removeLayer(this.routeLine);
         }
 
+        // Crear segmentos coloreados
         const maxSpeed = Math.max(...this.routeData.map(p => p.speed));
 
         for (let i = 0; i < this.routeData.length - 1; i++) {
             const point1 = this.routeData[i];
             const point2 = this.routeData[i + 1];
 
+            // Color basado en velocidad (verde a rojo)
             const speedRatio = maxSpeed > 0 ? point2.speed / maxSpeed : 0;
             const color = this.getSpeedColor(speedRatio);
 
             L.polyline([[point1.lat, point1.lng], [point2.lat, point2.lng]], {
-                color,
+                color: color,
                 weight: 4,
                 opacity: 0.8
             }).addTo(this.map);
@@ -322,6 +326,7 @@ class RegatasDashboard {
     }
 
     getSpeedColor(ratio) {
+        // Interpolación de verde a rojo
         const red = Math.floor(255 * ratio);
         const green = Math.floor(255 * (1 - ratio));
         return `rgb(${red}, ${green}, 0)`;
@@ -355,7 +360,7 @@ class RegatasDashboard {
                 document.getElementById('playBtn').textContent = '▶️ Play';
                 this.isPlaying = false;
             }
-        }, 500);
+        }, 500); // Actualizar cada 500ms
     }
 
     pausePlayback() {
@@ -380,6 +385,7 @@ class RegatasDashboard {
 
         const currentPoint = this.routeData[this.currentIndex];
 
+        // Actualizar marcador
         if (this.currentMarker) {
             this.map.removeLayer(this.currentMarker);
         }
@@ -388,11 +394,11 @@ class RegatasDashboard {
         const personData = this.currentPersonData;
 
         const popupContent = `
-            <strong>${personData?.nombre || 'Usuario'}</strong><br>
-            Embarcación: ${personData?.nombre || 'N/A'}<br>
-            Usuario: ${userData?.nombre || 'N/A'} ${userData?.apellido || ''}<br>
-            Teléfono: ${userData?.telefono || 'N/A'}
-        `;
+               <strong>${personData?.nombre || 'Usuario'}</strong><br>
+               Embarcación: ${personData?.nombre || 'N/A'}<br>
+               Usuario: ${userData?.nombre || 'N/A'} ${userData?.apellido || ''}<br>
+               Teléfono: ${userData?.telefono || 'N/A'}
+           `;
 
         this.currentMarker = L.marker([currentPoint.lat, currentPoint.lng])
             .addTo(this.map)
@@ -404,13 +410,15 @@ class RegatasDashboard {
 
         const currentPoint = this.routeData[this.currentIndex];
 
+        // Actualizar velocímetro (máximo 30 nudos)
         const maxSpeed = 30;
         const speedClamped = Math.min(currentPoint.speed, maxSpeed);
         const speedPercentage = Math.min(speedClamped / maxSpeed, 1) * 100;
         this.updateGauge('speedGauge', speedPercentage);
         document.getElementById('speedValue').textContent = speedClamped.toFixed(1);
 
-        const distanceNM = currentPoint.cumulativeDistance / 1.852;
+        // Actualizar distancia (convertir a millas náuticas)
+        const distanceNM = currentPoint.cumulativeDistance / 1.852; // km a millas náuticas
         const maxDistance = this.routeData[this.routeData.length - 1].cumulativeDistance / 1.852;
         const distancePercentage = maxDistance > 0 ? (distanceNM / maxDistance) * 100 : 0;
         this.updateGauge('distanceGauge', distancePercentage);
@@ -418,7 +426,7 @@ class RegatasDashboard {
     }
 
     updateGauge(gaugeId, percentage) {
-        const circumference = 2 * Math.PI * 60;
+        const circumference = 2 * Math.PI * 60; // radio = 60
         const offset = circumference - (percentage / 100) * circumference;
         document.getElementById(gaugeId).style.strokeDasharray = `${circumference - offset} ${circumference}`;
     }
@@ -428,13 +436,15 @@ class RegatasDashboard {
         const progress = (this.currentIndex / (this.routeData.length - 1)) * 100;
         slider.value = progress;
 
+        // MISMO CÁLCULO QUE TENÍAS (no lo toco)
         const timeDisplay = document.getElementById('timeDisplay');
-        const minutes = Math.floor(this.currentIndex / 2);
+        const minutes = Math.floor(this.currentIndex / 2); // Asumiendo 2 puntos por minuto
         const seconds = (this.currentIndex % 2) * 30;
         timeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
     calculateDistance(lat1, lon1, lat2, lon2) {
+        // Fórmula de Haversine para calcular distancia en km
         const R = 6371;
         const dLat = this.degToRad(lat2 - lat1);
         const dLon = this.degToRad(lon2 - lon1);
@@ -457,10 +467,10 @@ class RegatasDashboard {
         }
     }
 
-    // === Gráfico velocidad vs tiempo ===
-    updateSpeedChart(clearOnly = false) {
+    // === NUEVO: gráfico velocidad vs tiempo ===
+    buildSpeedChart() {
         const canvas = document.getElementById('speedTimeChart');
-        if (!canvas) return;
+        if (!canvas || !this.routeData.length) return;
 
         const ctx = canvas.getContext('2d');
 
@@ -469,19 +479,11 @@ class RegatasDashboard {
             this.speedChart = null;
         }
 
-        if (clearOnly || !this.routeData.length) {
-            return;
-        }
-
         const MAX_KNOTS = 30;
 
-        const labels = this.routeData.map(p =>
-            (p.elapsedSeconds || 0) / 60
-        ).map(min => min.toFixed(1));
-
-        const data = this.routeData.map(p =>
-            Math.min(p.speed, MAX_KNOTS)
-        );
+        // eje X: índice ~ tiempo (puntos cada ~30 s)
+        const labels = this.routeData.map((_, i) => (i / 2).toFixed(1)); // minutos aproximados
+        const data = this.routeData.map(p => Math.min(p.speed, MAX_KNOTS));
 
         this.speedChart = new Chart(ctx, {
             type: 'line',
@@ -490,10 +492,10 @@ class RegatasDashboard {
                 datasets: [{
                     label: 'Velocidad (nudos)',
                     data,
-                    tension: 0.2,
                     borderWidth: 2,
                     pointRadius: 0,
-                    fill: false
+                    fill: false,
+                    tension: 0.2
                 }]
             },
             options: {
@@ -503,7 +505,7 @@ class RegatasDashboard {
                     x: {
                         title: {
                             display: true,
-                            text: 'Tiempo (minutos)'
+                            text: 'Tiempo (minutos aprox.)'
                         }
                     },
                     y: {
@@ -516,35 +518,17 @@ class RegatasDashboard {
                     }
                 },
                 plugins: {
-                    legend: {
-                        display: false
-                    }
+                    legend: { display: false }
                 }
             }
         });
     }
 
-    // Ruta fija (rutas/listarId/52)
+    // Nueva función para cargar la ruta específica (ya la tenías)
     async cargarRutas(idRuta) {
         try {
             const res = await fetch(`${this.baseURL}/rutas/listarId/${idRuta}`);
-            const ruta = await res.json();
-
-            const titulo = document.createElement("h2");
-            titulo.innerText = ruta.nombre;
-            titulo.style.color = "white";
-            titulo.style.fontSize = "1.5em";
-            titulo.style.textShadow = "1px 1px 3px black";
-            titulo.style.position = "absolute";
-            titulo.style.top = "10px";
-            titulo.style.left = "50%";
-            titulo.style.transform = "translateX(-50%)";
-            titulo.style.zIndex = "1000";
-            titulo.style.margin = "0";
-            titulo.style.padding = "10px 20px";
-            titulo.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-            titulo.style.borderRadius = "10px";
-            document.body.appendChild(titulo);
+            const ruta = await res.json(); // 'ruta' ya es el objeto de la ruta
 
             const puntos = ruta.puntos;
             if (!puntos || puntos.length === 0) return;
@@ -565,6 +549,7 @@ class RegatasDashboard {
                     rutaId: idRuta
                 });
 
+                // círculo de control
                 L.circle(latlng, {
                     radius: this.RADIO_PUNTO_CONTROL,
                     color: 'blue',
@@ -597,6 +582,7 @@ class RegatasDashboard {
     }
 }
 
+// Inicializar dashboard cuando la página cargue
 document.addEventListener('DOMContentLoaded', () => {
     new RegatasDashboard();
 });

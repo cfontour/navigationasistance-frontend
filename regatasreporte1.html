@@ -35,10 +35,7 @@
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
         }
 
-        /* === LAYOUT PRINCIPAL ===
-           -> Volvemos a 2 filas (1fr 1fr)
-           -> El mapa ocupa SOLO la fila 1, como antes
-           -> La fila 2 (derecha) contiene gauges + gráfico apilados    */
+        /* === LAYOUT ORIGINAL, SIN TOCAR EL MAPA === */
         .dashboard-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -57,7 +54,7 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        /* Columna izquierda sin tocar, ocupa las dos filas */
+        /* Sección izquierda: Selector + Datos (igual que antes) */
         .user-section {
             grid-row: 1 / 3;
             grid-column: 1;
@@ -129,7 +126,7 @@
             color: #6c757d;
         }
 
-        /* Sección superior derecha: Mapa (NO SE ACHICA MÁS) */
+        /* Sección superior derecha: MAPA (igual que original) */
         .map-section {
             grid-row: 1;
             grid-column: 2;
@@ -172,23 +169,21 @@
             margin: 0 10px;
         }
 
-        /* CONTENEDOR COLUMNA DERECHA INFERIOR:
-           aquí viven los gauges y el gráfico, apilados */
-        .right-bottom-column {
+        /* Abajo derecha: misma celda de antes, ahora con gauges + gráfico dentro */
+        .gauges-section {
             grid-row: 2;
             grid-column: 2;
+
             display: flex;
             flex-direction: column;
-            gap: 10px;
         }
 
-        /* Sección de medidores (achicamos alto, para que ceda espacio) */
-        .gauges-section {
+        .gauges-top {
             display: flex;
             flex-direction: row;
             justify-content: space-around;
             align-items: center;
-            flex: 0 0 45%; /* ocupa ~45% de la altura de la fila inferior */
+            margin-bottom: 10px;
         }
 
         .gauge-container {
@@ -197,8 +192,8 @@
         }
 
         .gauge {
-            width: 130px;
-            height: 130px;
+            width: 150px;
+            height: 150px;
             margin: 0 auto;
             position: relative;
         }
@@ -235,7 +230,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 22px;
+            font-size: 24px;
             font-weight: bold;
             color: #2c3e50;
         }
@@ -247,16 +242,16 @@
             font-weight: 500;
         }
 
-        /* Nueva sección: gráfico velocidad vs tiempo */
+        /* Nueva parte: gráfico dentro de la misma sección inferior derecha */
         .chart-section {
-            flex: 1; /* el resto de la altura total de la fila inferior */
+            flex: 1;
             display: flex;
             flex-direction: column;
         }
 
         .chart-section h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
+            font-size: 16px;
+            margin-bottom: 5px;
             text-align: center;
             color: #2c3e50;
         }
@@ -287,7 +282,7 @@
 <img src="img/negro_transparente_geotraser.png" alt="GEOTRASER" class="logo">
 
 <div class="dashboard-container">
-    <!-- IZQUIERDA (sin cambios funcionales) -->
+    <!-- IZQUIERDA (igual que siempre) -->
     <div class="section user-section">
         <div class="user-selector-area">
             <h3>🏁 Participantes de la Regata</h3>
@@ -305,7 +300,7 @@
         </div>
     </div>
 
-    <!-- Arriba derecha: MAPA + timelapse (misma zona que tenías antes) -->
+    <!-- Arriba derecha: MAPA + slider, sin tocar tamaño -->
     <div class="section map-section">
         <div id="map"></div>
         <div class="map-controls">
@@ -317,9 +312,9 @@
         </div>
     </div>
 
-    <!-- Abajo derecha: gauges + gráfico apilados -->
-    <div class="right-bottom-column">
-        <div class="section gauges-section">
+    <!-- Abajo derecha: gauges + gráfico dentro de la MISMA sección -->
+    <div class="section gauges-section">
+        <div class="gauges-top">
             <div class="gauge-container">
                 <div class="gauge speed-gauge">
                     <svg class="gauge-svg">
@@ -345,7 +340,7 @@
             </div>
         </div>
 
-        <div class="section chart-section">
+        <div class="chart-section">
             <h3>Velocidad en función del tiempo</h3>
             <canvas id="speedTimeChart"></canvas>
         </div>
@@ -354,7 +349,7 @@
 
 <!-- Leaflet JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<!-- Chart.js -->
+<!-- Chart.js para el gráfico -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="regatasreporte1.js"></script>
 </body>

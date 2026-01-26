@@ -25,12 +25,14 @@ class RegatasDashboard {
     }
 
     initMap() {
+        // Inicializar mapa centrado en coordenadas por defecto
         this.map = L.map('map').setView([-34.9011, -56.1645], 13); // Montevideo
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(this.map);
 
+        // Iconos personalizados
         this.iconoInicio = L.icon({
             iconUrl: 'img/start_flag.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -128,7 +130,7 @@ class RegatasDashboard {
     }
 
     clearMap() {
-        // Borra solo las polylines del playback, mantiene puntos de control
+        // Borra SOLO las polylines de traza (no el tileLayer)
         this.map.eachLayer((layer) => {
             if (layer instanceof L.Polyline) {
                 this.map.removeLayer(layer);
@@ -351,10 +353,8 @@ class RegatasDashboard {
         this.pausePlayback();
         this.currentIndex = 0;
         this.isPlaying = false;
-        const playBtn = document.getElementById('playBtn');
-        const slider = document.getElementById('timeSlider');
-        if (playBtn) playBtn.textContent = '▶️ Play';
-        if (slider) slider.value = 0;
+        document.getElementById('playBtn').textContent = '▶️ Play';
+        document.getElementById('timeSlider').value = 0;
         this.updateMapPosition();
         this.updateGauges();
         this.updateTimeSlider();
@@ -402,26 +402,24 @@ class RegatasDashboard {
     }
 
     updateGauge(gaugeId, percentage) {
-        const circumference = 2 * Math.PI * 60;
-        const visible = (percentage / 100) * circumference;
+        const circumference = 2 * Math.PI * 60; // radio 60
+        const offset = circumference - (percentage / 100) * circumference;
         document.getElementById(gaugeId).style.strokeDasharray =
-            `${visible} ${circumference - visible}`;
+            `${circumference - offset} ${circumference}`;
     }
 
     updateTimeSlider() {
-        if (this.routeData.length <= 1) return;
-
         const slider = document.getElementById('timeSlider');
+        if (!slider || this.routeData.length <= 1) return;
+
         const progress = (this.currentIndex / (this.routeData.length - 1)) * 100;
-        if (slider) slider.value = progress;
+        slider.value = progress;
 
         const timeDisplay = document.getElementById('timeDisplay');
         const minutes = Math.floor(this.currentIndex / 2);
         const seconds = (this.currentIndex % 2) * 30;
-        if (timeDisplay) {
-            timeDisplay.textContent =
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
+        timeDisplay.textContent =
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
     calculateDistance(lat1, lon1, lat2, lon2) {
@@ -452,39 +450,17 @@ class RegatasDashboard {
         const canvas = document.getElementById('speedChart');
         if (!canvas || this.routeData.length === 0) return;
 
-        if (typeof Chart === 'undefined') {
-            console.error('❌ Chart.js no está disponible');
-            return;
-        }
-
-        const container = canvas.parentElement;
-
-        // downsampling para no dibujar 95k puntos
-        const MAX_POINTS = 5000;
-        const labels = [];
-        const data = [];
-        let step = 1;
-
-        if (this.routeData.length > MAX_POINTS) {
-            step = Math.ceil(this.routeData.length / MAX_POINTS);
-        }
-
-        for (let i = 0; i < this.routeData.length; i += step) {
-            labels.push(i);
-            data.push(this.routeData[i].speed);
-        }
-
-        const baseWidth = 800;
-        const pxPerPoint = 3;
-        const targetWidth = Math.max(baseWidth, data.length * pxPerPoint);
-        const targetHeight = (container && container.clientHeight) ? container.clientHeight : 200;
-
-        // importante: usar width/height reales del canvas
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
-
         const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        const labels = this.routeData.map((p, index) => index); // índice como "tiempo"
+        const data = this.routeData.map(p => p.speed);
+
+        // ancho grande para poder desplazarse horizontalmente
+        const baseWidth = 800;        // ancho mínimo del gráfico
+        const pxPerPoint = 3;         // zoom horizontal
+        canvas.width = Math.max(baseWidth, data.length * pxPerPoint);
+        canvas.height = canvas.parentElement.clientHeight || 200;
 
         if (this.speedChart) {
             this.speedChart.destroy();
@@ -500,7 +476,7 @@ class RegatasDashboard {
                     tension: 0.1,
                     borderWidth: 1.5,
                     borderColor: '#2980b9',
-                    fill: false,      // sin relleno, sin "mancha azul"
+                    fill: false,          // SIN relleno → sin mancha azul
                     pointRadius: 0
                 }]
             },

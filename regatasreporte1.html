@@ -21,8 +21,10 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            /* 👉 ahora se puede desplazar la página */
+            overflow-x: auto;
+            overflow-y: auto;
         }
 
         /* Logo esquina superior izquierda */
@@ -260,7 +262,8 @@
         .chart-container {
             flex: 1;
             min-height: 0;
-            overflow: auto; /* si el gráfico es más grande, barras de scroll internas */
+            overflow-x: auto;   /* barra horizontal interna */
+            overflow-y: hidden; /* sin scroll vertical dentro del gráfico */
         }
 
         #speedChart {

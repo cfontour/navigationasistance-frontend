@@ -446,11 +446,19 @@ class RegatasDashboard {
 
     // --- GRÁFICO DE VELOCIDAD ---
     updateSpeedChart() {
-        const ctx = document.getElementById('speedChart');
-        if (!ctx || this.routeData.length === 0) return;
+        const canvas = document.getElementById('speedChart');
+        if (!canvas || this.routeData.length === 0) return;
+
+        const ctx = canvas.getContext('2d');
 
         const labels = this.routeData.map((p, index) => index); // índice como "tiempo"
         const data = this.routeData.map(p => p.speed);
+
+        // 👉 ancho grande para poder “moverse” horizontalmente
+        const baseWidth = 800;        // ancho mínimo del gráfico
+        const pxPerPoint = 3;         // zoom horizontal (subís/bajás este valor según te guste)
+        canvas.width = Math.max(baseWidth, data.length * pxPerPoint);
+        canvas.height = canvas.parentElement.clientHeight || 200;
 
         if (this.speedChart) {
             this.speedChart.destroy();
@@ -459,17 +467,19 @@ class RegatasDashboard {
         this.speedChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels,
+                labels,
                 datasets: [{
                     label: 'Velocidad (nudos)',
-                    data: data,
-                    tension: 0.2,
-                    borderWidth: 2,
+                    data,
+                    tension: 0.1,
+                    borderWidth: 1.5,
+                    borderColor: '#2980b9',
+                    fill: false,      // 👉 sin relleno, chau “mancha azul”
                     pointRadius: 0
                 }]
             },
             options: {
-                responsive: true,
+                responsive: false,          // 👉 usamos el tamaño del canvas (no se comprime)
                 maintainAspectRatio: false,
                 scales: {
                     x: {
@@ -477,7 +487,7 @@ class RegatasDashboard {
                     },
                     y: {
                         beginAtZero: true,
-                        max: 30,
+                        max: 30,            // tope razonable en nudos
                         title: {
                             display: true,
                             text: 'Nudos'
@@ -485,9 +495,7 @@ class RegatasDashboard {
                     }
                 },
                 plugins: {
-                    legend: {
-                        display: false
-                    }
+                    legend: { display: false }
                 }
             }
         });

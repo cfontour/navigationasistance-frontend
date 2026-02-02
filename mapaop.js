@@ -156,7 +156,7 @@ async function cargarRutasDisponiblesEnSelector() {
 
 async function cargarNavegantesVinculados() {
   try {
-    const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listarActivosEnCarrera");
+    const response = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listarActivosPorGrupo/otsudan");
     const nadadores = await response.json();
     if (nadadores.length === 0) historialPuntos = new Map();
 

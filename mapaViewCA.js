@@ -14,14 +14,14 @@ document.addEventListener("DOMContentLoaded", () => {
   sirenaAudio.loop = false;
 
   const iconosDisponibles = [
-    "marker_na_rojo.png",
     "marker_na_verde.png",
-    "marker_na_anaranjado.png",
-    "marker_na_lila.png",
-    "marker_na_negro.png",
     "marker_na_amarillo.png",
     "marker_na_violeta.png",
     "marker_na_azul.png",
+    "marker_na_negro.png",
+    "marker_na_lila.png",
+    "marker_na_anaranjado.png",
+    "marker_na_rojo.png"
   ];
 
   const iconosPorUsuario = new Map();
@@ -67,34 +67,37 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================
   const map = L.map("map", { preferCanvas: true }).setView([0, 0], 2);
 
-  // Satélite (host correcto) + attribution
+  // Satélite (host correcto)
   const satLayer = L.tileLayer(
     "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    {
-      maxZoom: 19,
-      attribution: "Tiles © Esri"
-    }
+    { maxZoom: 19, attribution: "Tiles © Esri" }
   ).addTo(map);
 
-  // Fallback OSM si satélite falla
   const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
-    attribution: "&copy; OpenStreetMap"
+    attribution: "&copy; OpenStreetMap",
   });
 
   let usandoOSM = false;
   satLayer.on("tileerror", () => {
-    // Si ESRI falla, cambiamos a OSM una vez (silencioso)
     if (!usandoOSM) {
       usandoOSM = true;
       try { map.removeLayer(satLayer); } catch {}
       osmLayer.addTo(map);
       console.warn("⚠️ Satélite no disponible. Cambié a OSM automáticamente.");
+      fixLeafletAfterUiChange();
     }
   });
 
+  // ✅ FIX para cuando el mapa queda “en blanco/roto” por zoom/layout
+  function fixLeafletAfterUiChange() {
+    map.invalidateSize(true);
+    requestAnimationFrame(() => map.invalidateSize(true));
+    setTimeout(() => map.invalidateSize(true), 150);
+  }
+
   // =========================
-  // MARKER + TRAZA
+  // MARKERS + TRAZA
   // =========================
   const swimmerMarkers = new Map();
 
@@ -103,6 +106,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let polylineTraza = null;
   let marcadorInicio = null;
+
+  const iconoInicio = L.icon({
+    iconUrl: "img/start_flag.png",
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+  });
 
   function limpiarTraza() {
     if (polylineTraza) {
@@ -116,14 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
     trazaUUID = null;
   }
 
-  const iconoInicio = L.icon({
-    iconUrl: "img/start_flag.png",
-    iconSize: [24, 24],
-    iconAnchor: [12, 24],
-  });
-
   function normalizarPuntos(puntos) {
-    // Acepta formatos distintos de backend
     const latlngs = [];
     for (const p of puntos) {
       const lat = parseFloat(p.latitud ?? p.nadadorlat ?? p.lat);
@@ -150,7 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const uuidList = await res.json();
     if (!Array.isArray(uuidList) || uuidList.length === 0) return null;
-
     return uuidList[0];
   }
 
@@ -169,7 +170,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const latlngs = normalizarPuntos(puntos);
     if (latlngs.length === 0) return null;
 
-    // Dibujar
     if (polylineTraza) map.removeLayer(polylineTraza);
 
     polylineTraza = L.polyline(latlngs, {
@@ -180,18 +180,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     polylineTraza.bringToFront();
 
-    // Marcador inicio (primer punto)
     if (marcadorInicio) map.removeLayer(marcadorInicio);
     marcadorInicio = L.marker(latlngs[0], { icon: iconoInicio }).addTo(map);
 
-    // Enfocar traza
-    map.fitBounds(latlngs, { padding: [30, 30] });
+    // ✅ Orden correcto: invalidate -> fitBounds -> invalidate
+    fixLeafletAfterUiChange();
+    setTimeout(() => {
+      map.fitBounds(latlngs, { padding: [30, 30] });
+      fixLeafletAfterUiChange();
+    }, 0);
 
     return latlngs;
   }
 
   // =========================
-  // DATOS USUARIO (nombre/tel)
+  // BACKEND: USUARIO
   // =========================
   async function getUsuario(id) {
     try {
@@ -205,27 +208,31 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================
-  // LOOP PRINCIPAL (uno solo)
+  // LOOP PRINCIPAL
   // =========================
   async function tick() {
     const usuarioid = naveganteSeleccionadoId;
     if (!usuarioid) return;
 
     try {
-      const res = await fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar");
+      const res = await fetch(
+        "https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar"
+      );
       const nadadores = await res.json();
       const nadador = nadadores.find((n) => n.usuarioid === usuarioid);
 
       if (!nadador) {
         console.warn("El usuario no está activo:", usuarioid);
-        // limpiar marker + traza
+
         if (swimmerMarkers.has(usuarioid)) {
           map.removeLayer(swimmerMarkers.get(usuarioid));
           swimmerMarkers.delete(usuarioid);
         }
+
         limpiarTraza();
         latElem.textContent = "--";
         lonElem.textContent = "--";
+        fixLeafletAfterUiChange();
         return;
       }
 
@@ -235,9 +242,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const position = [lat, lng];
 
-      // nombre/tel (1 fetch)
       const usuario = await getUsuario(usuarioid);
-      const nombre = usuario?.nombre ? `${usuario.nombre} ${usuario?.apellido || ""}`.trim() : `Usuario ${usuarioid}`;
+      const nombre = usuario?.nombre
+        ? `${usuario.nombre} ${usuario?.apellido || ""}`.trim()
+        : `Usuario ${usuarioid}`;
       const telefono = usuario?.telefono || "Sin teléfono";
 
       // Hora
@@ -291,25 +299,22 @@ document.addEventListener("DOMContentLoaded", () => {
           .addTo(map)
           .bindPopup(popupTexto)
           .bindTooltip(tooltipTexto, { permanent: false, direction: "top" });
-
         swimmerMarkers.set(usuarioid, marker);
 
-        // primer centrado
         map.setView(position, 15);
+        fixLeafletAfterUiChange();
       }
 
       // UI coords
       latElem.textContent = lat.toFixed(5);
       lonElem.textContent = lng.toFixed(5);
 
-      // Seguimiento SOLO si traza no está activa
+      // Seguimiento
       if (!trazaActiva) {
         map.setView(position, map.getZoom());
       } else {
-        // traza en vivo: agregar punto al polyline para que sea continua
-        if (polylineTraza) {
-          polylineTraza.addLatLng(position);
-        }
+        // Traza en vivo: sumar punto al polyline si existe
+        if (polylineTraza) polylineTraza.addLatLng(position);
       }
     } catch (e) {
       console.error("Error tick:", e);
@@ -317,13 +322,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================
-  // BOTÓN TRAZA (igual concepto, pero correcto)
+  // BOTÓN TRAZA
   // =========================
   document.getElementById("btn-traza").addEventListener("click", async () => {
     trazaActiva = !trazaActiva;
 
+    // ✅ siempre arreglar tamaño antes/después
+    fixLeafletAfterUiChange();
+
     if (!trazaActiva) {
       limpiarTraza();
+      fixLeafletAfterUiChange();
       alert("Traza desactivada");
       return;
     }
@@ -339,14 +348,26 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       trazaUUID = uuid;
 
-      // 2) Cargar y dibujar histórico (y dejar polyline lista para sumar en vivo)
+      // 2) dibujar histórico
       await cargarTrazaHistoricaPorUUID(trazaUUID, colorSeleccionado);
+
+      // ✅ fix extra post-dibujo
+      fixLeafletAfterUiChange();
     } catch (e) {
       console.error("No se pudo cargar traza:", e);
     }
   });
 
-  // Primer tick + loop único
+  // ✅ FIX adicional: cuando el usuario cambia el zoom del browser o vuelve al tab
+  window.addEventListener("resize", fixLeafletAfterUiChange);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) fixLeafletAfterUiChange();
+  });
+
+  // Primer tick + loop
   tick();
   setInterval(tick, 5000);
+
+  // Un fix inicial por si carga con zoom raro
+  setTimeout(fixLeafletAfterUiChange, 0);
 });

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GEOTRASER - Mapa SOS</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 1rem;
+      font-family: Arial, sans-serif;
+      background-image: url('img/fondo_carrera.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: white;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 1rem 0;
+      text-shadow: 1px 1px 2px black;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+
+    .info-box {
+      text-align: center;
+      margin: 0.5rem 0 1rem 0;
+      font-size: 1.1rem;
+      text-shadow: 1px 1px 2px black;
+    }
+
+    #map {
+      position: relative;
+      height: 500px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      background-color: white;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.3);
+    }
+
+    footer img {
+      max-width: 300px;
+      opacity: 0.95;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .icono-emergencia {
+      animation: blink 1.2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { filter: brightness(100%); }
+      50%      { filter: brightness(220%); }
+    }
+  </style>
+</head>
+
+<body>
+<h1>🧭 VISUALIZACION DE AYUDA SOS</h1>
+
+<!-- Controles (si los usás desde JS, los dejé; si no, los podés borrar) -->
+<div class="controls">
+  <div id="zonaSelector" style="display:none;">
+    <label for="select-location">Ubicación inicial:</label>
+    <select id="select-location">
+      <option value="">-- Seleccionar --</option>
+    </select>
+  </div>
+</div>
+
+<!-- Coordenadas -->
+<div class="info-box">
+  Latitud: <span id="lat">--</span>, Longitud: <span id="lon">--</span>
+</div>
+
+<!-- Mapa -->
+<div id="map"></div>
+
+<!-- Footer / Logo -->
+<footer>
+  <img src="img/logo-geotraser-marine.png" alt="GEOTRASER">
+</footer>
+
+<div class="text-center my-4" style="text-align:center; margin-top: 1rem;">
+  <img src="img/geotraser-transparente.png" alt="GEOTRASER Logo" style="max-width: 240px; opacity: 0.95;">
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Script del mapa -->
+<script src="mapaCASOS.js"></script>
+</body>
+</html>

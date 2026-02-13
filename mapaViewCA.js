@@ -223,15 +223,23 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${uuid}`);
       const puntos = await res.json();
 
-      if (!puntos || puntos.length === 0) return;
+      if (!puntos || puntos.length === 0) {
+        console.warn("No hay puntos históricos para:", uuid);
+        return;
+      }
 
       const historial = [];
+      const latlngs = [];
+
       for (const punto of puntos) {
         const lat = parseFloat(punto.latitud);
         const lng = parseFloat(punto.longitud);
         if (isNaN(lat) || isNaN(lng)) continue;
 
-        const marcador = L.circleMarker([lat, lng], {
+        const ll = [lat, lng];
+        latlngs.push(ll);
+
+        const marcador = L.circleMarker(ll, {
           radius: 5,
           color: color,
           fillColor: color,
@@ -242,6 +250,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       rutaHistorial.set(uuid, historial);
+
+      // 👇 ESTO es lo que te falta para “ver” la traza
+      if (latlngs.length > 0) {
+        map.fitBounds(latlngs, { padding: [30, 30] });
+      }
     } catch (err) {
       console.error("Error al cargar traza histórica:", err);
     }

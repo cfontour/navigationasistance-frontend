@@ -8,14 +8,14 @@ document.addEventListener("DOMContentLoaded", () => {
   sirenaAudio.loop = false;
 
   const iconosDisponibles = [
-    "marker_na_rojo.png",
     "marker_na_verde.png",
-    "marker_na_anaranjado.png",
-    "marker_na_lila.png",
-    "marker_na_negro.png",
     "marker_na_amarillo.png",
     "marker_na_violeta.png",
-    "marker_na_azul.png"
+    "marker_na_azul.png",
+    "marker_na_lila.png",
+    "marker_na_negro.png",
+    "marker_na_anaranjado.png",
+    "marker_na_rojo.png"
   ];
 
   const iconosPorUsuario = new Map();

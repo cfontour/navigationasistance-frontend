@@ -354,12 +354,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function getSwimmer() {
     try {
       const response = await fetch(api_url);
-      const dataOriginal = await response.json();
-
-      // ✅✅ CAMBIO MÍNIMO: si viene ?usuario=, filtrar el array a SOLO ese usuario
-      const data = (usuarioDesdeURL && String(usuarioDesdeURL).trim() !== "")
-        ? dataOriginal.filter(n => String(n.usuarioid) === String(usuarioDesdeURL))
-        : dataOriginal;
+      const data = await response.json();
 
       const nuevosIds = new Set();
 

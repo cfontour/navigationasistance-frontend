@@ -163,6 +163,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // ✅✅ NUEVO: obtener uuid por usuario+fecha y luego cargar /ruta/{uuid}
+  async function cargarTrazaHistoricaPorUsuario(usuarioId, color) {
+    const fechaUruguay = new Date().toLocaleDateString("sv-SE", {
+      timeZone: "America/Montevideo",
+    });
+
+    try {
+      const resUuid = await fetch(
+        `https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ultimorecorrido/${usuarioId}/${fechaUruguay}`
+      );
+
+      if (!resUuid.ok) {
+        console.warn("No se pudo obtener ultimorecorrido:", await resUuid.text());
+        return;
+      }
+
+      const uuidList = await resUuid.json();
+      if (!Array.isArray(uuidList) || uuidList.length === 0) {
+        console.warn("Sin recorridos para el usuario:", usuarioId);
+        return;
+      }
+
+      const uuid = uuidList[0];
+      await cargarTrazaHistorica(uuid, color);
+    } catch (err) {
+      console.error("Error al cargar traza histórica por usuario:", err);
+    }
+  }
+
   // Activar traza para un usuario cuando se hace click en su marcador
   function activarTrazaParaUsuario(usuarioid, position, nombre) {
     naveganteSeleccionadoId = usuarioid;
@@ -183,8 +212,9 @@ document.addEventListener("DOMContentLoaded", () => {
       })
     }).addTo(map);
 
-    // Cargar traza histórica del usuario
-    cargarTrazaHistorica(usuarioid, colorSeleccionado);
+    // ✅ FIX: antes se pasaba usuarioid a una función que espera uuid.
+    // Ahora se obtiene el uuid correcto y luego se llama /ruta/{uuid}
+    cargarTrazaHistoricaPorUsuario(usuarioid, colorSeleccionado);
 
     // Trazar la ruta completa del día
     trazarRutaUsuarioEspecifico(usuarioid);
@@ -291,7 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(`https://navigationasistance-backend-1.onrender.com/nadadorhistoricorutas/ruta/${uuid}`);
       const puntos = await res.json();
 
-      if (!puntos || puntos.length === 0) {
+      if (!Array.isArray(puntos) || puntos.length === 0) {
         console.warn("Sin puntos para el recorrido.");
         return;
       }
@@ -356,7 +386,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(api_url);
       const dataOriginal = await response.json();
 
-      // ✅✅ CAMBIO MÍNIMO: si viene ?usuario=, filtrar el array a SOLO ese usuario
+      // ✅ CAMBIO MÍNIMO: si viene ?usuario=, filtrar el array a SOLO ese usuario
       const data = (usuarioDesdeURL && String(usuarioDesdeURL).trim() !== "")
         ? dataOriginal.filter(n => String(n.usuarioid) === String(usuarioDesdeURL))
         : dataOriginal;

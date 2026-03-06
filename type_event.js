@@ -150,11 +150,23 @@ class TypeEventABM {
         );
 
         console.log('Response status update:', response.status);
-        const responseData = await response.json();
+
+        // Leer el body de la respuesta
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+
+        let responseData;
+        try {
+            responseData = JSON.parse(responseText);
+        } catch (e) {
+            console.error('Error parsing JSON:', e);
+            responseData = { message: responseText };
+        }
+
         console.log('Response data update:', responseData);
 
         if (!response.ok) {
-            throw new Error(responseData.message || 'Error al actualizar el evento');
+            throw new Error(responseData.message || `Error HTTP ${response.status}: al actualizar el evento`);
         }
 
         return responseData;
@@ -163,8 +175,16 @@ class TypeEventABM {
     async deleteEvent(id) {
         const response = await fetch(
             `${this.API_BASE}/typeEvent/eliminar/${id}`,
-            { method: 'POST' }
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            }
         );
+
+        console.log('Response status delete:', response.status);
+        const responseText = await response.text();
+        console.log('Response text delete:', responseText);
 
         if (!response.ok) {
             throw new Error('Error al eliminar el evento');

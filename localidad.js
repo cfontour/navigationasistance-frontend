@@ -193,11 +193,23 @@ class LocalidadABM {
         );
 
         console.log('Response status update:', response.status);
-        const responseData = await response.json();
+
+        // Leer el body de la respuesta
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+
+        let responseData;
+        try {
+            responseData = JSON.parse(responseText);
+        } catch (e) {
+            console.error('Error parsing JSON:', e);
+            responseData = { message: responseText };
+        }
+
         console.log('Response data update:', responseData);
 
         if (!response.ok) {
-            throw new Error(responseData.message || 'Error al actualizar la localidad');
+            throw new Error(responseData.message || `Error HTTP ${response.status}: al actualizar la localidad`);
         }
 
         return responseData;
@@ -206,11 +218,19 @@ class LocalidadABM {
     async deleteLocality(id) {
         const response = await fetch(
             `${this.API_BASE}/localidad/eliminar/${id}`,
-            { method: 'POST' }
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            }
         );
 
+        console.log('Response status delete:', response.status);
+        const responseData = await response.json();
+        console.log('Response data delete:', responseData);
+
         if (!response.ok) {
-            throw new Error('Error al eliminar la localidad');
+            throw new Error(responseData.message || 'Error al eliminar la localidad');
         }
     }
 

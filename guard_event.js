@@ -337,27 +337,62 @@ class GuardEventViewer {
             this.mapContainer.style.display = 'none';
             this.modalImage.style.display = 'block';
 
-            // Si es un string base64, usarlo directamente
+            let imageSrc = '';
+
+            console.log('Tipo de event_image:', typeof event.event_image);
+            console.log('Contenido de event_image:', event.event_image);
+
+            // Si es un string, usarlo como URL directa
             if (typeof event.event_image === 'string') {
-                this.modalImage.src = event.event_image;
-            } else if (event.event_image instanceof ArrayBuffer) {
-                // Si es un buffer, convertirlo a base64
-                const binary = String.fromCharCode.apply(null, new Uint8Array(event.event_image));
-                const base64 = btoa(binary);
-                this.modalImage.src = `data:image/jpeg;base64,${base64}`;
-            } else if (Array.isArray(event.event_image)) {
-                // Si es un array
+                imageSrc = event.event_image;
+
+                // Si no empieza con http o /, probablemente sea una ruta relativa o nombre de archivo
+                if (!imageSrc.startsWith('http') && !imageSrc.startsWith('data:') && !imageSrc.startsWith('/')) {
+                    // Intentar como URL relativa
+                    imageSrc = imageSrc;
+                }
+            }
+            // Si es un array de números (array de bytes)
+            else if (Array.isArray(event.event_image)) {
                 const binary = String.fromCharCode.apply(null, event.event_image);
                 const base64 = btoa(binary);
-                this.modalImage.src = `data:image/jpeg;base64,${base64}`;
-            } else {
-                this.modalImage.src = event.event_image;
+                imageSrc = `data:image/jpeg;base64,${base64}`;
+            }
+            // Si es un ArrayBuffer
+            else if (event.event_image instanceof ArrayBuffer) {
+                const binary = String.fromCharCode.apply(null, new Uint8Array(event.event_image));
+                const base64 = btoa(binary);
+                imageSrc = `data:image/jpeg;base64,${base64}`;
+            }
+            // Si es un Uint8Array
+            else if (event.event_image instanceof Uint8Array) {
+                const binary = String.fromCharCode.apply(null, event.event_image);
+                const base64 = btoa(binary);
+                imageSrc = `data:image/jpeg;base64,${base64}`;
+            }
+            else {
+                console.warn('Tipo de imagen desconocido:', typeof event.event_image);
+                imageSrc = String(event.event_image);
             }
 
+            console.log('Intentando cargar imagen desde:', imageSrc);
+            this.modalImage.src = imageSrc;
             this.detailModal.style.display = 'block';
+
+            // Manejar errores de carga de imagen
+            this.modalImage.onerror = () => {
+                console.error('Error al cargar la imagen desde:', imageSrc);
+                this.showError('Error al cargar la imagen. Verifica que la ruta sea válida.');
+                this.modalImage.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23333" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="white" font-family="Arial" font-size="16"%3EError al cargar imagen%3C/text%3E%3C/svg%3E';
+            };
+
+            this.modalImage.onload = () => {
+                console.log('Imagen cargada exitosamente');
+            };
+
         } catch (error) {
-            console.error('Error al mostrar imagen:', error);
-            this.showError('Error al cargar la imagen');
+            console.error('Error al procesar imagen:', error);
+            this.showError('Error al cargar la imagen: ' + error.message);
         }
     }
 

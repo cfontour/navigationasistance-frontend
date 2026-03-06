@@ -342,14 +342,15 @@ class GuardEventViewer {
             console.log('Tipo de event_image:', typeof event.event_image);
             console.log('Contenido de event_image:', event.event_image);
 
-            // Si es un string, usarlo como nombre de archivo y construir la URL del backend
+            // Si es un string, intentar construir la URL
             if (typeof event.event_image === 'string') {
-                // Si ya es una URL completa (empieza con http, data:, o /), usarla tal cual
+                // Si ya es una URL completa, usarla tal cual
                 if (event.event_image.startsWith('http') || event.event_image.startsWith('data:') || event.event_image.startsWith('/')) {
                     imageSrc = event.event_image;
                 } else {
-                    // Si es solo un nombre de archivo, construir la URL hacia el backend
-                    imageSrc = `https://navigationasistance-backend-1.onrender.com/images/${event.event_image}`;
+                    // Si es solo un nombre de archivo, intentar diferentes rutas
+                    // Intenta primero con la ruta sin prefijo (podría ser relativa)
+                    imageSrc = event.event_image;
                 }
             }
             // Si es un array de números (array de bytes)
@@ -382,12 +383,39 @@ class GuardEventViewer {
             // Manejar errores de carga de imagen
             this.modalImage.onerror = () => {
                 console.error('Error al cargar la imagen desde:', imageSrc);
-                this.showError('Error al cargar la imagen. La URL podría ser incorrecta.');
-                this.modalImage.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23333" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="white" font-family="Arial" font-size="16"%3EError al cargar imagen%3C/text%3E%3C/svg%3E';
+                console.warn('Intentando rutas alternativas...');
+
+                // Array de rutas alternativas a intentar
+                const alternativeRoutes = [
+                    `https://navigationasistance-backend-1.onrender.com/guardEvent/imagen/${event.event_image}`,
+                    `https://navigationasistance-backend-1.onrender.com/uploads/${event.event_image}`,
+                    `https://navigationasistance-backend-1.onrender.com/images/${event.event_image}`,
+                    `/images/${event.event_image}`,
+                    `/uploads/${event.event_image}`,
+                ];
+
+                // Intentar la siguiente ruta
+                let routeIndex = 0;
+                const tryNextRoute = () => {
+                    if (routeIndex < alternativeRoutes.length) {
+                        const nextRoute = alternativeRoutes[routeIndex];
+                        console.log(`Intentando ruta alternativa [${routeIndex + 1}/${alternativeRoutes.length}]:`, nextRoute);
+                        this.modalImage.src = nextRoute;
+                        routeIndex++;
+                    } else {
+                        // Si ninguna ruta funciona, mostrar error
+                        this.showError('No se pudo cargar la imagen. Verifica la configuración de rutas.');
+                        this.modalImage.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23333" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="white" font-family="Arial" font-size="14"%3EError al cargar imagen%3Cbr/%3EArchivo: ' + event.event_image + '%3C/text%3E%3C/svg%3E';
+                    }
+                };
+
+                // Reasignar el manejador de error para intentar la siguiente ruta
+                this.modalImage.onerror = tryNextRoute;
+                tryNextRoute();
             };
 
             this.modalImage.onload = () => {
-                console.log('Imagen cargada exitosamente');
+                console.log('✅ Imagen cargada exitosamente desde:', this.modalImage.src);
             };
 
         } catch (error) {

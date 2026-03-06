@@ -400,14 +400,28 @@ class GuardEventViewer {
             this.modalImage.src = imageSrc;
             this.detailModal.style.display = 'block';
 
-            this.modalImage.onerror = () => {
-                console.error('❌ Error al mostrar imagen');
-                this.showError('Error al mostrar la imagen.');
-                this.modalImage.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23333" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="white" font-family="Arial" font-size="14"%3EError al cargar imagen%3C/text%3E%3C/svg%3E';
-            };
+            let imageLoaded = false;
 
             this.modalImage.onload = () => {
                 console.log('✅ Imagen mostrada exitosamente');
+                imageLoaded = true;
+                // Limpiar mensaje de error si existía
+                this.errorMessage.innerHTML = '';
+            };
+
+            this.modalImage.onerror = () => {
+                // Solo mostrar error si realmente falló (no si ya cargó)
+                if (imageLoaded) return;
+
+                console.error('❌ Error al mostrar imagen');
+                console.error('Tipo de dato:', typeof event.event_image);
+                console.error('Es array?', Array.isArray(event.event_image));
+                console.error('Largo:', event.event_image?.length);
+
+                // Mostrar error con más detalles
+                this.showError(`Error al mostrar la imagen. Tipo: ${typeof event.event_image}`);
+
+                this.modalImage.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23333" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="white" font-family="Arial" font-size="12"%3EError al mostrar imagen%3C/text%3E%3C/svg%3E';
             };
 
         } catch (error) {

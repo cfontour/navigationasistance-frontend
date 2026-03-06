@@ -165,14 +165,12 @@ class LocalidadABM {
         });
 
         console.log('Response status add:', response.status);
-        const responseData = await response.json();
-        console.log('Response data add:', responseData);
 
         if (!response.ok) {
-            throw new Error(responseData.message || 'Error al crear la localidad');
+            throw new Error('Error al crear la localidad');
         }
 
-        return responseData;
+        return { success: true };
     }
 
     async updateLocality(id, nombre, pais) {

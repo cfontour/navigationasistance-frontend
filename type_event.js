@@ -122,14 +122,12 @@ class TypeEventABM {
         });
 
         console.log('Response status add:', response.status);
-        const responseData = await response.json();
-        console.log('Response data add:', responseData);
 
         if (!response.ok) {
-            throw new Error(responseData.message || 'Error al crear el evento');
+            throw new Error('Error al crear el evento');
         }
 
-        return responseData;
+        return { success: true };
     }
 
     async updateEvent(id, nombre, importancia) {
@@ -151,25 +149,13 @@ class TypeEventABM {
 
         console.log('Response status update:', response.status);
 
-        // Leer el body de la respuesta
-        const responseText = await response.text();
-        console.log('Response text:', responseText);
-
-        let responseData;
-        try {
-            responseData = JSON.parse(responseText);
-        } catch (e) {
-            console.error('Error parsing JSON:', e);
-            responseData = { message: responseText };
-        }
-
-        console.log('Response data update:', responseData);
+        console.log('Response status update:', response.status);
 
         if (!response.ok) {
-            throw new Error(responseData.message || `Error HTTP ${response.status}: al actualizar el evento`);
+            throw new Error('Error al actualizar el evento');
         }
 
-        return responseData;
+        return { success: true };
     }
 
     async deleteEvent(id) {
@@ -183,8 +169,6 @@ class TypeEventABM {
         );
 
         console.log('Response status delete:', response.status);
-        const responseText = await response.text();
-        console.log('Response text delete:', responseText);
 
         if (!response.ok) {
             throw new Error('Error al eliminar el evento');

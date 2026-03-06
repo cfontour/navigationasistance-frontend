@@ -342,14 +342,14 @@ class GuardEventViewer {
             console.log('Tipo de event_image:', typeof event.event_image);
             console.log('Contenido de event_image:', event.event_image);
 
-            // Si es un string, usarlo como URL directa
+            // Si es un string, usarlo como nombre de archivo y construir la URL del backend
             if (typeof event.event_image === 'string') {
-                imageSrc = event.event_image;
-
-                // Si no empieza con http o /, probablemente sea una ruta relativa o nombre de archivo
-                if (!imageSrc.startsWith('http') && !imageSrc.startsWith('data:') && !imageSrc.startsWith('/')) {
-                    // Intentar como URL relativa
-                    imageSrc = imageSrc;
+                // Si ya es una URL completa (empieza con http, data:, o /), usarla tal cual
+                if (event.event_image.startsWith('http') || event.event_image.startsWith('data:') || event.event_image.startsWith('/')) {
+                    imageSrc = event.event_image;
+                } else {
+                    // Si es solo un nombre de archivo, construir la URL hacia el backend
+                    imageSrc = `https://navigationasistance-backend-1.onrender.com/images/${event.event_image}`;
                 }
             }
             // Si es un array de números (array de bytes)
@@ -382,7 +382,7 @@ class GuardEventViewer {
             // Manejar errores de carga de imagen
             this.modalImage.onerror = () => {
                 console.error('Error al cargar la imagen desde:', imageSrc);
-                this.showError('Error al cargar la imagen. Verifica que la ruta sea válida.');
+                this.showError('Error al cargar la imagen. La URL podría ser incorrecta.');
                 this.modalImage.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23333" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="white" font-family="Arial" font-size="16"%3EError al cargar imagen%3C/text%3E%3C/svg%3E';
             };
 

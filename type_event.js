@@ -143,7 +143,7 @@ class TypeEventABM {
         const response = await fetch(
             `${this.API_BASE}/typeEvent/actualizar/${id}`,
             {
-                method: 'PUT',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             }
@@ -163,7 +163,7 @@ class TypeEventABM {
     async deleteEvent(id) {
         const response = await fetch(
             `${this.API_BASE}/typeEvent/eliminar/${id}`,
-            { method: 'DELETE' }
+            { method: 'POST' }
         );
 
         if (!response.ok) {

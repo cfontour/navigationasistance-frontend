@@ -186,7 +186,7 @@ class LocalidadABM {
         const response = await fetch(
             `${this.API_BASE}/localidad/actualizar/${id}`,
             {
-                method: 'PUT',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             }
@@ -206,7 +206,7 @@ class LocalidadABM {
     async deleteLocality(id) {
         const response = await fetch(
             `${this.API_BASE}/localidad/eliminar/${id}`,
-            { method: 'DELETE' }
+            { method: 'POST' }
         );
 
         if (!response.ok) {

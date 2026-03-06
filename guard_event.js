@@ -26,18 +26,24 @@ class GuardEventViewer {
         this.errorMessage = document.getElementById('errorMessage');
 
         // Modal
-        this.imageModal = document.getElementById('imageModal');
+        this.detailModal = document.getElementById('detailModal');
+        this.modalTitle = document.getElementById('modalTitle');
+        this.mapContainer = document.getElementById('mapContainer');
         this.modalImage = document.getElementById('modalImage');
         this.closeModal = document.getElementById('closeModal');
+
+        // Variables para el mapa
+        this.map = null;
+        this.mapMarker = null;
     }
 
     attachEventListeners() {
         this.btnRefresh.addEventListener('click', () => this.handleRefresh());
         this.searchBox.addEventListener('input', (e) => this.handleSearch(e.target.value));
-        this.closeModal.addEventListener('click', () => this.hideImageModal());
-        this.imageModal.addEventListener('click', (e) => {
-            if (e.target === this.imageModal) {
-                this.hideImageModal();
+        this.closeModal.addEventListener('click', () => this.hideModal());
+        this.detailModal.addEventListener('click', (e) => {
+            if (e.target === this.detailModal) {
+                this.hideModal();
             }
         });
     }
@@ -161,13 +167,30 @@ class GuardEventViewer {
 
         this.tableContainer.innerHTML = tableHTML;
 
-        // Adjuntar event listeners a las imágenes
+        // Adjuntar event listeners a las imágenes y mapas
         setTimeout(() => {
             this.filteredEvents.forEach(event => {
+                // Listeners para imágenes
                 if (event.event_image) {
                     const imgBtn = document.getElementById(`img-${event.id}`);
                     if (imgBtn) {
                         imgBtn.addEventListener('click', () => this.showImageModal(event));
+                    }
+                }
+
+                // Listeners para mapas (latitud)
+                if (event.guard_lat) {
+                    const latBtn = document.getElementById(`lat-${event.id}`);
+                    if (latBtn) {
+                        latBtn.addEventListener('click', () => this.showMap(event));
+                    }
+                }
+
+                // Listeners para mapas (longitud)
+                if (event.guard_lng) {
+                    const lngBtn = document.getElementById(`lng-${event.id}`);
+                    if (lngBtn) {
+                        lngBtn.addEventListener('click', () => this.showMap(event));
                     }
                 }
             });
@@ -180,6 +203,14 @@ class GuardEventViewer {
             `<div class="image-preview" id="img-${event.id}" style="cursor: pointer;" title="Ver imagen">🖼️</div>` :
             '<span class="text-muted">-</span>';
 
+        const latBtn = event.guard_lat ?
+            `<span class="geo-cell" id="lat-${event.id}" style="cursor: pointer;" title="Ver mapa">${this.formatCoordinate(event.guard_lat)}</span>` :
+            '<span class="text-muted">-</span>';
+
+        const lngBtn = event.guard_lng ?
+            `<span class="geo-cell" id="lng-${event.id}" style="cursor: pointer;" title="Ver mapa">${this.formatCoordinate(event.guard_lng)}</span>` :
+            '<span class="text-muted">-</span>';
+
         return `
             <tr style="animation-delay: ${index * 30}ms">
                 <td class="id-cell">${event.id}</td>
@@ -188,8 +219,8 @@ class GuardEventViewer {
                 <td class="truncate">${event.type_id || '-'}</td>
                 <td class="truncate">${this.escapeHtml(event.event_descripcion || '-')}</td>
                 <td>${imagenBtn}</td>
-                <td class="geo-cell" title="${event.guard_lat || '-'}">${this.formatCoordinate(event.guard_lat)}</td>
-                <td class="geo-cell" title="${event.guard_lng || '-'}">${this.formatCoordinate(event.guard_lng)}</td>
+                <td>${latBtn}</td>
+                <td>${lngBtn}</td>
                 <td class="datetime-cell">${fecha}</td>
             </tr>
         `;
@@ -227,10 +258,85 @@ class GuardEventViewer {
         }
     }
 
+    showMap(event) {
+        if (!event.guard_lat || !event.guard_lng) return;
+
+        try {
+            const lat = parseFloat(event.guard_lat);
+            const lng = parseFloat(event.guard_lng);
+
+            if (isNaN(lat) || isNaN(lng)) {
+                this.showError('Coordenadas inválidas');
+                return;
+            }
+
+            this.modalTitle.textContent = `📍 Ubicación del Evento ${event.id}`;
+            this.modalImage.style.display = 'none';
+            this.mapContainer.style.display = 'block';
+            this.detailModal.style.display = 'block';
+
+            // Esperar a que el modal sea visible antes de inicializar el mapa
+            setTimeout(() => {
+                if (this.map) {
+                    this.map.remove();
+                    this.map = null;
+                }
+
+                this.map = L.map('mapContainer', {
+                    center: [lat, lng],
+                    zoom: 15,
+                    dragging: true,
+                    touchZoom: true
+                });
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(this.map);
+
+                // Crear marcador
+                if (this.mapMarker) {
+                    this.map.removeLayer(this.mapMarker);
+                }
+
+                this.mapMarker = L.circleMarker([lat, lng], {
+                    radius: 8,
+                    fillColor: '#3b82f6',
+                    color: '#1e40af',
+                    weight: 2,
+                    opacity: 0.8,
+                    fillOpacity: 0.7
+                }).addTo(this.map);
+
+                // Popup con información
+                const popupText = `
+                    <strong>Evento ${event.id}</strong><br>
+                    Usuario: ${this.escapeHtml(event.usuario_id)}<br>
+                    Descripción: ${this.escapeHtml(event.event_descripcion || '-')}<br>
+                    Lat: ${lat.toFixed(6)}<br>
+                    Lng: ${lng.toFixed(6)}
+                `;
+
+                this.mapMarker.bindPopup(popupText).openPopup();
+
+                // Redimensionar el mapa
+                this.map.invalidateSize();
+            }, 50);
+
+        } catch (error) {
+            console.error('Error al mostrar mapa:', error);
+            this.showError('Error al cargar el mapa');
+        }
+    }
+
     showImageModal(event) {
         if (!event.event_image) return;
 
         try {
+            this.modalTitle.textContent = `🖼️ Imagen del Evento ${event.id}`;
+            this.mapContainer.style.display = 'none';
+            this.modalImage.style.display = 'block';
+
             // Si es un string base64, usarlo directamente
             if (typeof event.event_image === 'string') {
                 this.modalImage.src = event.event_image;
@@ -239,21 +345,30 @@ class GuardEventViewer {
                 const binary = String.fromCharCode.apply(null, new Uint8Array(event.event_image));
                 const base64 = btoa(binary);
                 this.modalImage.src = `data:image/jpeg;base64,${base64}`;
+            } else if (Array.isArray(event.event_image)) {
+                // Si es un array
+                const binary = String.fromCharCode.apply(null, event.event_image);
+                const base64 = btoa(binary);
+                this.modalImage.src = `data:image/jpeg;base64,${base64}`;
             } else {
-                // Intentar como es
                 this.modalImage.src = event.event_image;
             }
 
-            this.imageModal.style.display = 'block';
+            this.detailModal.style.display = 'block';
         } catch (error) {
             console.error('Error al mostrar imagen:', error);
             this.showError('Error al cargar la imagen');
         }
     }
 
-    hideImageModal() {
-        this.imageModal.style.display = 'none';
+    hideModal() {
+        this.detailModal.style.display = 'none';
         this.modalImage.src = '';
+        this.mapContainer.style.display = 'none';
+        if (this.map) {
+            this.map.remove();
+            this.map = null;
+        }
     }
 
     showError(message) {

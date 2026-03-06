@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registros de Eventos Guardados</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <style>
         * {
             margin: 0;
@@ -300,6 +302,23 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+        }
+
+        td.geo-cell:hover {
+            background: rgba(59, 130, 246, 0.2);
+            text-decoration: underline;
+        }
+
+        #mapContainer {
+            width: 100%;
+            height: 400px;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            z-index: 100;
         }
 
         /* Estados */
@@ -554,17 +573,22 @@
     </div>
 </div>
 
-<!-- Image Modal -->
-<div id="imageModal" class="modal">
+<!-- Image/Map Modal -->
+<div id="detailModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Vista de Imagen</h2>
+            <h2 id="modalTitle">Detalles</h2>
             <button class="close-btn" id="closeModal">&times;</button>
         </div>
-        <img id="modalImage" class="modal-image" src="" alt="Evento">
+        <div id="mapContainer"></div>
+        <img id="modalImage" class="modal-image" src="" alt="Evento" style="display: none;">
     </div>
 </div>
 
+<!-- Leaflet JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<!-- OpenStreetMap Tiles -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet-providers.min.js"></script>
 <script src="guard_event.js"></script>
 </body>
 </html>

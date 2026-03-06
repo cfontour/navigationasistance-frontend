@@ -292,6 +292,16 @@
             color: #cbd5e1;
         }
 
+        td.geo-cell {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #60a5fa;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         /* Estados */
         .empty-state {
             text-align: center;
@@ -530,7 +540,7 @@
                     type="text"
                     class="search-box"
                     id="searchBox"
-                    placeholder="Buscar por usuario, descripción, localidad o tipo..."
+                    placeholder="Buscar por usuario, descripción, localidad, tipo, lat o lng..."
             />
             <span class="records-count">
                     Registros: <span id="recordsCount">0</span>

@@ -102,11 +102,15 @@ class GuardEventViewer {
                 const descripcion = (event.event_descripcion || '').toLowerCase();
                 const localidad = (event.localidad_id || '').toString().toLowerCase();
                 const typeId = (event.type_id || '').toString().toLowerCase();
+                const lat = (event.guard_lat || '').toString().toLowerCase();
+                const lng = (event.guard_lng || '').toString().toLowerCase();
 
                 return usuario.includes(term) ||
                        descripcion.includes(term) ||
                        localidad.includes(term) ||
-                       typeId.includes(term);
+                       typeId.includes(term) ||
+                       lat.includes(term) ||
+                       lng.includes(term);
             });
         }
 
@@ -143,6 +147,8 @@ class GuardEventViewer {
                             <th>Tipo</th>
                             <th>Descripción</th>
                             <th>Imagen</th>
+                            <th>Latitud</th>
+                            <th>Longitud</th>
                             <th>Fecha/Hora</th>
                         </tr>
                     </thead>
@@ -182,6 +188,8 @@ class GuardEventViewer {
                 <td class="truncate">${event.type_id || '-'}</td>
                 <td class="truncate">${this.escapeHtml(event.event_descripcion || '-')}</td>
                 <td>${imagenBtn}</td>
+                <td class="geo-cell" title="${event.guard_lat || '-'}">${this.formatCoordinate(event.guard_lat)}</td>
+                <td class="geo-cell" title="${event.guard_lng || '-'}">${this.formatCoordinate(event.guard_lng)}</td>
                 <td class="datetime-cell">${fecha}</td>
             </tr>
         `;
@@ -202,6 +210,20 @@ class GuardEventViewer {
             return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
         } catch {
             return dateString;
+        }
+    }
+
+    formatCoordinate(coord) {
+        if (!coord) return '-';
+
+        try {
+            const num = parseFloat(coord);
+            if (isNaN(num)) return coord;
+
+            // Redondear a 6 decimales (precisión máxima para coordenadas GPS)
+            return num.toFixed(6);
+        } catch {
+            return coord;
         }
     }
 

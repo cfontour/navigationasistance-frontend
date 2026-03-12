@@ -20,13 +20,15 @@ $(document).ready(function () {
         tabla.clear();
 
         data.forEach((item) => {
-          const clave = item.clave ?? "";
-          const valor = item.valor ?? "";
+          const clave = item.grupoid ?? "";
+          const nombre = item.gruponombre ?? "";
+          const descripcion = item.grupodescripcion ?? "";
 
           const btnActualizar = `
             <button class="btn btn-sm btn-warning actualizar-btn"
                     data-clave="${clave}"
-                    data-valor="${valor}"
+                    data-nombre="${nombre}"
+                    data-descripcion="${descripcion}"
                     title="Editar valor">
               <i class="fas fa-edit"></i>
             </button>`;
@@ -38,7 +40,7 @@ $(document).ready(function () {
               <i class="fas fa-trash"></i>
             </button>`;
 
-          tabla.row.add([clave, valor, btnActualizar, btnEliminar]);
+          tabla.row.add([clave, nombre, descripcion, btnActualizar, btnEliminar]);
         });
 
         tabla.draw();

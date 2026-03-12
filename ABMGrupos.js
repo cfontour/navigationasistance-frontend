@@ -52,9 +52,9 @@ $(document).ready(function () {
   $('#form-nuevo-grupo').on('submit', function (e) {
     e.preventDefault();
 
-    const clave = $('#nueva-clave').val().trim();
-    const nombre = $('#nuevo-nombre').val().trim();
-    const descripcion = $('#nueva-descripcion').val().trim();
+    const grupoid = $('#nueva-clave').val().trim();
+    const gruponombre = $('#nuevo-nombre').val().trim();
+    const grupodescripcion = $('#nueva-descripcion').val().trim();
 
     if (!clave) {
       alert("La clave no puede estar vacía.");

@@ -56,7 +56,7 @@ $(document).ready(function () {
     const gruponombre = $('#nuevo-nombre').val().trim();
     const grupodescripcion = $('#nueva-descripcion').val().trim();
 
-    if (!clave) {
+    if (!grupoid) {
       alert("La clave no puede estar vacía.");
       return;
     }

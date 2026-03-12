@@ -99,12 +99,12 @@ $(document).ready(function () {
     // Canceló o dejó igual
     if (nuevoNombre === null) return;
 
-    const nombreTrim = String(nuevoNombre).trim();
+      const nombreTrim = String(nuevoNombre).trim();
 
     // Canceló o dejó igual
-        if (nuevaDescripcion === null) return;
+    if (nuevaDescripcion === null) return;
 
-        const descripcionTrim = String(nuevaDescripcion).trim();
+       const descripcionTrim = String(nuevaDescripcion).trim();
 
     // Si querés permitir vacío, sacá este if
     if (nombreTrim.length === 0) {
@@ -117,7 +117,7 @@ $(document).ready(function () {
       return;
     }
 
-    const payload = { clave, nombre: nombreTrim, descripcion: descripcionTrim };
+    const payload = { grupoid: clave, gruponombre: nombreTrim, grupodescripcion: descripcionTrim };
 
     fetch(`https://navigationasistance-backend-1.onrender.com/grupos/actualizar/${encodeURIComponent(clave)}`, {
       method: 'POST',

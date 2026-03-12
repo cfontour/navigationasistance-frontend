@@ -62,7 +62,7 @@ $(document).ready(function () {
     }
 
     // Ajustá este body si tu backend espera otra estructura
-    const payload = { clave, nombre, descripcion };
+    const payload = { grupoid, gruponombre, grupodescripcion };
 
     fetch("https://navigationasistance-backend-1.onrender.com/grupos/agregar", {
       method: 'POST',

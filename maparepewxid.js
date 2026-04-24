@@ -247,6 +247,10 @@ async function cargarNavegantesVinculados() {
       const marcador = L.marker([lat, lng], { icon: icono }).addTo(map);
       marcadores.set(String(n.usuarioid), marcador);
 
+      if (USUARIO_ID_URL && String(n.usuarioid) === String(USUARIO_ID_URL)) {
+        map.setView([lat, lng], 16);
+      }
+      
       // popup (contenido sin onclick inline)
       actualizarPopup(n.usuarioid);
 

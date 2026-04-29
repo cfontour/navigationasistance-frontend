@@ -907,7 +907,7 @@ async function cargarRutas(idRuta) {
 
     const titleEl = document.getElementById("site-title");
     //if (titleEl) titleEl.textContent = (ruta.nombre || "").toUpperCase();
-    if (titleEl) titleEl.textContent = ("150 millas de a tres. Yatch Club Uruguayo. Trofeo JGF").toUpperCase();
+    if (titleEl) titleEl.textContent = ("Regata 150 millas de a tres. Yatch Club Uruguayo. Trofeo JGF").toUpperCase();
 
     const puntos = ruta.puntos;
     if (!puntos || puntos.length === 0) return;

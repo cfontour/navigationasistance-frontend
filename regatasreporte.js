@@ -19,8 +19,8 @@ class RegatasDashboard {
         this.initMap();
         this.setupEventListeners();
         await this.loadParticipants();
-        // Cargar automáticamente la ruta 52
-        await this.cargarRutas("52");
+        // Cargar automáticamente la ruta 
+        await this.cargarRutas("96");
     }
 
     initMap() {

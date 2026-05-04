@@ -176,7 +176,7 @@ async function exportarPDF() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  obtenerRutaIdPorNombre("PUNTA DEL ESTE"); // o el nombre exacto de la ruta
+  obtenerRutaIdPorNombre("Regata 150 millas de a tres. Trofeo JGF"); // o el nombre exacto de la ruta
   cargarUsuarios();
   cargarParticipantes();
 });

@@ -2,7 +2,7 @@ let usuarios = [];
 let rutaIdGlobal = null;
 let asignaciones = []; // guarda usuarioId → nadadorRutaId
 
-async function obtenerRutaIdPorNombre(nombreRuta = "PUNTA DEL ESTE") {
+async function obtenerRutaIdPorNombre(nombreRuta = "Regata 150 millas de a tres. Trofeo JGF") {
   const res = await fetch("https://navigationasistance-backend-1.onrender.com/rutas/listar");
   const rutas = await res.json();
   const ruta = rutas.find(r => r.nombre === nombreRuta);

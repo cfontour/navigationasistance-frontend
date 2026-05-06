@@ -172,7 +172,8 @@ function aplicarColorIcono(usuarioid, color) {
 
 // =================== ICONOS NAVEGANTES ===================
 
-function crearIconoCompetidorConBearing(bearing, usuarioid) {
+function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "") {
+
   let normalizedBearing = bearing % 360;
   if (normalizedBearing < 0) normalizedBearing += 360;
 
@@ -182,12 +183,55 @@ function crearIconoCompetidorConBearing(bearing, usuarioid) {
   const paddedAngle = String(iconAngle).padStart(3, "0");
   const iconUrl = `/img/barco_bearing_icons/barco_${paddedAngle}.png`;
 
-  return L.icon({
-    iconUrl,
-    iconSize: [40, 40],
+  return L.divIcon({
+    className: "barco-wrapper",
+    html: `
+      <div style="
+        position: relative;
+        width: 80px;
+        height: 50px;
+      ">
+
+        <!-- línea blanca -->
+        <div style="
+          position:absolute;
+          left:19px;
+          top:-25px;
+          width:2px;
+          height:50px;
+          background:white;
+          opacity:0.9;
+        "></div>
+
+        <!-- nombre -->
+        <div style="
+          position:absolute;
+          left:26px;
+          top:-30px;
+          color:white;
+          font-size:12px;
+          font-weight:bold;
+          text-shadow: 1px 1px 3px black;
+          white-space: nowrap;
+        ">
+          ${nombreCompleto}
+        </div>
+
+        <!-- barco -->
+        <img
+          src="${iconUrl}"
+          style="
+            position:absolute;
+            left:0;
+            top:10px;
+            width:40px;
+            height:40px;
+          "
+        />
+      </div>
+    `,
+    iconSize: [80, 50],
     iconAnchor: [20, 20],
-    popupAnchor: [0, -16],
-    className: `barco-icon barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, "_")}`,
   });
 }
 
@@ -239,7 +283,18 @@ async function cargarNavegantesVinculados() {
           sirenaAudio.play().catch(() => {});
         }
       } else {
-        icono = crearIconoCompetidorConBearing(bearing, n.usuarioid);
+        //icono = crearIconoCompetidorConBearing(bearing, n.usuarioid);
+
+        const nombreCompleto = n.nombre
+          ? `${n.nombre} ${n.apellido || ""}`
+          : `Usuario ${n.usuarioid}`;
+
+        icono = crearIconoCompetidorConBearing(
+          bearing,
+          n.usuarioid,
+          nombreCompleto
+        );
+
         const colorUsuario = obtenerColorUsuario(n.usuarioid);
         setTimeout(() => aplicarColorIcono(n.usuarioid, colorUsuario), 200);
       }
@@ -250,7 +305,7 @@ async function cargarNavegantesVinculados() {
       if (USUARIO_ID_URL && String(n.usuarioid) === String(USUARIO_ID_URL)) {
         map.setView([lat, lng], 16);
       }
-      
+
       // popup (contenido sin onclick inline)
       actualizarPopup(n.usuarioid);
 

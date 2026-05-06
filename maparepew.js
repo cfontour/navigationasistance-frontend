@@ -181,7 +181,7 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
           left:19px;
           top:-25px;
           width:2px;
-          height:70px;
+          height:50px;
           background:white;
           opacity:0.9;
         "></div>

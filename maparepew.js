@@ -167,7 +167,7 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
   const iconUrl = `/img/barco_bearing_icons/barco_${paddedAngle}.png`;
 
   return L.divIcon({
-    className: "barco-wrapper",
+    className: `barco-wrapper barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, "_")}`,
     html: `
       <div style="
         position: relative;

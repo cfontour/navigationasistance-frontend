@@ -96,22 +96,22 @@ let marcadoresPuntosControl = [];
 let circulosPuntosControl = [];
 
 const COLORES_USUARIOS = [
-  "#ff6b6b",
-  "#4ecdc4",
-  "#45b7d1",
-  "#96ceb4",
-  "#feca57",
-  "#ff9ff3",
-  "#54a0ff",
-  "#5f27cd",
-  "#00d2d3",
-  "#ff9f43",
-  "#10ac84",
-  "#ee5a6f",
-  "#c44569",
-  "#40739e",
-  "#487eb0",
-  "#8c7ae6",
+  "#ff0000",
+  "#00ff00",
+  "#0000ff",
+  "#ffff00",
+  "#ff00ff",
+  "#00ffff",
+  "#ff8800",
+  "#39ff14",
+  "#ff1493",
+  "#00bfff",
+  "#9400d3",
+  "#7fff00",
+  "#ff4500",
+  "#1e90ff",
+  "#ffd700",
+  "#00fa9a",
 ];
 let coloresAsignados = new Map();
 let contadorColores = 0;
@@ -127,25 +127,28 @@ function obtenerColorUsuario(usuarioid) {
 }
 
 function convertirHexAFiltro(hex) {
+
   const filtrosMap = {
-    "#ff6b6b": "sepia(100%) saturate(200%) hue-rotate(0deg)",
-    "#4ecdc4": "sepia(100%) saturate(200%) hue-rotate(160deg)",
-    "#45b7d1": "sepia(100%) saturate(200%) hue-rotate(200deg)",
-    "#96ceb4": "sepia(100%) saturate(200%) hue-rotate(120deg)",
-    "#feca57": "sepia(100%) saturate(200%) hue-rotate(40deg)",
-    "#ff9ff3": "sepia(100%) saturate(200%) hue-rotate(300deg)",
-    "#54a0ff": "sepia(100%) saturate(200%) hue-rotate(220deg)",
-    "#5f27cd": "sepia(100%) saturate(200%) hue-rotate(260deg)",
-    "#00d2d3": "sepia(100%) saturate(200%) hue-rotate(180deg)",
-    "#ff9f43": "sepia(100%) saturate(200%) hue-rotate(25deg)",
-    "#10ac84": "sepia(100%) saturate(200%) hue-rotate(140deg)",
-    "#ee5a6f": "sepia(100%) saturate(200%) hue-rotate(340deg)",
-    "#c44569": "sepia(100%) saturate(200%) hue-rotate(320deg)",
-    "#40739e": "sepia(100%) saturate(200%) hue-rotate(210deg)",
-    "#487eb0": "sepia(100%) saturate(200%) hue-rotate(205deg)",
-    "#8c7ae6": "sepia(100%) saturate(200%) hue-rotate(270deg)",
+
+    "#ff0000": "sepia(100%) saturate(500%) hue-rotate(0deg)",
+    "#00ff00": "sepia(100%) saturate(500%) hue-rotate(90deg)",
+    "#0000ff": "sepia(100%) saturate(500%) hue-rotate(220deg)",
+    "#ffff00": "sepia(100%) saturate(500%) hue-rotate(40deg)",
+    "#ff00ff": "sepia(100%) saturate(500%) hue-rotate(300deg)",
+    "#00ffff": "sepia(100%) saturate(500%) hue-rotate(180deg)",
+    "#ff8800": "sepia(100%) saturate(500%) hue-rotate(20deg)",
+    "#39ff14": "sepia(100%) saturate(500%) hue-rotate(100deg)",
+    "#ff1493": "sepia(100%) saturate(500%) hue-rotate(330deg)",
+    "#00bfff": "sepia(100%) saturate(500%) hue-rotate(200deg)",
+    "#9400d3": "sepia(100%) saturate(500%) hue-rotate(270deg)",
+    "#7fff00": "sepia(100%) saturate(500%) hue-rotate(80deg)",
+    "#ff4500": "sepia(100%) saturate(500%) hue-rotate(10deg)",
+    "#1e90ff": "sepia(100%) saturate(500%) hue-rotate(210deg)",
+    "#ffd700": "sepia(100%) saturate(500%) hue-rotate(50deg)",
+    "#00fa9a": "sepia(100%) saturate(500%) hue-rotate(150deg)",
   };
-  return filtrosMap[hex] || "sepia(100%) saturate(200%) hue-rotate(0deg)";
+
+  return filtrosMap[hex] || "sepia(100%) saturate(500%) hue-rotate(0deg)";
 }
 
 function aplicarColorIcono(usuarioid, color) {

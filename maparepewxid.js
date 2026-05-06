@@ -224,8 +224,8 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
             position:absolute;
             left:0;
             top:10px;
-            width:40px;
-            height:40px;
+            width:120px;
+            height:120px;
           "
         />
       </div>
@@ -1100,8 +1100,8 @@ function crearIconoEmbarcacion(v) {
   return L.divIcon({
     className: `vessel-icon ${t.clase}`,
     html: `<div style="transform: rotate(${v.heading}deg);">${t.icono}</div>`,
-    iconSize: [160, 160],
-    iconAnchor: [80, 80],
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
   });
 }
 

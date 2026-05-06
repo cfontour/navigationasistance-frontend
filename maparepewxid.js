@@ -1100,8 +1100,8 @@ function crearIconoEmbarcacion(v) {
   return L.divIcon({
     className: `vessel-icon ${t.clase}`,
     html: `<div style="transform: rotate(${v.heading}deg);">${t.icono}</div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
+    iconSize: [80, 80],
+    iconAnchor: [40, 40],
   });
 }
 

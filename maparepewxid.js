@@ -96,22 +96,22 @@ let marcadoresPuntosControl = [];
 let circulosPuntosControl = [];
 
 const COLORES_USUARIOS = [
-  "#ff0000", // rojo
-  "#00ff00", // verde lima
-  "#0000ff", // azul puro
-  "#ffff00", // amarillo
-  "#ff00ff", // magenta
-  "#00ffff", // cyan
-  "#ff8800", // naranja fuerte
-  "#39ff14", // verde neón
-  "#ff1493", // rosa intenso
-  "#00bfff", // celeste fuerte
-  "#9400d3", // violeta intenso
-  "#7fff00", // chartreuse
-  "#ff4500", // naranja rojizo
-  "#1e90ff", // dodger blue
-  "#ffd700", // gold
-  "#00fa9a", // medium spring green
+  "#ff6b6b",
+  "#4ecdc4",
+  "#45b7d1",
+  "#96ceb4",
+  "#feca57",
+  "#ff9ff3",
+  "#54a0ff",
+  "#5f27cd",
+  "#00d2d3",
+  "#ff9f43",
+  "#10ac84",
+  "#ee5a6f",
+  "#c44569",
+  "#40739e",
+  "#487eb0",
+  "#8c7ae6",
 ];
 let coloresAsignados = new Map();
 let contadorColores = 0;

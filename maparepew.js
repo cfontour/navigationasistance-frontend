@@ -112,53 +112,6 @@ function obtenerColorUsuario(usuarioid) {
   return coloresAsignados.get(key);
 }
 
-function convertirHexAFiltro(hex) {
-
-  const filtrosMap = {
-
-    "#ff0000": "sepia(100%) saturate(500%) hue-rotate(0deg)",
-    "#00ff00": "sepia(100%) saturate(500%) hue-rotate(90deg)",
-    "#0000ff": "sepia(100%) saturate(500%) hue-rotate(220deg)",
-    "#ffff00": "sepia(100%) saturate(500%) hue-rotate(40deg)",
-    "#ff00ff": "sepia(100%) saturate(500%) hue-rotate(300deg)",
-    "#00ffff": "sepia(100%) saturate(500%) hue-rotate(180deg)",
-    "#ff8800": "sepia(100%) saturate(500%) hue-rotate(20deg)",
-    "#39ff14": "sepia(100%) saturate(500%) hue-rotate(100deg)",
-    "#ff1493": "sepia(100%) saturate(500%) hue-rotate(330deg)",
-    "#00bfff": "sepia(100%) saturate(500%) hue-rotate(200deg)",
-    "#9400d3": "sepia(100%) saturate(500%) hue-rotate(270deg)",
-    "#7fff00": "sepia(100%) saturate(500%) hue-rotate(80deg)",
-    "#ff4500": "sepia(100%) saturate(500%) hue-rotate(10deg)",
-    "#1e90ff": "sepia(100%) saturate(500%) hue-rotate(210deg)",
-    "#ffd700": "sepia(100%) saturate(500%) hue-rotate(50deg)",
-    "#00fa9a": "sepia(100%) saturate(500%) hue-rotate(150deg)",
-  };
-
-  return filtrosMap[hex] || "sepia(100%) saturate(500%) hue-rotate(0deg)";
-}
-
-function aplicarColorIcono(usuarioid, color) {
-  const className = `barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, "_")}`;
-  const filtros = convertirHexAFiltro(color);
-
-  let styleSheet = document.getElementById("iconos-dinamicos-css");
-  if (!styleSheet) {
-    styleSheet = document.createElement("style");
-    styleSheet.id = "iconos-dinamicos-css";
-    document.head.appendChild(styleSheet);
-  }
-
-  const newRule = `.${className} { filter: ${filtros} !important; }`;
-  const existingRuleIndex = Array.from(styleSheet.sheet.cssRules).findIndex(
-    (rule) => rule.selectorText === `.${className}`
-  );
-
-  if (existingRuleIndex !== -1) {
-    styleSheet.sheet.deleteRule(existingRuleIndex);
-  }
-  styleSheet.sheet.insertRule(newRule, styleSheet.sheet.cssRules.length);
-}
-
 const estiloAnimacion = document.createElement("style");
 estiloAnimacion.innerHTML = `
 @keyframes rockAndRoll {
@@ -245,8 +198,7 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
         </div>
 
         <!-- velero -->
-        <img
-          src="/img/${sprite}"
+        <div
           class="velero-rock"
           style="
             position:absolute;
@@ -254,8 +206,20 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
             top:0;
             width:80px;
             height:80px;
+
+            background:${obtenerColorUsuario(usuarioid)};
+
+            -webkit-mask-image:url('/img/${sprite}');
+            -webkit-mask-repeat:no-repeat;
+            -webkit-mask-position:center;
+            -webkit-mask-size:contain;
+
+            mask-image:url('/img/${sprite}');
+            mask-repeat:no-repeat;
+            mask-position:center;
+            mask-size:contain;
           "
-        />
+        ></div>
 
       </div>
     `,

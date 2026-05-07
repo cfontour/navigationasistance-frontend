@@ -173,35 +173,73 @@ function aplicarColorIcono(usuarioid, color) {
   styleSheet.sheet.insertRule(newRule, styleSheet.sheet.cssRules.length);
 }
 
+const estiloAnimacion = document.createElement("style");
+estiloAnimacion.innerHTML = `
+@keyframes rockAndRoll {
+  0%   { transform: rotate(-15deg); }
+  50%  { transform: rotate(15deg); }
+  100% { transform: rotate(-15deg); }
+}
+
+.velero-rock {
+  animation: rockAndRoll 2.5s ease-in-out infinite;
+  transform-origin: center center;
+}
+`;
+document.head.appendChild(estiloAnimacion);
+
 // =================== ICONOS NAVEGANTES ===================
 
 function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "") {
 
-  let normalizedBearing = bearing % 360;
-  if (normalizedBearing < 0) normalizedBearing += 360;
+  let angulo = bearing % 360;
+  if (angulo < 0) angulo += 360;
 
-  let iconAngle = Math.round(normalizedBearing / 10) * 10;
-  if (iconAngle === 360) iconAngle = 0;
+  let sprite = "velero_0.png";
 
-  const paddedAngle = String(iconAngle).padStart(3, "0");
-  const iconUrl = `/img/barco_bearing_icons/barco_${paddedAngle}.png`;
+  if (angulo >= 337.5 || angulo < 22.5) {
+    sprite = "velero_0.png";
+  }
+  else if (angulo >= 22.5 && angulo < 67.5) {
+    sprite = "velero_45.png";
+  }
+  else if (angulo >= 67.5 && angulo < 112.5) {
+    sprite = "velero_90.png";
+  }
+  else if (angulo >= 112.5 && angulo < 157.5) {
+    sprite = "velero_135.png";
+  }
+  else if (angulo >= 157.5 && angulo < 202.5) {
+    sprite = "velero_180.png";
+  }
+  else if (angulo >= 202.5 && angulo < 247.5) {
+    sprite = "velero_225.png";
+  }
+  else if (angulo >= 247.5 && angulo < 292.5) {
+    sprite = "velero_270.png";
+  }
+  else {
+    sprite = "velero_315.png";
+  }
 
   return L.divIcon({
+
     className: `barco-wrapper barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, "_")}`,
+
     html: `
       <div style="
         position: relative;
-        width: 80px;
-        height: 50px;
+        width: 120px;
+        height: 120px;
       ">
 
         <!-- línea blanca -->
         <div style="
           position:absolute;
-          left:29px;
+          left:39px;
           top:-25px;
           width:2px;
-          height:50px;
+          height:70px;
           background:white;
           opacity:0.9;
         "></div>
@@ -209,8 +247,8 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
         <!-- nombre -->
         <div style="
           position:absolute;
-          left:26px;
-          top:-30px;
+          left:45px;
+          top:-32px;
           color:white;
           font-size:12px;
           font-weight:bold;
@@ -220,21 +258,24 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
           ${nombreCompleto}
         </div>
 
-        <!-- barco -->
+        <!-- velero -->
         <img
-          src="${iconUrl}"
+          src="/img/${sprite}"
+          class="velero-rock"
           style="
             position:absolute;
             left:0;
-            top:10px;
-            width:60px;
-            height:60px;
+            top:0;
+            width:80px;
+            height:80px;
           "
         />
+
       </div>
     `,
-    iconSize: [80, 50],
-    iconAnchor: [20, 20],
+
+    iconSize: [120, 120],
+    iconAnchor: [40, 40],
   });
 }
 

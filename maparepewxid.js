@@ -117,13 +117,16 @@ let coloresAsignados = new Map();
 let contadorColores = 0;
 
 function obtenerColorUsuario(usuarioid) {
-  if (!coloresAsignados.has(usuarioid)) {
+  const key = String(usuarioid);
+
+  if (!coloresAsignados.has(key)) {
     const color = COLORES_USUARIOS[contadorColores % COLORES_USUARIOS.length];
-    coloresAsignados.set(usuarioid, color);
+    coloresAsignados.set(key, color);
     contadorColores++;
-    console.log(`🎨 Color asignado para usuario ${usuarioid}: ${color}`);
+    console.log(`🎨 Color asignado para usuario ${key}: ${color}`);
   }
-  return coloresAsignados.get(usuarioid);
+
+  return coloresAsignados.get(key);
 }
 
 function convertirHexAFiltro(hex) {

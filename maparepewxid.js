@@ -179,9 +179,9 @@ function aplicarColorIcono(usuarioid, color) {
 const estiloAnimacion = document.createElement("style");
 estiloAnimacion.innerHTML = `
 @keyframes rockAndRoll {
-  0%   { transform: rotate(-15deg); }
-  50%  { transform: rotate(15deg); }
-  100% { transform: rotate(-15deg); }
+  0%   { transform: rotate(-8deg); }
+  50%  { transform: rotate(8deg); }
+  100% { transform: rotate(-8deg); }
 }
 
 .velero-rock {

@@ -156,35 +156,43 @@ function aplicarColorIcono(usuarioid, color) {
   styleSheet.sheet.insertRule(newRule, styleSheet.sheet.cssRules.length);
 }
 
+const estiloAnimacion = document.createElement("style");
+estiloAnimacion.innerHTML = `
+@keyframes rockAndRoll {
+  0%   { transform: rotate(-4deg); }
+  50%  { transform: rotate(4deg); }
+  100% { transform: rotate(-4deg); }
+}
+
+.velero-rock {
+  animation: rockAndRoll 2.5s ease-in-out infinite;
+  transform-origin: center center;
+}
+`;
+document.head.appendChild(estiloAnimacion);
+
 // =================== ICONOS NAVEGANTES ===================
 
 function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "") {
 
-  let normalizedBearing = bearing % 360;
-  if (normalizedBearing < 0) normalizedBearing += 360;
-
-  let iconAngle = Math.round(normalizedBearing / 10) * 10;
-  if (iconAngle === 360) iconAngle = 0;
-
-  const paddedAngle = String(iconAngle).padStart(3, "0");
-  const iconUrl = `/img/barco_bearing_icons/barco_${paddedAngle}.png`;
-
   return L.divIcon({
+
     className: `barco-wrapper barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, "_")}`,
+
     html: `
       <div style="
         position: relative;
-        width: 80px;
-        height: 50px;
+        width: 120px;
+        height: 120px;
       ">
 
         <!-- línea blanca -->
         <div style="
           position:absolute;
-          left:29px;
+          left:39px;
           top:-25px;
           width:2px;
-          height:50px;
+          height:70px;
           background:white;
           opacity:0.9;
         "></div>
@@ -192,8 +200,8 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
         <!-- nombre -->
         <div style="
           position:absolute;
-          left:26px;
-          top:-30px;
+          left:45px;
+          top:-32px;
           color:white;
           font-size:12px;
           font-weight:bold;
@@ -203,21 +211,35 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
           ${nombreCompleto}
         </div>
 
-        <!-- barco -->
-        <img
-          src="${iconUrl}"
-          style="
-            position:absolute;
-            left:0;
-            top:10px;
-            width:60px;
-            height:60px;
-          "
-        />
+        <!-- velero -->
+        <!-- velero -->
+        <div style="
+          position:absolute;
+          left:0;
+          top:0;
+          width:80px;
+          height:80px;
+
+          transform: rotate(${bearing}deg);
+          transform-origin:center center;
+        ">
+
+          <img
+            src="/img/velero.png"
+            class="velero-rock"
+            style="
+              width:80px;
+              height:80px;
+            "
+          />
+
+        </div>
+
       </div>
     `,
-    iconSize: [80, 50],
-    iconAnchor: [20, 20],
+
+    iconSize: [120, 120],
+    iconAnchor: [40, 40],
   });
 }
 

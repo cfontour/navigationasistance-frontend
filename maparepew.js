@@ -175,6 +175,36 @@ document.head.appendChild(estiloAnimacion);
 
 function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "") {
 
+  let angulo = bearing % 360;
+  if (angulo < 0) angulo += 360;
+
+  let sprite = "velero_0.png";
+
+  if (angulo >= 337.5 || angulo < 22.5) {
+    sprite = "velero_0.png";
+  }
+  else if (angulo >= 22.5 && angulo < 67.5) {
+    sprite = "velero_45.png";
+  }
+  else if (angulo >= 67.5 && angulo < 112.5) {
+    sprite = "velero_90.png";
+  }
+  else if (angulo >= 112.5 && angulo < 157.5) {
+    sprite = "velero_135.png";
+  }
+  else if (angulo >= 157.5 && angulo < 202.5) {
+    sprite = "velero_180.png";
+  }
+  else if (angulo >= 202.5 && angulo < 247.5) {
+    sprite = "velero_225.png";
+  }
+  else if (angulo >= 247.5 && angulo < 292.5) {
+    sprite = "velero_270.png";
+  }
+  else {
+    sprite = "velero_315.png";
+  }
+
   return L.divIcon({
 
     className: `barco-wrapper barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, "_")}`,
@@ -212,28 +242,17 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
         </div>
 
         <!-- velero -->
-        <!-- velero -->
-        <div style="
-          position:absolute;
-          left:0;
-          top:0;
-          width:80px;
-          height:80px;
-
-          transform: rotate(${bearing}deg);
-          transform-origin:center center;
-        ">
-
-          <img
-            src="/img/velero.png"
-            class="velero-rock"
-            style="
-              width:80px;
-              height:80px;
-            "
-          />
-
-        </div>
+        <img
+          src="/img/${sprite}"
+          class="velero-rock"
+          style="
+            position:absolute;
+            left:0;
+            top:0;
+            width:80px;
+            height:80px;
+          "
+        />
 
       </div>
     `,

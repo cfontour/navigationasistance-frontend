@@ -585,7 +585,7 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
     const colorTraza = obtenerColorTraza(colorUsuario);
 
     polylineTraza = L.polyline(latlngs, {
-      color: colorUsuario,
+      color: colorTraza,
       weight: 4,
       dashArray: "10, 10",
     }).addTo(map);

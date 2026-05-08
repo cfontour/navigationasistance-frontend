@@ -164,9 +164,6 @@ function convertirHexAFiltro(hex) {
 }
 
 function aplicarColorIcono(usuarioid, color) {
-
-  coloresVisualesIconos.set(String(usuarioid), color); // guardamos el color real
-
   const className = `barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, "_")}`;
   const filtros = convertirHexAFiltro(color);
 
@@ -547,10 +544,10 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
     // borrar anterior y dibujar
     if (polylineTraza) map.removeLayer(polylineTraza);
 
-    //const colorUsuario = obtenerColorUsuario(usuarioId);
-    //const colorTraza = obtenerColorTraza(colorUsuario);
+    const colorUsuario = obtenerColorUsuario(usuarioId);
+    const colorTraza = obtenerColorTraza(colorUsuario);
 
-    const colorTraza = coloresVisualesIconos.get(String(usuarioId)) || "#ff0000";
+    //const colorTraza = coloresAsignados.get(String(usuarioId));
 
     polylineTraza = L.polyline(latlngs, {
       color: colorTraza,

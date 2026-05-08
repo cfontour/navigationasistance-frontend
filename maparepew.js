@@ -112,31 +112,31 @@ function obtenerColorUsuario(usuarioid) {
   return coloresAsignados.get(key);
 }
 
-//function obtenerColorTraza(hex) {
+function obtenerColorTraza(hex) {
 
-//  const mapaTraza = {
+  const mapaTraza = {
 
-//    "#ff0000": "#ff5a5a",
-//    "#00ff00": "#4dff88",
-//    "#0000ff": "#5b8cff",
-//    "#ffff00": "#ffe95c",
-//    "#ff00ff": "#ff6bff",
-//    "#00ffff": "#63f7ff",
-//    "#ff8800": "#ff9f43",
-//    "#39ff14": "#7dff72",
-//    "#ff1493": "#ff5cad",
-//    "#00bfff": "#58d3ff",
-//    "#9400d3": "#b266ff",
-//    "#7fff00": "#b7ff4a",
-//    "#ff4500": "#ff7a45",
-//    "#1e90ff": "#66b3ff",
-//    "#ffd700": "#ffe066",
-//    "#00fa9a": "#5fffc8",
+    "#ff0000": "#ff5a5a",
+    "#00ff00": "#4dff88",
+    "#0000ff": "#5b8cff",
+    "#ffff00": "#ffe95c",
+    "#ff00ff": "#ff6bff",
+    "#00ffff": "#63f7ff",
+    "#ff8800": "#ff9f43",
+    "#39ff14": "#7dff72",
+    "#ff1493": "#ff5cad",
+    "#00bfff": "#58d3ff",
+    "#9400d3": "#b266ff",
+    "#7fff00": "#b7ff4a",
+    "#ff4500": "#ff7a45",
+    "#1e90ff": "#66b3ff",
+    "#ffd700": "#ffe066",
+    "#00fa9a": "#5fffc8",
 
-//  };
+  };
 
-//  return mapaTraza[hex] || hex;
-//}
+  return mapaTraza[hex] || hex;
+}
 
 function convertirHexAFiltro(hex) {
 
@@ -545,6 +545,7 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
     if (polylineTraza) map.removeLayer(polylineTraza);
 
     const colorUsuario = obtenerColorUsuario(usuarioId);
+    const colorTraza = obtenerColorTraza(colorUsuario);
 
     polylineTraza = L.polyline(latlngs, {
       color: colorTraza,

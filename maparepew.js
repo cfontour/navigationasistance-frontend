@@ -553,6 +553,10 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
       dashArray: "10, 10",
     }).addTo(map);
 
+    console.log("🎨 Traza para usuario:", usuarioId);
+    console.log("🎨 coloresAsignados:", [...coloresAsignados.entries()]);
+    console.log("🎨 Color obtenido:", obtenerColorUsuario(usuarioId));
+    
     // por encima de azulejos y debajo de UI
     polylineTraza.bringToFront();
   } catch (err) {

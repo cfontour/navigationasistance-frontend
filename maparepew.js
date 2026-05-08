@@ -544,8 +544,10 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
     // borrar anterior y dibujar
     if (polylineTraza) map.removeLayer(polylineTraza);
 
-    const colorUsuario = obtenerColorUsuario(usuarioId);
-    const colorTraza = obtenerColorTraza(colorUsuario);
+    //const colorUsuario = obtenerColorUsuario(usuarioId);
+    //const colorTraza = obtenerColorTraza(colorUsuario);
+
+    const colorTraza = coloresAsignados.get(String(usuarioId));
 
     polylineTraza = L.polyline(latlngs, {
       color: colorTraza,
@@ -556,7 +558,7 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
     console.log("🎨 Traza para usuario:", usuarioId);
     console.log("🎨 coloresAsignados:", [...coloresAsignados.entries()]);
     console.log("🎨 Color obtenido:", obtenerColorUsuario(usuarioId));
-    
+
     // por encima de azulejos y debajo de UI
     polylineTraza.bringToFront();
   } catch (err) {

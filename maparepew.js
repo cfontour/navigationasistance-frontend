@@ -116,21 +116,21 @@ function obtenerColorTraza(hex) {
 
   const mapaTraza = {
 
-    "#ff0000": "#ff5a5a",
-    "#00ff00": "#4dff88",
-    "#0000ff": "#5b8cff",
+    "#ff0000": "#ffd700", // amarillo visual barco
+    "#00ff00": "#39ff14",
+    "#0000ff": "#ff69b4", // rosado visual
     "#ffff00": "#ffe95c",
-    "#ff00ff": "#ff6bff",
-    "#00ffff": "#63f7ff",
+    "#ff00ff": "#ff66ff",
+    "#00ffff": "#66ffff",
     "#ff8800": "#ff9f43",
     "#39ff14": "#7dff72",
     "#ff1493": "#ff5cad",
     "#00bfff": "#58d3ff",
-    "#9400d3": "#b266ff",
+    "#9400d3": "#c77dff",
     "#7fff00": "#b7ff4a",
     "#ff4500": "#ff7a45",
     "#1e90ff": "#66b3ff",
-    "#ffd700": "#ffe066",
+    "#ffd700": "#fff07a",
     "#00fa9a": "#5fffc8",
 
   };

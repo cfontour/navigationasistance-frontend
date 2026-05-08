@@ -129,6 +129,32 @@ function obtenerColorUsuario(usuarioid) {
   return coloresAsignados.get(key);
 }
 
+function obtenerColorTraza(hex) {
+
+  const mapaTraza = {
+
+    "#ff0000": "#ffd700", // amarillo visual barco
+    "#00ff00": "#39ff14",
+    "#0000ff": "#ff69b4", // rosado visual
+    "#ffff00": "#ffe95c",
+    "#ff00ff": "#ff66ff",
+    "#00ffff": "#66ffff",
+    "#ff8800": "#ff9f43",
+    "#39ff14": "#7dff72",
+    "#ff1493": "#ff5cad",
+    "#00bfff": "#58d3ff",
+    "#9400d3": "#c77dff",
+    "#7fff00": "#b7ff4a",
+    "#ff4500": "#ff7a45",
+    "#1e90ff": "#66b3ff",
+    "#ffd700": "#fff07a",
+    "#00fa9a": "#5fffc8",
+
+  };
+
+  return mapaTraza[hex] || hex;
+}
+
 function convertirHexAFiltro(hex) {
 
   const filtrosMap = {
@@ -556,6 +582,8 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
     if (polylineTraza) map.removeLayer(polylineTraza);
 
     const colorUsuario = obtenerColorUsuario(usuarioId);
+    const colorTraza = obtenerColorTraza(colorUsuario);
+
     polylineTraza = L.polyline(latlngs, {
       color: colorUsuario,
       weight: 4,

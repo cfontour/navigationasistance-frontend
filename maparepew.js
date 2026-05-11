@@ -250,11 +250,26 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
             top:0;
             width:80px;
             height:80px;
-            filter:${filtroUsuario};
+            z-index:1;
           "
         />
 
-      </div>
+        <div
+          class="velero-rock"
+          style="
+            position:absolute;
+            left:0;
+            top:0;
+            width:80px;
+            height:80px;
+            background:${colorUsuario};
+            -webkit-mask: url('/img/${sprite}') center / contain no-repeat;
+            mask: url('/img/${sprite}') center / contain no-repeat;
+            mix-blend-mode: color;
+            z-index:2;
+            pointer-events:none;
+          "
+        ></div>
     `,
 
     iconSize: [120, 120],
@@ -518,10 +533,7 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
     //const colorUsuario = obtenerColorUsuario(usuarioId);
     //const colorTraza = obtenerColorTraza(colorUsuario);
 
-    const colorTraza =
-      obtenerColorUsuario(
-        normalizarUsuarioId(usuarioId)
-      );
+    const colorTraza = obtenerColorUsuario(usuarioId);
 
     if (!colorUsuario) {
       console.warn("⚠️ Usuario sin color aún:", usuarioId);

@@ -97,47 +97,33 @@ const COLORES_USUARIOS = [
   "#ffd700",
   "#00fa9a",
 ];
+
 let coloresAsignados = new Map();
 let contadorColores = 0;
 
+function normalizarUsuarioId(usuarioid) {
+  return String(usuarioid);
+}
+
 function obtenerColorUsuario(usuarioid) {
-  const key = String(usuarioid);
+
+  const key = normalizarUsuarioId(usuarioid);
 
   if (!coloresAsignados.has(key)) {
-    const color = COLORES_USUARIOS[contadorColores % COLORES_USUARIOS.length];
-    //coloresAsignados.set(key, color);
-    coloresVelero.set(key, color);
+
+    const color =
+      COLORES_USUARIOS[
+        contadorColores % COLORES_USUARIOS.length
+      ];
+
+    coloresAsignados.set(key, color);
+
     contadorColores++;
-    console.log(`🎨 Color asignado para usuario ${key}: ${color}`);
+
+    console.log(`🎨 Color asignado usuario ${key}: ${color}`);
   }
 
   return coloresAsignados.get(key);
-}
-
-function obtenerColorTraza(hex) {
-
-  const mapaTraza = {
-
-    "#ff0000": "#ffd700", // amarillo visual barco
-    "#00ff00": "#39ff14",
-    "#0000ff": "#ff69b4", // rosado visual
-    "#ffff00": "#ffe95c",
-    "#ff00ff": "#ff66ff",
-    "#00ffff": "#66ffff",
-    "#ff8800": "#ff9f43",
-    "#39ff14": "#7dff72",
-    "#ff1493": "#ff5cad",
-    "#00bfff": "#58d3ff",
-    "#9400d3": "#c77dff",
-    "#7fff00": "#b7ff4a",
-    "#ff4500": "#ff7a45",
-    "#1e90ff": "#66b3ff",
-    "#ffd700": "#fff07a",
-    "#00fa9a": "#5fffc8",
-
-  };
-
-  return mapaTraza[hex] || hex;
 }
 
 function convertirHexAFiltro(hex) {
@@ -165,28 +151,6 @@ function convertirHexAFiltro(hex) {
   return filtrosMap[hex] || "sepia(100%) saturate(500%) hue-rotate(0deg)";
 }
 
-function aplicarColorIcono(usuarioid, color) {
-  const className = `barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, "_")}`;
-  const filtros = convertirHexAFiltro(color);
-
-  let styleSheet = document.getElementById("iconos-dinamicos-css");
-  if (!styleSheet) {
-    styleSheet = document.createElement("style");
-    styleSheet.id = "iconos-dinamicos-css";
-    document.head.appendChild(styleSheet);
-  }
-
-  const newRule = `.${className} { filter: ${filtros} !important; }`;
-  const existingRuleIndex = Array.from(styleSheet.sheet.cssRules).findIndex(
-    (rule) => rule.selectorText === `.${className}`
-  );
-
-  if (existingRuleIndex !== -1) {
-    styleSheet.sheet.deleteRule(existingRuleIndex);
-  }
-  styleSheet.sheet.insertRule(newRule, styleSheet.sheet.cssRules.length);
-}
-
 const estiloAnimacion = document.createElement("style");
 estiloAnimacion.innerHTML = `
 @keyframes rockAndRoll {
@@ -206,7 +170,14 @@ document.head.appendChild(estiloAnimacion);
 
 function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "") {
 
+  const usuarioKey = normalizarUsuarioId(usuarioid);
+
+  const colorUsuario = obtenerColorUsuario(usuarioKey);
+
+  const filtroUsuario = convertirHexAFiltro(colorUsuario);
+
   let angulo = bearing % 360;
+
   if (angulo < 0) angulo += 360;
 
   let sprite = "velero_0.png";
@@ -238,7 +209,7 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
 
   return L.divIcon({
 
-    className: `barco-wrapper barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, "_")}`,
+    className: "barco-wrapper",
 
     html: `
       <div style="
@@ -247,7 +218,6 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
         height: 120px;
       ">
 
-        <!-- línea blanca -->
         <div style="
           position:absolute;
           left:39px;
@@ -258,7 +228,6 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
           opacity:0.9;
         "></div>
 
-        <!-- nombre -->
         <div style="
           position:absolute;
           left:45px;
@@ -272,7 +241,6 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
           ${nombreCompleto}
         </div>
 
-        <!-- velero -->
         <img
           src="/img/${sprite}"
           class="velero-rock"
@@ -282,6 +250,7 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
             top:0;
             width:80px;
             height:80px;
+            filter:${filtroUsuario};
           "
         />
 
@@ -337,8 +306,8 @@ async function cargarNavegantesVinculados() {
           nombreCompleto
         );
 
-        const colorUsuario = obtenerColorUsuario(n.usuarioid);
-        setTimeout(() => aplicarColorIcono(n.usuarioid, colorUsuario), 200);
+        //const colorUsuario = obtenerColorUsuario(n.usuarioid);
+        //setTimeout(() => aplicarColorIcono(n.usuarioid, colorUsuario), 200);
       }
 
       const marcador = L.marker([lat, lng], { icon: icono }).addTo(map);
@@ -549,7 +518,10 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
     //const colorUsuario = obtenerColorUsuario(usuarioId);
     //const colorTraza = obtenerColorTraza(colorUsuario);
 
-    const colorUsuario = coloresVelero.get(String(usuarioId));
+    const colorTraza =
+      obtenerColorUsuario(
+        normalizarUsuarioId(usuarioId)
+      );
 
     if (!colorUsuario) {
       console.warn("⚠️ Usuario sin color aún:", usuarioId);

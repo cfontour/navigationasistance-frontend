@@ -165,7 +165,7 @@ function convertirHexAFiltro(hex) {
 
 function aplicarColorIcono(usuarioid, color) {
   const className = `barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, "_")}`;
-  const filtros = convertirHexAFiltro(color);
+  //const filtros = convertirHexAFiltro(color);
 
   let styleSheet = document.getElementById("iconos-dinamicos-css");
   if (!styleSheet) {
@@ -233,6 +233,8 @@ function crearIconoCompetidorConBearing(bearing, usuarioid, nombreCompleto = "")
   else {
     sprite = "velero_315.png";
   }
+
+  const color = obtenerColorUsuario(usuarioid);
 
   return L.divIcon({
 
@@ -336,7 +338,7 @@ async function cargarNavegantesVinculados() {
         );
 
         const colorUsuario = obtenerColorUsuario(n.usuarioid);
-        setTimeout(() => aplicarColorIcono(n.usuarioid, colorUsuario), 200);
+        //setTimeout(() => aplicarColorIcono(n.usuarioid, colorUsuario), 200);
       }
 
       const marcador = L.marker([lat, lng], { icon: icono }).addTo(map);

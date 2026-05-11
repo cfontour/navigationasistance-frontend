@@ -112,25 +112,56 @@ function obtenerColorUsuario(usuarioid) {
   return coloresAsignados.get(key);
 }
 
-// =================== CAMBIO 1: convertirHexAFiltro con cálculo matemático ===================
-// Convierte un color hex a un filtro CSS que colorea una imagen PNG transparente/blanca
-// Técnica: brightness(0) lleva a negro → invert(100%) a blanco → sepia+saturate+hue-rotate al color exacto
-// El sesgo de sepia es ~36°, por lo que hue-rotate = hueObjetivo - 36
+function obtenerColorTraza(hex) {
 
-function hexToHueDeg(hex) {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  const hue = Math.round(Math.atan2(Math.sqrt(3) * (g - b), 2 * r - g - b) * 180 / Math.PI);
-  return hue < 0 ? hue + 360 : hue;
+  const mapaTraza = {
+
+    "#ff0000": "#ffd700", // amarillo visual barco
+    "#00ff00": "#39ff14",
+    "#0000ff": "#ff69b4", // rosado visual
+    "#ffff00": "#ffe95c",
+    "#ff00ff": "#ff66ff",
+    "#00ffff": "#66ffff",
+    "#ff8800": "#ff9f43",
+    "#39ff14": "#7dff72",
+    "#ff1493": "#ff5cad",
+    "#00bfff": "#58d3ff",
+    "#9400d3": "#c77dff",
+    "#7fff00": "#b7ff4a",
+    "#ff4500": "#ff7a45",
+    "#1e90ff": "#66b3ff",
+    "#ffd700": "#fff07a",
+    "#00fa9a": "#5fffc8",
+
+  };
+
+  return mapaTraza[hex] || hex;
 }
 
 function convertirHexAFiltro(hex) {
-  const hue = hexToHueDeg(hex);
-  const rotate = hue - 36; // 36° es el sesgo que introduce sepia(100%)
-  return `brightness(0) saturate(100%) invert(100%) sepia(100%) saturate(10000%) hue-rotate(${rotate}deg)`;
+
+  const filtrosMap = {
+
+    "#ff0000": "sepia(100%) saturate(500%) hue-rotate(0deg)",
+    "#00ff00": "sepia(100%) saturate(500%) hue-rotate(90deg)",
+    "#0000ff": "sepia(100%) saturate(500%) hue-rotate(220deg)",
+    "#ffff00": "sepia(100%) saturate(500%) hue-rotate(40deg)",
+    "#ff00ff": "sepia(100%) saturate(500%) hue-rotate(300deg)",
+    "#00ffff": "sepia(100%) saturate(500%) hue-rotate(180deg)",
+    "#ff8800": "sepia(100%) saturate(500%) hue-rotate(20deg)",
+    "#39ff14": "sepia(100%) saturate(500%) hue-rotate(100deg)",
+    "#ff1493": "sepia(100%) saturate(500%) hue-rotate(330deg)",
+    "#00bfff": "sepia(100%) saturate(500%) hue-rotate(200deg)",
+    "#9400d3": "sepia(100%) saturate(500%) hue-rotate(270deg)",
+    "#7fff00": "sepia(100%) saturate(500%) hue-rotate(80deg)",
+    "#ff4500": "sepia(100%) saturate(500%) hue-rotate(10deg)",
+    "#1e90ff": "sepia(100%) saturate(500%) hue-rotate(210deg)",
+    "#ffd700": "sepia(100%) saturate(500%) hue-rotate(50deg)",
+    "#00fa9a": "sepia(100%) saturate(500%) hue-rotate(150deg)",
+  };
+
+  return filtrosMap[hex] || "sepia(100%) saturate(500%) hue-rotate(0deg)";
 }
-// =================== FIN CAMBIO 1 ===================
 
 function aplicarColorIcono(usuarioid, color) {
   const className = `barco-icon-${usuarioid.replace(/[^a-zA-Z0-9]/g, "_")}`;
@@ -143,9 +174,9 @@ function aplicarColorIcono(usuarioid, color) {
     document.head.appendChild(styleSheet);
   }
 
-  const newRule = `.${className} img { filter: ${filtros} !important; }`;
+  const newRule = `.${className} { filter: ${filtros} !important; }`;
   const existingRuleIndex = Array.from(styleSheet.sheet.cssRules).findIndex(
-    (rule) => rule.selectorText === `.${className} img`
+    (rule) => rule.selectorText === `.${className}`
   );
 
   if (existingRuleIndex !== -1) {
@@ -292,6 +323,8 @@ async function cargarNavegantesVinculados() {
           sirenaAudio.play().catch(() => {});
         }
       } else {
+        //icono = crearIconoCompetidorConBearing(bearing, n.usuarioid);
+
         const nombreCompleto = n.nombre
           ? `${n.nombre} ${n.apellido || ""}`
           : `Usuario ${n.usuarioid}`;
@@ -511,9 +544,10 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
     // borrar anterior y dibujar
     if (polylineTraza) map.removeLayer(polylineTraza);
 
-    // =================== CAMBIO 2: usar directamente el color del usuario ===================
-    const colorTraza = obtenerColorUsuario(usuarioId);
-    // =================== FIN CAMBIO 2 ===================
+    const colorUsuario = obtenerColorUsuario(usuarioId);
+    const colorTraza = obtenerColorTraza(colorUsuario);
+
+    //const colorTraza = coloresAsignados.get(String(usuarioId));
 
     polylineTraza = L.polyline(latlngs, {
       color: colorTraza,
@@ -521,7 +555,9 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
       dashArray: "10, 10",
     }).addTo(map);
 
-    console.log("🎨 Traza para usuario:", usuarioId, "color:", colorTraza);
+    console.log("🎨 Traza para usuario:", usuarioId);
+    console.log("🎨 coloresAsignados:", [...coloresAsignados.entries()]);
+    console.log("🎨 Color obtenido:", obtenerColorUsuario(usuarioId));
 
     // por encima de azulejos y debajo de UI
     polylineTraza.bringToFront();
@@ -1280,7 +1316,7 @@ document.addEventListener("DOMContentLoaded", () => {
     windCtx = windCanvasEl.getContext('2d');
     windCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // si estaba encendido, resembrar para que no "desaparezcan" al mover
+    // si estaba encendido, resembrar para que no “desaparezcan” al mover
     if (vientoVisible) {
       windParticles = [];
       for (let i = 0; i < PARTICLE_COUNT; i++) windParticles.push(new WindParticle(windCanvasEl));
@@ -1308,18 +1344,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  //resizeWindCanvas();
+  //map.on("resize zoomend moveend", resizeWindCanvas);
+  //map.on("zoomstart movestart", () => {
+  //  if (windCtx) windCtx.clearRect(0, 0, windCanvasEl.width, windCanvasEl.height);
+  //});
+
   resizeWindCanvas();
 
   // Mantener partículas visibles mientras se arrastra el mapa
   map.on('resize zoomend', resizeWindCanvas);
 
-  // (Opcional) bajar un poco el alpha durante el zoom animado para evitar "smear" visual
+  // (Opcional) bajar un poco el alpha durante el zoom animado para evitar “smear” visual
   map.on('zoomstart', () => {
     if (windCtx) windCtx.globalAlpha = 0.8;
   });
   map.on('zoomend', () => {
     if (windCtx) windCtx.globalAlpha = 1;
   });
+
+  //map.on('moveend', () => {
+  //  if (vientoVisible && windCanvasEl) {
+  //    windParticles = [];
+  //    for (let i = 0; i < PARTICLE_COUNT; i++) windParticles.push(new WindParticle(windCanvasEl));
+  //  }
+  //});
 
   // Botón viento (sin inline handler)
   const btnViento = document.getElementById("toggle-viento");

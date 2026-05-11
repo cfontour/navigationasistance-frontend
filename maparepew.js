@@ -3,6 +3,7 @@
 // Variable para controlar qué usuario tiene la traza activa
 let usuarioTrazaActiva = null;
 let intervaloPollling = null;
+let coloresVelero = new Map();
 
 // Viento (canvas de partículas)
 let windCanvasEl = null;
@@ -104,7 +105,8 @@ function obtenerColorUsuario(usuarioid) {
 
   if (!coloresAsignados.has(key)) {
     const color = COLORES_USUARIOS[contadorColores % COLORES_USUARIOS.length];
-    coloresAsignados.set(key, color);
+    //coloresAsignados.set(key, color);
+    coloresVelero.set(key, color);
     contadorColores++;
     console.log(`🎨 Color asignado para usuario ${key}: ${color}`);
   }
@@ -544,7 +546,16 @@ async function trazarRutaUsuarioEspecifico(usuarioId) {
     // borrar anterior y dibujar
     if (polylineTraza) map.removeLayer(polylineTraza);
 
-    const colorUsuario = obtenerColorUsuario(usuarioId);
+    //const colorUsuario = obtenerColorUsuario(usuarioId);
+    //const colorTraza = obtenerColorTraza(colorUsuario);
+
+    const colorUsuario = coloresVelero.get(String(usuarioId));
+
+    if (!colorUsuario) {
+      console.warn("⚠️ Usuario sin color aún:", usuarioId);
+      return;
+    }
+
     const colorTraza = obtenerColorTraza(colorUsuario);
 
     //const colorTraza = coloresAsignados.get(String(usuarioId));

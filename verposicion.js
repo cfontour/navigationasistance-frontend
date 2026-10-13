@@ -22,6 +22,7 @@ $(document).ready(function () {
           const lat = item.nadadorlat ?? "";
           const lng = item.nadadorlng ?? "";
           const fecha = formatearFecha(item.fechaUltimaActualizacion);
+          const bateria = `${item.bateria ?? 0}%`;
           const emergenciaIcono = item.emergency ? "🚨" : "";
 
           // Botón SOS: rojo (true) / amarillo (false)
@@ -39,7 +40,7 @@ $(document).ready(function () {
               <i class="fas fa-trash"></i>
             </button>`;
 
-          tabla.row.add([id, usuario, lat, lng, fecha, emergenciaIcono, btnSOS, btnEliminar]);
+          tabla.row.add([id, usuario, lat, lng, fecha, bateria, emergenciaIcono, btnSOS, btnEliminar]);
         });
 
         tabla.draw();

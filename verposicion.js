@@ -1,5 +1,8 @@
 // verposicion.js
 $(document).ready(function () {
+  const INTERVALO_MS = 10000; // AUTOREFRESH: cada 10 segundos
+  let cargando = false;       // AUTOREFRESH: evita consultas superpuestas
+
   const tabla = $('#navegantes').DataTable({
     language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" },
     columnDefs: [
@@ -9,8 +12,12 @@ $(document).ready(function () {
   });
 
   cargarDatos();
+  setInterval(cargarDatos, INTERVALO_MS); // AUTOREFRESH
 
   function cargarDatos() {
+    if (cargando) return; // AUTOREFRESH
+    cargando = true;      // AUTOREFRESH
+
     fetch("https://navigationasistance-backend-1.onrender.com/nadadorposicion/listar")
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then(data => {
@@ -44,9 +51,10 @@ $(document).ready(function () {
           tabla.row.add([id, usuario, lat, lng, fecha, bateria, senal, emergenciaIcono, btnSOS, btnEliminar]);
         });
 
-        tabla.draw();
+        tabla.draw(false); // AUTOREFRESH: mantiene página, orden y filtro
       })
-      .catch(err => console.error("Error cargando datos:", err));
+      .catch(err => console.error("Error cargando datos:", err))
+      .finally(() => { cargando = false; }); // AUTOREFRESH
   }
 
   // Toggle SOS con body { emergency: true/false }

@@ -4,6 +4,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const latElem = document.getElementById("lat");
   const lonElem = document.getElementById("lon");
 
+  // NUEVO BURBUJA: estilos de la burbuja translúcida
+  const estiloBurbuja = document.createElement("style");
+  estiloBurbuja.textContent = `
+    .leaflet-tooltip.burbuja-navegante {
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      border-radius: 12px;
+      padding: 4px 8px;
+      box-shadow: none;
+      font-size: 12px;
+      font-weight: 600;
+      color: #2C2C2A;
+    }
+    .leaflet-tooltip-top.burbuja-navegante:before {
+      border-top-color: rgba(255, 255, 255, 0.75);
+    }
+    .burbuja-navegante .bn-fila {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+  `;
+  document.head.appendChild(estiloBurbuja);
+
   const sirenaAudio = new Audio('img/sirena.mp3');
   sirenaAudio.loop = false;
 
@@ -327,6 +352,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // NUEVO BURBUJA: solo el nombre, sin apellido
+  async function getUsuarioPrimerNombre(id) {
+    try {
+      const res = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${id}`);
+      const usuario = await res.json();
+      return usuario.nombre || id;
+    } catch (error) {
+      console.error("Error al obtener nombre:", error);
+      return id;
+    }
+  }
+
   async function getUsuarioTelefono(usuarioid) {
     try {
       const response = await fetch(`https://navigationasistance-backend-1.onrender.com/usuarios/listarId/${usuarioid}`);
@@ -363,6 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const nombre = await getUsuarioNombre(usuarioid);
         const telefono = await getUsuarioTelefono(usuarioid);
+        const primerNombre = await getUsuarioPrimerNombre(usuarioid); // NUEVO BURBUJA
 
         const position = [lat, lng];
 
@@ -418,7 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
           apellido: ""
         };
         const popupTexto = htmlPopupUsuario(usuarioid, datosUsuario);
-        const tooltipTexto = `👤 ${nombre}\n🆔 ${usuarioid}\n🕒 ${hora}\n📶 Estado: ${estado}`;
+        const tooltipTexto = htmlBurbuja(primerNombre, nadador.bateria ?? 0, nadador.rssi); // NUEVO BURBUJA
 
         // EMERGENCIA
         let icono;
@@ -458,7 +496,12 @@ document.addEventListener("DOMContentLoaded", () => {
           })
             .addTo(map)
             .bindPopup(popupTexto)
-            .bindTooltip(tooltipTexto, { permanent: false, direction: 'top' });
+            .bindTooltip(tooltipTexto, {           // NUEVO BURBUJA
+              permanent: true,
+              direction: 'top',
+              offset: [0, -16],
+              className: 'burbuja-navegante'
+            });
 
           swimmerMarkers.set(usuarioid, marker);
         }
@@ -534,6 +577,69 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </div>
     `;
+  }
+
+  // NUEVO BURBUJA: contenido de la burbuja (nombre + pila + señal)
+  function htmlBurbuja(nombre, bateria, rssi) {
+    return `
+      <div class="bn-fila">
+        <span>${nombre}</span>
+        ${iconoBateria(bateria)}
+        ${iconoSenal(rssi)}
+      </div>`;
+  }
+
+  // NUEVO BURBUJA: pila de 5 segmentos (mismo código de colores que verposicion.js)
+  function iconoBateria(pct) {
+    const p = Math.max(0, Math.min(100, pct));
+    const segmentos = p <= 0 ? 0 : Math.ceil(p / 20);
+
+    let color;
+    if (p > 60) color = "#639922";
+    else if (p > 40) color = "#EF9F27";
+    else if (p > 20) color = "#D85A30";
+    else color = "#E24B4A";
+
+    let rects = "";
+    for (let i = 0; i < 5; i++) {
+      const x = 3 + i * 6.2;
+      const activo = i < segmentos;
+      rects += `<rect x="${x}" y="3" width="5.2" height="12" rx="1"
+                      fill="${activo ? color : "#D3D1C7"}" opacity="${activo ? 1 : 0.5}"/>`;
+    }
+
+    return `
+      <svg width="34" height="15" viewBox="0 0 40 18" style="vertical-align: middle;">
+        <rect x="1" y="1" width="34" height="16" rx="3" fill="none" stroke="#888780" stroke-width="1.5"/>
+        <rect x="36" y="6" width="3" height="6" rx="1" fill="#888780"/>
+        ${rects}
+      </svg>`;
+  }
+
+  // NUEVO BURBUJA: ícono estilo wifi (mismos umbrales que verposicion.js)
+  function iconoSenal(rssi) {
+    const sinDato = (rssi === null || rssi === undefined || rssi >= 0);
+
+    let nivel = 0;
+    if (!sinDato) {
+      if (rssi >= -70) nivel = 4;
+      else if (rssi >= -85) nivel = 3;
+      else if (rssi >= -100) nivel = 2;
+      else if (rssi >= -115) nivel = 1;
+    }
+
+    const colorActivo = nivel >= 3 ? "#639922" : "#BA7517";
+    const colorInactivo = "#B4B2A9";
+    const c = n => (nivel >= n ? colorActivo : colorInactivo);
+    const o = n => (nivel >= n ? 1 : 0.45);
+
+    return `
+      <svg width="24" height="16" viewBox="25 0 150 100" style="vertical-align: middle;">
+        <path d="M100 96 L83 79 A24 24 0 0 1 117 79 Z" fill="${c(1)}" opacity="${o(1)}"/>
+        <path d="M68.9 64.9 A44 44 0 0 1 131.1 64.9" fill="none" stroke="${c(2)}" stroke-width="12" stroke-linecap="round" opacity="${o(2)}"/>
+        <path d="M53.3 49.3 A66 66 0 0 1 146.7 49.3" fill="none" stroke="${c(3)}" stroke-width="12" stroke-linecap="round" opacity="${o(3)}"/>
+        <path d="M37.8 33.8 A88 88 0 0 1 162.2 33.8" fill="none" stroke="${c(4)}" stroke-width="12" stroke-linecap="round" opacity="${o(4)}"/>
+      </svg>`;
   }
 
   // Iniciar ciclo de actualizaciones

@@ -456,7 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
           apellido: ""
         };
         const popupTexto = htmlPopupUsuario(usuarioid, datosUsuario);
-        const tooltipTexto = htmlBurbuja(primerNombre, nadador.bateria ?? 0, nadador.rssi); // NUEVO BURBUJA
+        const tooltipTexto = htmlBurbuja(`${usuarioid} - ${primerNombre}`, nadador.bateria ?? 0, nadador.rssi); // NUEVO BURBUJA
 
         // EMERGENCIA
         let icono;

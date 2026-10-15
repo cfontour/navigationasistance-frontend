@@ -29,7 +29,7 @@ $(document).ready(function () {
           const lat = item.nadadorlat ?? "";
           const lng = item.nadadorlng ?? "";
           const fecha = formatearFecha(item.fechaUltimaActualizacion);
-          const bateria = `${item.bateria ?? 0}%`;
+          const bateria = iconoBateria(item.bateria ?? 0); // NUEVO BATERIA
           const senal = iconoSenal(item.rssi);
           const emergenciaIcono = item.emergency ? "🚨" : "";
 
@@ -98,6 +98,36 @@ $(document).ready(function () {
     if (!iso) return "";
     const d = new Date(iso);
     return d.toLocaleString("es-UY", { timeZone: "America/Montevideo" });
+  }
+
+  // NUEVO BATERIA: pila de 5 segmentos (20% c/u). Color: >60 verde · 41-60 naranja · 21-40 rojo anaranjado · 1-20 rojo
+  function iconoBateria(pct) {
+    const p = Math.max(0, Math.min(100, pct));
+    const segmentos = p <= 0 ? 0 : Math.ceil(p / 20);
+
+    let color;
+    if (p > 60) color = "#639922";
+    else if (p > 40) color = "#EF9F27";
+    else if (p > 20) color = "#D85A30";
+    else color = "#E24B4A";
+
+    let rects = "";
+    for (let i = 0; i < 5; i++) {
+      const x = 3 + i * 6.2;
+      const activo = i < segmentos;
+      rects += `<rect x="${x}" y="3" width="5.2" height="12" rx="1"
+                      fill="${activo ? color : "#D3D1C7"}" opacity="${activo ? 1 : 0.5}"/>`;
+    }
+
+    return `
+      <span title="Batería ${p}%">
+        <svg width="40" height="18" viewBox="0 0 40 18" style="vertical-align: middle;">
+          <rect x="1" y="1" width="34" height="16" rx="3" fill="none" stroke="#888780" stroke-width="1.5"/>
+          <rect x="36" y="6" width="3" height="6" rx="1" fill="#888780"/>
+          ${rects}
+        </svg>
+        ${p}%
+      </span>`;
   }
 
   // Ícono estilo wifi según RSSI (dBm). Niveles: 4 ≥ -70 · 3 ≥ -85 · 2 ≥ -100 · 1 ≥ -115 · 0 menos

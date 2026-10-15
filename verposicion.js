@@ -23,6 +23,7 @@ $(document).ready(function () {
           const lng = item.nadadorlng ?? "";
           const fecha = formatearFecha(item.fechaUltimaActualizacion);
           const bateria = `${item.bateria ?? 0}%`;
+          const senal = iconoSenal(item.rssi);
           const emergenciaIcono = item.emergency ? "🚨" : "";
 
           // Botón SOS: rojo (true) / amarillo (false)
@@ -40,7 +41,7 @@ $(document).ready(function () {
               <i class="fas fa-trash"></i>
             </button>`;
 
-          tabla.row.add([id, usuario, lat, lng, fecha, bateria, emergenciaIcono, btnSOS, btnEliminar]);
+          tabla.row.add([id, usuario, lat, lng, fecha, bateria, senal, emergenciaIcono, btnSOS, btnEliminar]);
         });
 
         tabla.draw();
@@ -89,5 +90,35 @@ $(document).ready(function () {
     if (!iso) return "";
     const d = new Date(iso);
     return d.toLocaleString("es-UY", { timeZone: "America/Montevideo" });
+  }
+
+  // Ícono estilo wifi según RSSI (dBm). Niveles: 4 ≥ -70 · 3 ≥ -85 · 2 ≥ -100 · 1 ≥ -115 · 0 menos
+  function iconoSenal(rssi) {
+    const sinDato = (rssi === null || rssi === undefined || rssi >= 0);
+
+    let nivel = 0;
+    if (!sinDato) {
+      if (rssi >= -70) nivel = 4;
+      else if (rssi >= -85) nivel = 3;
+      else if (rssi >= -100) nivel = 2;
+      else if (rssi >= -115) nivel = 1;
+    }
+
+    const colorActivo = nivel >= 3 ? "#639922" : "#BA7517";
+    const colorInactivo = "#B4B2A9";
+    const c = n => (nivel >= n ? colorActivo : colorInactivo);
+    const o = n => (nivel >= n ? 1 : 0.45);
+    const titulo = sinDato ? "Sin dato de señal" : `RSSI ${rssi} dBm`;
+
+    return `
+      <span title="${titulo}">
+        <svg width="30" height="20" viewBox="25 0 150 100" style="vertical-align: middle;">
+          <path d="M100 96 L83 79 A24 24 0 0 1 117 79 Z" fill="${c(1)}" opacity="${o(1)}"/>
+          <path d="M68.9 64.9 A44 44 0 0 1 131.1 64.9" fill="none" stroke="${c(2)}" stroke-width="12" stroke-linecap="round" opacity="${o(2)}"/>
+          <path d="M53.3 49.3 A66 66 0 0 1 146.7 49.3" fill="none" stroke="${c(3)}" stroke-width="12" stroke-linecap="round" opacity="${o(3)}"/>
+          <path d="M37.8 33.8 A88 88 0 0 1 162.2 33.8" fill="none" stroke="${c(4)}" stroke-width="12" stroke-linecap="round" opacity="${o(4)}"/>
+        </svg>
+        ${sinDato ? "—" : `${rssi} dBm`}
+      </span>`;
   }
 });
